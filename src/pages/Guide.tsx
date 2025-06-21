@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useTelegram } from '../hooks/useTelegram';
+import { navigateToGame } from '../utils/navigation';
 
 const players = Array.from({ length: 20 }, (_, i) => i + 1);
 
@@ -12,6 +14,23 @@ const categories = [
 
 const Guide = () => {
 	const [nextStep, setNextStep] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
+	const { initData } = useTelegram();
+
+	const handleStartGame = async () => {
+		if (!initData) {
+			console.error('Данные Telegram не найдены');
+			return;
+		}
+
+		setIsLoading(true);
+		try {
+			await navigateToGame(initData, navigate);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	return (
 		<div className='container flex flex-col justify-around h-full'>
@@ -111,12 +130,13 @@ const Guide = () => {
 					>
 						Назад
 					</button>
-					<Link
-						to='/select-team'
-						className='link_btn text-white bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] border-2 border-[#EC3381] py-[clamp(0.5rem,2vh,1rem)]'
+					<button
+						onClick={handleStartGame}
+						disabled={isLoading}
+						className='link_btn text-white bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] border-2 border-[#EC3381] py-[clamp(0.5rem,2vh,1rem)] disabled:opacity-50 disabled:cursor-not-allowed'
 					>
-						Начать игру
-					</Link>
+						{isLoading ? 'Загрузка...' : 'Начать игру'}
+					</button>
 				</div>
 			)}
 		</div>
