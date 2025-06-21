@@ -49,8 +49,14 @@ const Game = () => {
 			// Получаем выбранную команду из navigation state
 			const selectedClub = location.state?.selectedClub;
 			if (!selectedClub) {
-				showMessageModal('Команда не выбрана');
-				navigate('/select-team');
+				// Добавляем небольшую задержку, чтобы дать время для навигации
+				setTimeout(() => {
+					if (!location.state?.selectedClub) {
+						showMessageModal('Команда не выбрана');
+						navigate('/select-team');
+					}
+				}, 100);
+				setLoadingClub(false);
 				return;
 			}
 

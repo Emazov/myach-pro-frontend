@@ -159,13 +159,9 @@ export const useGameStore = create<GameState>()(
 				},
 
 				resetGame: () => {
-					const state = get();
 					set({
 						...initialState,
 						categories: LOCAL_CATEGORIES,
-						isLoading: false,
-						playerQueue: [...state.playerQueue],
-						maxPlayersToProcess: state.playerQueue.length,
 						categorizedPlayers: Object.fromEntries(
 							LOCAL_CATEGORIES.map((cat) => [cat.name, []]),
 						),

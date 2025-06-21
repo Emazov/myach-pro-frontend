@@ -4,6 +4,7 @@ import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
+import { navigateToGame } from '../utils/navigation';
 
 const Results = () => {
 	const navigate = useNavigate();
@@ -11,6 +12,7 @@ const Results = () => {
 	const { categorizedPlayers, resetGame, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isStartingNewGame, setIsStartingNewGame] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -39,9 +41,19 @@ const Results = () => {
 		loadClub();
 	}, [initData]);
 
-	const handleNewGame = () => {
-		resetGame();
-		navigate('/game');
+	const handleNewGame = async () => {
+		if (!initData) {
+			console.error('Данные Telegram не найдены');
+			return;
+		}
+
+		setIsStartingNewGame(true);
+		try {
+			resetGame();
+			await navigateToGame(initData, navigate);
+		} finally {
+			setIsStartingNewGame(false);
+		}
 	};
 
 	const handleGoHome = () => {
@@ -107,9 +119,10 @@ const Results = () => {
 			<div className='flex justify-center gap-4 mt-8'>
 				<button
 					onClick={handleNewGame}
-					className='bg-[#EC3381] text-white py-3 px-6 rounded-lg text-[clamp(1rem,3vw,1.2rem)]'
+					disabled={isStartingNewGame}
+					className='bg-[#EC3381] text-white py-3 px-6 rounded-lg text-[clamp(1rem,3vw,1.2rem)] disabled:opacity-50 disabled:cursor-not-allowed'
 				>
-					Новая игра
+					{isStartingNewGame ? 'Загрузка...' : 'Новая игра'}
 				</button>
 				<button
 					onClick={handleGoHome}
