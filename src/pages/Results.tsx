@@ -65,7 +65,53 @@ const Results = () => {
 				}
 
 				try {
-					// Создаём ссылку для скачивания
+					// Пробуем поделиться через Web Share API (современные браузеры)
+					if (navigator.share && navigator.canShare) {
+						const file = new File(
+							[blob],
+							`результаты_${club?.name || 'команды'}.png`,
+							{
+								type: 'image/png',
+							},
+						);
+
+						if (navigator.canShare({ files: [file] })) {
+							await navigator.share({
+								title: `Результаты распределения - ${club?.name}`,
+								text: 'Результаты распределения игроков по категориям',
+								files: [file],
+							});
+
+							if (tg && tg.showAlert) {
+								tg.showAlert('Картинка отправлена!');
+							}
+							return;
+						}
+					}
+
+					// Если Web Share API недоступен, пробуем через Telegram Web App
+					if (tg && tg.switchInlineQuery) {
+						// Создаем текстовое сообщение с результатами для отправки
+						const resultText = categories
+							.map((category) => {
+								const players = categorizedPlayers[category.name] || [];
+								return `${category.name}: ${players
+									.map((p) => p.name)
+									.join(', ')}`;
+							})
+							.join('\n');
+
+						const shareText = `🏆 Результаты распределения - ${club?.name}\n\n${resultText}`;
+
+						tg.switchInlineQuery(shareText, ['users', 'groups']);
+
+						if (tg.showAlert) {
+							tg.showAlert('Выберите чат для отправки результатов');
+						}
+						return;
+					}
+
+					// Запасной вариант - скачивание файла
 					const url = URL.createObjectURL(blob);
 					const link = document.createElement('a');
 					link.href = url;
@@ -75,16 +121,15 @@ const Results = () => {
 					document.body.removeChild(link);
 					URL.revokeObjectURL(url);
 
-					// Если доступен Telegram Web App, показываем уведомление
 					if (tg && tg.showAlert) {
 						tg.showAlert(
-							'Картинка сохранена! Теперь вы можете поделиться ей в чате.',
+							'Картинка сохранена в загрузки. Вы можете поделиться ей в чате.',
 						);
 					}
 				} catch (err) {
-					console.error('Ошибка при скачивании:', err);
+					console.error('Ошибка при отправке:', err);
 					if (tg && tg.showAlert) {
-						tg.showAlert('Ошибка при создании картинки');
+						tg.showAlert('Ошибка при отправке. Попробуйте еще раз.');
 					}
 				}
 			}, 'image/png');
