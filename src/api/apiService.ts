@@ -22,7 +22,7 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
 
 		// Преобразуем данные в нужный формат
 		return result.clubs.map((club: any) => ({
-			id: club.id, // Используем реальный ID из API
+			id: club.id.toString(), // Преобразуем в string
 			name: club.name,
 			img_url: club.logoUrl || '',
 		}));
@@ -53,10 +53,10 @@ export const fetchPlayers = async (initData: string): Promise<Player[]> => {
 		// Преобразуем данные в нужный формат
 		// API возвращает игроков без club_id, поэтому ставим 1 по умолчанию
 		return result.players.map((player: any, index: number) => ({
-			id: index + 1, // Используем индекс как числовой ID
+			id: (index + 1).toString(), // Преобразуем в string
 			name: player.name,
 			img_url: player.avatarUrl || '',
-			club_id: 1, // Устанавливаем club_id по умолчанию
+			club_id: '1', // Устанавливаем club_id по умолчанию как string
 		}));
 	} catch (error) {
 		console.error('Ошибка при запросе игроков:', error);
@@ -76,7 +76,7 @@ export const fetchPlayersByClub = async (
 
 		// Преобразуем игроков команды в нужный формат
 		return club.players.map((player: any) => ({
-			id: player.id,
+			id: player.id.toString(),
 			name: player.name,
 			img_url: player.avatarUrl || '',
 			club_id: clubId,

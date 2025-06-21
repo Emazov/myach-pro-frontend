@@ -1,12 +1,12 @@
 export interface Player {
-	id: number;
+	id: string;
 	name: string;
 	img_url: string;
-	club_id: number;
+	club_id: string;
 }
 
 export interface Club {
-	id: number;
+	id: string;
 	name: string;
 	img_url: string;
 }

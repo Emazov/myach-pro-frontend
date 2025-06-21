@@ -50,7 +50,7 @@ const ManageClubPage = () => {
 				const clubsData = await fetchClubs(initData);
 				// Преобразуем данные в нужный формат
 				const formattedClubs = clubsData.map((club: any) => ({
-					id: club.id.toString(),
+					id: club.id,
 					name: club.name,
 					logoUrl: club.img_url || '',
 				}));

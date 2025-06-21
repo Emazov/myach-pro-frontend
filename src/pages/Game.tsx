@@ -59,7 +59,7 @@ const Game = () => {
 				setClub(selectedClub);
 
 				// Загружаем данные игры для выбранной команды
-				await initializeGame(initData, selectedClub.id.toString());
+				await initializeGame(initData, selectedClub.id);
 			} catch (err) {
 				console.error('Ошибка при загрузке данных:', err);
 				showMessageModal(

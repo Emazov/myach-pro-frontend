@@ -46,7 +46,7 @@ const StartPage = () => {
 				<div className='flex flex-col gap-3'>
 					<Link
 						to={isAdmin ? '/admin' : '/guide'}
-						className='link_btn bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] text-white py-[clamp(1rem,1vh,2rem)]'
+						className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-white py-[clamp(1rem,1vh,2rem)]'
 					>
 						{isAdmin ? 'Админ' : 'Играть'}
 					</Link>
