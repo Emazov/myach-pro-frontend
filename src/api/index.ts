@@ -1,6 +1,7 @@
 export {
 	fetchClubs,
 	fetchPlayers,
+	fetchPlayersByClub,
 	authenticateTelegramUser,
 	createClub,
 	createPlayer,

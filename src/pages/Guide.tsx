@@ -112,7 +112,7 @@ const Guide = () => {
 						Назад
 					</button>
 					<Link
-						to='/game'
+						to='/select-team'
 						className='link_btn text-white bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] border-2 border-[#EC3381] py-[clamp(0.5rem,2vh,1rem)]'
 					>
 						Начать игру

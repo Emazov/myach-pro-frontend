@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 
 import StartPage from './pages/StartPage';
 import Guide from './pages/Guide';
+import SelectTeamPage from './pages/SelectTeamPage';
 import Game from './pages/Game';
 import Results from './pages/Results';
 import AdminPage from './pages/AdminPage';
@@ -37,6 +38,7 @@ function App() {
 			<Routes>
 				<Route index element={<StartPage />} />
 				<Route path='/guide' element={<Guide />} />
+				<Route path='/select-team' element={<SelectTeamPage />} />
 				<Route path='/game' element={<Game />} />
 				<Route path='/results' element={<Results />} />
 

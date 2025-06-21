@@ -65,6 +65,29 @@ export const fetchPlayers = async (initData: string): Promise<Player[]> => {
 };
 
 /**
+ * Получить список игроков конкретной команды
+ */
+export const fetchPlayersByClub = async (
+	initData: string,
+	clubId: string,
+): Promise<Player[]> => {
+	try {
+		const club = await fetchClubById(initData, clubId);
+
+		// Преобразуем игроков команды в нужный формат
+		return club.players.map((player: any) => ({
+			id: player.id,
+			name: player.name,
+			img_url: player.avatarUrl || '',
+			club_id: clubId,
+		}));
+	} catch (error) {
+		console.error('Ошибка при запросе игроков команды:', error);
+		throw error;
+	}
+};
+
+/**
  * Аутентифицировать пользователя через Telegram
  * Отправляет initData на сервер для проверки и получения информации о пользователе
  */

@@ -1,12 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameStore, useModalStore } from '../store';
 import { Modal, CategoryItem } from '../components';
-import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 
 const Game = () => {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { initData } = useTelegram();
 	const [club, setClub] = React.useState<any>(null);
 	const [loadingClub, setLoadingClub] = React.useState(true);
@@ -46,15 +46,20 @@ const Game = () => {
 				return;
 			}
 
-			try {
-				// Загружаем данные игры
-				await initializeGame(initData);
+			// Получаем выбранную команду из navigation state
+			const selectedClub = location.state?.selectedClub;
+			if (!selectedClub) {
+				showMessageModal('Команда не выбрана');
+				navigate('/select-team');
+				return;
+			}
 
-				// Загружаем информацию о клубе
-				const clubs = await fetchClubs(initData);
-				if (clubs && clubs.length > 0) {
-					setClub(clubs[0]);
-				}
+			try {
+				// Устанавливаем команду
+				setClub(selectedClub);
+
+				// Загружаем данные игры для выбранной команды
+				await initializeGame(initData, selectedClub.id.toString());
 			} catch (err) {
 				console.error('Ошибка при загрузке данных:', err);
 				showMessageModal(
@@ -66,7 +71,7 @@ const Game = () => {
 		};
 
 		loadData();
-	}, [initializeGame, showMessageModal, initData]);
+	}, [initializeGame, showMessageModal, initData, location.state, navigate]);
 
 	// Функция для добавления игрока в категорию
 	const handleCategoryClick = (categoryName: string) => {

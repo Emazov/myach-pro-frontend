@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 import type { CategorizedPlayers, Player, Category } from '../types';
-import { fetchPlayers } from '../api';
+import { fetchPlayersByClub } from '../api';
 import { LOCAL_CATEGORIES } from '../config/categories';
 
 type AddPlayerResult =
@@ -34,7 +34,7 @@ interface GameState {
 	getCategoryFilled: (categoryName: string) => string;
 	getCurrentPlayer: () => Player | undefined;
 	resetGame: () => void;
-	initializeGame: (initData: string) => Promise<void>;
+	initializeGame: (initData: string, clubId: string) => Promise<void>;
 }
 
 const initialState = {
@@ -172,12 +172,12 @@ export const useGameStore = create<GameState>()(
 					});
 				},
 
-				initializeGame: async (initData: string) => {
+				initializeGame: async (initData: string, clubId: string) => {
 					set({ isLoading: true, error: null });
 
 					try {
 						// Используем локальные категории и загружаем игроков с сервера
-						const players = await fetchPlayers(initData);
+						const players = await fetchPlayersByClub(initData, clubId);
 
 						// Создаем начальное состояние категорий
 						const emptyCategorizedPlayers = Object.fromEntries(

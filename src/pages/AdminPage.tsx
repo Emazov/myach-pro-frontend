@@ -74,19 +74,10 @@ const AdminPage = () => {
 				</Link>
 
 				<Link
-					to='/admin/add-players'
+					to='/guide'
 					className='admin-btn bg-[#EC3381] text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
 				>
 					Играть
-				</Link>
-			</div>
-
-			<div className='back-button'>
-				<Link
-					to='/'
-					className='link_btn bg-gray-700 text-white text-[clamp(1rem,2vh,1.5rem)] py-[clamp(1rem,1vh,2rem)]'
-				>
-					На главную
 				</Link>
 			</div>
 		</div>
