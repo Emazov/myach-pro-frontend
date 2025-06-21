@@ -4,17 +4,15 @@ import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
-import { navigateToGame } from '../utils/navigation';
 import html2canvas from 'html2canvas';
 
 const Results = () => {
 	const navigate = useNavigate();
 	const { initData, tg } = useTelegram();
-	const { categorizedPlayers, resetGame, categories } = useGameStore();
+	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSharing, setIsSharing] = useState(false);
-	const [isStartingNewGame, setIsStartingNewGame] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const resultsRef = useRef<HTMLDivElement>(null);
 
