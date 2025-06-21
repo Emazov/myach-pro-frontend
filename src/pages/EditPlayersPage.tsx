@@ -2,7 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useUserStore } from '../store';
 import { useTelegram } from '../hooks/useTelegram';
-import { fetchClubById, createPlayer, deletePlayer } from '../api';
+import {
+	fetchClubById,
+	createPlayer,
+	updatePlayer,
+	deletePlayer,
+} from '../api';
 
 interface Player {
 	id: string;
@@ -153,8 +158,18 @@ const EditPlayersPage = () => {
 				formData.append('avatar', player.image);
 			}
 
-			// Создаем нового игрока
-			await createPlayer(initData, formData);
+			// Проверяем - это обновление существующего игрока или создание нового
+			if (
+				player.isExisting &&
+				player.id &&
+				!player.id.startsWith('new-player-')
+			) {
+				// Обновляем существующего игрока
+				await updatePlayer(initData, player.id, formData);
+			} else {
+				// Создаем нового игрока
+				await createPlayer(initData, formData);
+			}
 
 			// Успешно сохранено
 			setShowPlayerForm(false);
@@ -183,7 +198,7 @@ const EditPlayersPage = () => {
 			});
 			setPlayers(playersArray);
 		} catch (err) {
-			console.error('Ошибка при создании игрока:', err);
+			console.error('Ошибка при сохранении игрока:', err);
 			setError(err instanceof Error ? err.message : 'Произошла ошибка');
 		} finally {
 			setIsSubmitting(false);

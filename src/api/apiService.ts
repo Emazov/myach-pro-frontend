@@ -449,3 +449,32 @@ export const addAdminByUsername = async (
 		return { success: false, message: 'Ошибка сети' };
 	}
 };
+
+/**
+ * Обновить игрока - только для админа
+ */
+export const updatePlayer = async (
+	initData: string,
+	playerId: string,
+	formData: FormData,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/players/${playerId}`, {
+			method: 'PUT',
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
+			body: formData,
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при обновлении игрока');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при обновлении игрока:', error);
+		throw error;
+	}
+};

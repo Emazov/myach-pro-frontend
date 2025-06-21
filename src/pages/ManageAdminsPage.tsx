@@ -33,10 +33,20 @@ const ManageAdminsPage: React.FC = () => {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [operationLoading, setOperationLoading] = useState(false);
+	const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
 
 	useEffect(() => {
 		loadAdmins();
 	}, []);
+
+	// Очистка таймера при размонтировании
+	useEffect(() => {
+		return () => {
+			if (searchTimeout) {
+				clearTimeout(searchTimeout);
+			}
+		};
+	}, [searchTimeout]);
 
 	const loadAdmins = async () => {
 		if (!initData) return;
@@ -52,7 +62,7 @@ const ManageAdminsPage: React.FC = () => {
 		}
 	};
 
-	// Поиск пользователей
+	// Поиск пользователей с debounce
 	const handleSearch = async (query: string) => {
 		if (!initData || !query.trim()) {
 			setSearchResults([]);
@@ -69,6 +79,33 @@ const ManageAdminsPage: React.FC = () => {
 		} finally {
 			setSearchLoading(false);
 		}
+	};
+
+	// Debounced поиск
+	const handleSearchInput = (query: string) => {
+		setSearchQuery(query);
+
+		// Очищаем предыдущий таймер
+		if (searchTimeout) {
+			clearTimeout(searchTimeout);
+		}
+
+		// Если строка пустая - сразу очищаем результаты
+		if (!query.trim()) {
+			setSearchResults([]);
+			setSearchLoading(false);
+			return;
+		}
+
+		// Показываем загрузку
+		setSearchLoading(true);
+
+		// Устанавливаем новый таймер
+		const newTimeout = setTimeout(() => {
+			handleSearch(query);
+		}, 300); // Задержка 300мс
+
+		setSearchTimeout(newTimeout);
 	};
 
 	// Добавление админа
@@ -283,10 +320,7 @@ const ManageAdminsPage: React.FC = () => {
 								<input
 									type='text'
 									value={searchQuery}
-									onChange={(e) => {
-										setSearchQuery(e.target.value);
-										handleSearch(e.target.value);
-									}}
+									onChange={(e) => handleSearchInput(e.target.value)}
 									className='w-full rounded-lg px-3 py-2 border'
 									style={{
 										background: 'var(--tg-theme-secondary-bg-color)',
