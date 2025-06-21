@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
@@ -7,7 +6,6 @@ import { useTelegram } from '../hooks/useTelegram';
 import html2canvas from 'html2canvas';
 
 const Results = () => {
-	const navigate = useNavigate();
 	const { initData, tg } = useTelegram();
 	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
@@ -196,10 +194,6 @@ const Results = () => {
 		}
 	};
 
-	const handleGoHome = () => {
-		navigate('/');
-	};
-
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
 		return (
@@ -227,52 +221,78 @@ const Results = () => {
 	}
 
 	return (
-		<div className='container mx-auto px-4 py-8'>
-			<div ref={resultsRef} className='bg-white p-4 rounded-lg'>
-				<div className='flex flex-col items-center mb-8'>
-					<img
-						src={club.img_url}
-						alt={club.name}
-						className='w-24 h-24 object-contain mb-4'
-						crossOrigin='anonymous'
-						loading='eager'
-					/>
-					<h1 className='text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-2'>
-						{club.name}
-					</h1>
-					<h2 className='text-[clamp(1rem,3vw,2rem)] text-center mb-8'>
-						Результаты распределения игроков
-					</h2>
+		<div className='min-h-screen bg-gradient-to-b from-[#EC3381] to-[#FF6B9D] flex flex-col'>
+			<div ref={resultsRef} className='flex-1 flex flex-col'>
+				{/* Заголовок с мячом */}
+				<div className='text-center py-6'>
+					<div className='flex items-center justify-center gap-3 mb-2'>
+						<div className='w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-yellow-400 flex items-center justify-center'>
+							<span className='text-2xl'>⚽</span>
+						</div>
+					</div>
+					<h1 className='text-white text-3xl font-bold'>РЕЗУЛЬТАТ</h1>
 				</div>
 
-				<ul className='category_list flex flex-col gap-2'>
-					{categories.map((category) => {
-						const players = categorizedPlayers[category.name] || [];
-						return (
-							<CategoryItem
-								key={`category-${category.name}`}
-								category={category}
-								players={players}
-								showPlayerImages={true}
-							/>
-						);
-					})}
-				</ul>
+				{/* Основной контент */}
+				<div className='bg-white rounded-t-3xl flex-1 px-4 pt-6 pb-4'>
+					{/* Заголовок тир-листа и логотип */}
+					<div className='flex items-center justify-between mb-6'>
+						<div>
+							<h2 className='text-black text-lg font-bold'>ТИР-ЛИСТ ИГРОКОВ</h2>
+							<div className='flex items-center gap-2 mt-1'>
+								<img
+									src={club.img_url}
+									alt={club.name}
+									className='w-6 h-6 object-contain'
+									crossOrigin='anonymous'
+									loading='eager'
+								/>
+								<span className='text-black font-semibold'>{club.name}</span>
+							</div>
+						</div>
+						<div className='text-right'>
+							<span className='text-black text-sm'>МЯЧ</span>
+						</div>
+					</div>
+
+					{/* Список категорий */}
+					<ul className='category_list flex flex-col gap-3 mb-6'>
+						{categories.map((category) => {
+							const players = categorizedPlayers[category.name] || [];
+							return (
+								<CategoryItem
+									key={`category-${category.name}`}
+									category={category}
+									players={players}
+									showPlayerImages={true}
+								/>
+							);
+						})}
+					</ul>
+
+					{/* Ссылка на бота */}
+					<div className='text-center mb-6'>
+						<a
+							href='https://t.me/MyachProBot'
+							className='inline-flex items-center gap-2 text-blue-600 text-sm font-medium'
+							target='_blank'
+							rel='noopener noreferrer'
+						>
+							<span>🔗</span>
+							Собери свой тир-лист в боте
+						</a>
+					</div>
+				</div>
 			</div>
 
-			<div className='flex justify-center gap-4 mt-8'>
+			{/* Кнопка поделиться */}
+			<div className='p-4'>
 				<button
 					onClick={handleShare}
 					disabled={isSharing}
-					className='bg-[#EC3381] text-white py-3 px-6 rounded-lg text-[clamp(1rem,3vw,1.2rem)] disabled:opacity-50 disabled:cursor-not-allowed'
+					className='w-full bg-yellow-400 text-black py-4 rounded-2xl text-lg font-bold disabled:opacity-50 disabled:cursor-not-allowed'
 				>
 					{isSharing ? 'Создаём картинку...' : 'Поделиться'}
-				</button>
-				<button
-					onClick={handleGoHome}
-					className='bg-gray-700 text-white py-3 px-6 rounded-lg text-[clamp(1rem,3vw,1.2rem)]'
-				>
-					На главную
 				</button>
 			</div>
 		</div>
