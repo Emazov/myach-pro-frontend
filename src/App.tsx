@@ -14,6 +14,7 @@ import AddPlayersPage from './pages/AddPlayersPage';
 import ManageClubPage from './pages/ManageClubPage';
 import EditClubPage from './pages/EditClubPage';
 import EditPlayersPage from './pages/EditPlayersPage';
+import ManageAdminsPage from './pages/ManageAdminsPage';
 
 function App() {
 	const { tg, initData } = useTelegram();
@@ -53,6 +54,7 @@ function App() {
 					path='/admin/edit-players/:clubId'
 					element={<EditPlayersPage />}
 				/>
+				<Route path='/admin/manage-admins' element={<ManageAdminsPage />} />
 			</Routes>
 		</div>
 	);

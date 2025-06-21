@@ -295,3 +295,90 @@ export const deletePlayer = async (
 		throw error;
 	}
 };
+
+/**
+ * Получить список админов
+ */
+export const fetchAdmins = async (initData: string): Promise<any[]> => {
+	try {
+		const response = await fetch(`${API_URL}/admin/admins?initData=${encodeURIComponent(initData)}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const result = await response.json();
+		return result.admins || [];
+	} catch (error) {
+		console.error('Ошибка при запросе списка админов:', error);
+		throw error;
+	}
+};
+
+/**
+ * Добавить нового админа
+ */
+export const addAdmin = async (
+	initData: string,
+	telegramId: string,
+	username?: string,
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await fetch(`${API_URL}/admin/admins`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				initData,
+				telegramId,
+				username,
+			}),
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			return { success: false, message: result.error || 'Ошибка сервера' };
+		}
+
+		return { success: true, message: result.message };
+	} catch (error) {
+		console.error('Ошибка при добавлении админа:', error);
+		return { success: false, message: 'Ошибка сети' };
+	}
+};
+
+/**
+ * Удалить админа
+ */
+export const removeAdmin = async (
+	initData: string,
+	telegramId: string,
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await fetch(`${API_URL}/admin/admins/${telegramId}`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ initData }),
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			return { success: false, message: result.error || 'Ошибка сервера' };
+		}
+
+		return { success: true, message: result.message };
+	} catch (error) {
+		console.error('Ошибка при удалении админа:', error);
+		return { success: false, message: 'Ошибка сети' };
+	}
+};

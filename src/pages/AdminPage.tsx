@@ -67,6 +67,13 @@ const AdminPage = () => {
 				</Link>
 
 				<Link
+					to='/admin/manage-admins'
+					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
+				>
+					Управление админами
+				</Link>
+
+				<Link
 					to='/admin/analytics'
 					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
 				>

@@ -9,4 +9,7 @@ export {
 	updateClub,
 	deleteClub,
 	deletePlayer,
+	fetchAdmins,
+	addAdmin,
+	removeAdmin,
 } from './apiService';
