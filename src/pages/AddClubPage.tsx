@@ -67,11 +67,11 @@ const AddClubPage = () => {
 			formData.append('logo', selectedImage);
 
 			// Используем API сервис
-			await createClub(initData, formData);
+			const response = await createClub(initData, formData);
 
-			// Успешно создано
-			navigate('/admin', {
-				state: { message: 'Команда успешно добавлена!' },
+			// Переходим на страницу добавления игроков с ID созданной команды
+			navigate(`/admin/add-players/${response.club.id}`, {
+				state: { clubName: clubName.trim() },
 			});
 		} catch (err) {
 			console.error('Ошибка при создании команды:', err);

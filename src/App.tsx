@@ -41,6 +41,7 @@ function App() {
 				<Route path='/admin' element={<AdminPage />} />
 				<Route path='/admin/add-club' element={<AddClubPage />} />
 				<Route path='/admin/add-players' element={<AddPlayersPage />} />
+				<Route path='/admin/add-players/:clubId' element={<AddPlayersPage />} />
 			</Routes>
 		</div>
 	);

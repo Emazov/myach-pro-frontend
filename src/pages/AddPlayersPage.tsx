@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useUserStore } from '../store';
 import { useTelegram } from '../hooks/useTelegram';
-import { fetchClubs, createPlayer } from '../api';
+import { createPlayer } from '../api';
 
 interface Player {
 	id: string;
@@ -16,6 +16,8 @@ const AddPlayersPage = () => {
 	const { initData } = useTelegram();
 	const navigate = useNavigate();
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const { clubId } = useParams();
+	const { state } = useLocation();
 
 	const [players, setPlayers] = useState<Player[]>(
 		Array.from({ length: 20 }, (_, i) => ({
@@ -31,30 +33,14 @@ const AddPlayersPage = () => {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [showPlayerForm, setShowPlayerForm] = useState(false);
-	const [clubId, setClubId] = useState<string | null>(null);
 
-	// Проверяем права доступа и загружаем клубы
+	// Проверяем права доступа
 	useEffect(() => {
 		if (!isLoading && !isAdmin) {
 			navigate('/');
 			return;
 		}
-
-		const loadClubs = async () => {
-			if (initData) {
-				try {
-					const clubs = await fetchClubs(initData);
-					if (clubs && clubs.length > 0 && clubs[0]) {
-						setClubId(clubs[0].id.toString());
-					}
-				} catch (error) {
-					console.error('Ошибка загрузки клубов:', error);
-				}
-			}
-		};
-
-		loadClubs();
-	}, [isAdmin, isLoading, navigate, initData]);
+	}, [isAdmin, isLoading, navigate]);
 
 	const handleSlotClick = (index: number) => {
 		setSelectedPlayerIndex(index);
@@ -139,7 +125,11 @@ const AddPlayersPage = () => {
 
 	const handleFinish = () => {
 		navigate('/admin', {
-			state: { message: 'Игроки успешно добавлены!' },
+			state: {
+				message: `Игроки для команды "${
+					state?.clubName || 'команды'
+				}" успешно добавлены!`,
+			},
 		});
 	};
 
@@ -166,6 +156,11 @@ const AddPlayersPage = () => {
 					<div className='flex justify-between items-center mb-8'>
 						<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
 							Добавьте игроков
+							{state?.clubName && (
+								<span className='block text-[clamp(1rem,3vw,1.2rem)] text-gray-600 mt-1'>
+									в команду "{state.clubName}"
+								</span>
+							)}
 						</h1>
 						<button
 							onClick={() => navigate('/admin')}

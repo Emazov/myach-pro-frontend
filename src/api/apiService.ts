@@ -1,6 +1,6 @@
 import type { Club, Player, User } from '../types';
 
-const API_URL = `https://myach-pro-backend-production.up.railway.app/`;
+const API_URL = `https://myach-pro-backend-production.up.railway.app/api`;
 
 /**
  * Получить список клубов с сервера
