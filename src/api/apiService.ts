@@ -478,3 +478,65 @@ export const updatePlayer = async (
 		throw error;
 	}
 };
+
+/**
+ * Отправляет изображение тир-листа через бота в чат
+ */
+export const sendTierListImage = async (
+	initData: string,
+	imageBase64: string,
+	chatId: string | number,
+	clubName: string,
+	caption?: string,
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await fetch(`${API_URL}/bot/send-message`, {
+			method: 'POST',
+			headers: {
+				Authorization: `tma ${initData}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				image: imageBase64,
+				chatId,
+				clubName,
+				caption,
+			}),
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при отправке сообщения');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при отправке тир-листа:', error);
+		throw error;
+	}
+};
+
+/**
+ * Получение списка чатов для бота
+ */
+export const getBotChats = async (
+	initData: string,
+): Promise<{ chatId: string | number }> => {
+	try {
+		const response = await fetch(`${API_URL}/bot/chats`, {
+			headers: {
+				Authorization: `tma ${initData}`,
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`Ошибка при получении чатов: ${response.status}`);
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при запросе чатов:', error);
+		throw error;
+	}
+};

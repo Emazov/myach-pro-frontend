@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
-import { fetchClubs } from '../api';
+import { fetchClubs, sendTierListImage, getBotChats } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import html2canvas from 'html2canvas';
 
@@ -181,11 +181,11 @@ const Results = () => {
 					// Если Web Share API недоступен, пробуем через Telegram Web App
 					if (tg) {
 						try {
-							// Преобразуем blob в base64 для отправки через Telegram
+							// Преобразуем blob в base64 для отправки через API
 							const reader = new FileReader();
 							reader.readAsDataURL(blob);
-							reader.onloadend = () => {
-								const base64data = reader.result;
+							reader.onloadend = async () => {
+								const base64data = reader.result as string;
 
 								// Создаем текстовое сообщение с результатами
 								const resultText = categories
@@ -199,26 +199,62 @@ const Results = () => {
 
 								const shareText = `🏆 ТИР-ЛИСТ ${club?.name.toUpperCase()}\n\n${resultText}\n\n👉 Собери свой тир-лист в боте @MyachProBot`;
 
-								// Отправляем через Telegram WebApp
-								if (tg.sendData) {
-									// Отправка изображения и данных через Telegram WebApp API
-									const data = JSON.stringify({
-										type: 'photo',
-										data: base64data,
-										text: shareText,
-									});
-									tg.sendData(data);
-									if (tg.showAlert) {
-										tg.showAlert('Результаты отправлены в чат!');
+								try {
+									// Пробуем отправить через наш API бота
+									if (initData) {
+										// Получаем chatId пользователя
+										const chatInfo = await getBotChats(initData);
+
+										if (chatInfo.chatId) {
+											// Отправляем сообщение через API
+											await sendTierListImage(
+												initData,
+												base64data,
+												chatInfo.chatId,
+												club?.name || '',
+												shareText,
+											);
+
+											if (tg && tg.showAlert) {
+												tg.showAlert('Результаты отправлены в чат!');
+											}
+											return;
+										}
 									}
-									return;
-								} else if (tg.switchInlineQuery) {
-									// Запасной вариант - только текст
-									tg.switchInlineQuery(shareText, ['users', 'groups']);
-									if (tg.showAlert) {
-										tg.showAlert('Выберите чат для отправки результатов');
+
+									// Запасные варианты если API не сработал
+									if (tg) {
+										if (tg.sendData) {
+											// Отправка изображения через Telegram WebApp API
+											const data = JSON.stringify({
+												type: 'photo',
+												data: base64data,
+												text: shareText,
+											});
+											tg.sendData(data);
+											if (tg.showAlert) {
+												tg.showAlert('Результаты отправлены в чат!');
+											}
+											return;
+										} else if (tg.switchInlineQuery) {
+											// Только текст через inline query
+											tg.switchInlineQuery(shareText, ['users', 'groups']);
+											if (tg.showAlert) {
+												tg.showAlert('Выберите чат для отправки результатов');
+											}
+											return;
+										}
 									}
-									return;
+								} catch (err) {
+									console.error('Ошибка при отправке через API бота:', err);
+
+									// Если API не сработал, пробуем стандартные методы Telegram
+									if (tg && tg.switchInlineQuery) {
+										tg.switchInlineQuery(shareText, ['users', 'groups']);
+										if (tg.showAlert) {
+											tg.showAlert('Выберите чат для отправки результатов');
+										}
+									}
 								}
 							};
 							return; // Ждем завершения асинхронной операции
