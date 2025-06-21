@@ -59,7 +59,7 @@ const SelectTeamPage = () => {
 				</div>
 				<button
 					onClick={() => navigate('/guide')}
-					className='link_btn bg-gray-500 text-white py-3 px-6 rounded-lg'
+					className='link_btn bg-[var(--tg-theme-text-color)] py-3 px-6 rounded-lg'
 				>
 					Назад
 				</button>
@@ -89,9 +89,9 @@ const SelectTeamPage = () => {
 					<div className='flex justify-center items-center h-full'>
 						<div
 							onClick={() => handleTeamSelect(clubs[0]!)}
-							className='flex flex-col items-center p-6 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors min-w-[200px]'
+							className='flex flex-col items-center p-6 bg-[var(--tg-theme-text-color)] rounded-lg text-[var(--tg-theme-bg-color)] min-w-[200px]'
 						>
-							<div className='w-24 h-24 mb-4 overflow-hidden rounded-full bg-gray-300'>
+							<div className='w-24 h-24 mb-4 overflow-hidden rounded-full'>
 								{clubs[0]!.img_url ? (
 									<img
 										src={clubs[0]!.img_url}
@@ -116,9 +116,9 @@ const SelectTeamPage = () => {
 							<div
 								key={club.id}
 								onClick={() => handleTeamSelect(club)}
-								className='flex flex-col items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors'
+								className='flex flex-col items-center p-4 bg-[var(--tg-theme-text-color)] rounded-lg text-[var(--tg-theme-bg-color)] cursor-pointer'
 							>
-								<div className='w-16 h-16 mb-2 overflow-hidden rounded-full bg-gray-300'>
+								<div className='w-16 h-16 mb-2 overflow-hidden rounded-full'>
 									{club.img_url ? (
 										<img
 											src={club.img_url}

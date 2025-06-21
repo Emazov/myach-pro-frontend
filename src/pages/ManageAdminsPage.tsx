@@ -224,7 +224,7 @@ const ManageAdminsPage: React.FC = () => {
 							• У пользователя должен быть установлен @username в настройках
 							Telegram
 						</p>
-						<p>• Введите @username в поле поиска (например: @ivan_petrov)</p>
+						<p>• Введите username в поле поиска (например: ivan_petrov)</p>
 						<p>
 							• Если пользователя нет в списке - попросите его перезапустить
 							бота
@@ -327,7 +327,7 @@ const ManageAdminsPage: React.FC = () => {
 										borderColor: 'var(--tg-theme-hint-color)',
 										color: 'var(--tg-theme-text-color)',
 									}}
-									placeholder='Введите @username пользователя'
+									placeholder='Введите username пользователя'
 								/>
 								{searchLoading && (
 									<div
