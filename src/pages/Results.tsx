@@ -1,19 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { navigateToGame } from '../utils/navigation';
+import html2canvas from 'html2canvas';
 
 const Results = () => {
 	const navigate = useNavigate();
-	const { initData } = useTelegram();
+	const { initData, tg } = useTelegram();
 	const { categorizedPlayers, resetGame, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isSharing, setIsSharing] = useState(false);
 	const [isStartingNewGame, setIsStartingNewGame] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const resultsRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const loadClub = async () => {
@@ -41,18 +44,59 @@ const Results = () => {
 		loadClub();
 	}, [initData]);
 
-	const handleNewGame = async () => {
-		if (!initData) {
-			console.error('Данные Telegram не найдены');
-			return;
-		}
+	const handleShare = async () => {
+		if (!resultsRef.current) return;
 
-		setIsStartingNewGame(true);
+		setIsSharing(true);
 		try {
-			resetGame();
-			await navigateToGame(initData, navigate);
+			// Создаём скриншот результатов
+			const canvas = await html2canvas(resultsRef.current, {
+				backgroundColor: '#ffffff',
+				scale: 2, // Увеличиваем качество
+				useCORS: true,
+				allowTaint: true,
+				height: resultsRef.current.offsetHeight,
+				width: resultsRef.current.offsetWidth,
+			});
+
+			// Конвертируем canvas в blob
+			canvas.toBlob(async (blob) => {
+				if (!blob) {
+					console.error('Не удалось создать изображение');
+					return;
+				}
+
+				try {
+					// Создаём ссылку для скачивания
+					const url = URL.createObjectURL(blob);
+					const link = document.createElement('a');
+					link.href = url;
+					link.download = `результаты_${club?.name || 'команды'}.png`;
+					document.body.appendChild(link);
+					link.click();
+					document.body.removeChild(link);
+					URL.revokeObjectURL(url);
+
+					// Если доступен Telegram Web App, показываем уведомление
+					if (tg && tg.showAlert) {
+						tg.showAlert(
+							'Картинка сохранена! Теперь вы можете поделиться ей в чате.',
+						);
+					}
+				} catch (err) {
+					console.error('Ошибка при скачивании:', err);
+					if (tg && tg.showAlert) {
+						tg.showAlert('Ошибка при создании картинки');
+					}
+				}
+			}, 'image/png');
+		} catch (err) {
+			console.error('Ошибка при создании скриншота:', err);
+			if (tg && tg.showAlert) {
+				tg.showAlert('Ошибка при создании картинки');
+			}
 		} finally {
-			setIsStartingNewGame(false);
+			setIsSharing(false);
 		}
 	};
 
@@ -88,41 +132,43 @@ const Results = () => {
 
 	return (
 		<div className='container mx-auto px-4 py-8'>
-			<div className='flex flex-col items-center mb-8'>
-				<img
-					src={club.img_url}
-					alt={club.name}
-					className='w-24 h-24 object-contain mb-4'
-				/>
-				<h1 className='text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-2'>
-					{club.name}
-				</h1>
-				<h2 className='text-[clamp(1rem,3vw,2rem)] text-center mb-8'>
-					Результаты распределения игроков
-				</h2>
-			</div>
+			<div ref={resultsRef} className='bg-white p-4 rounded-lg'>
+				<div className='flex flex-col items-center mb-8'>
+					<img
+						src={club.img_url}
+						alt={club.name}
+						className='w-24 h-24 object-contain mb-4'
+					/>
+					<h1 className='text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-2'>
+						{club.name}
+					</h1>
+					<h2 className='text-[clamp(1rem,3vw,2rem)] text-center mb-8'>
+						Результаты распределения игроков
+					</h2>
+				</div>
 
-			<ul className='category_list flex flex-col gap-2'>
-				{categories.map((category) => {
-					const players = categorizedPlayers[category.name] || [];
-					return (
-						<CategoryItem
-							key={`category-${category.name}`}
-							category={category}
-							players={players}
-							showPlayerImages={true}
-						/>
-					);
-				})}
-			</ul>
+				<ul className='category_list flex flex-col gap-2'>
+					{categories.map((category) => {
+						const players = categorizedPlayers[category.name] || [];
+						return (
+							<CategoryItem
+								key={`category-${category.name}`}
+								category={category}
+								players={players}
+								showPlayerImages={true}
+							/>
+						);
+					})}
+				</ul>
+			</div>
 
 			<div className='flex justify-center gap-4 mt-8'>
 				<button
-					onClick={handleNewGame}
-					disabled={isStartingNewGame}
+					onClick={handleShare}
+					disabled={isSharing}
 					className='bg-[#EC3381] text-white py-3 px-6 rounded-lg text-[clamp(1rem,3vw,1.2rem)] disabled:opacity-50 disabled:cursor-not-allowed'
 				>
-					{isStartingNewGame ? 'Загрузка...' : 'Новая игра'}
+					{isSharing ? 'Создаём картинку...' : 'Поделиться'}
 				</button>
 				<button
 					onClick={handleGoHome}

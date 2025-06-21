@@ -25,13 +25,13 @@ const CategoryItem = ({
 				<ul className='player_list grid grid-cols-6 gap-1 items-center'>
 					{players.map((player) => (
 						<li
-							className='player_item flex items-center justify-center rounded-lg w-[clamp(2.5rem,4vw,4rem)]'
+							className='player_item flex items-center justify-center rounded-lg w-[clamp(2.5rem,4vw,4rem)] h-[clamp(2.5rem,4vw,4rem)] overflow-hidden'
 							key={`slot-${player.id}`}
 						>
 							<img
 								src={player.img_url}
 								alt={player.name}
-								className='object-cover rounded-sm'
+								className='w-full h-full object-cover rounded-sm'
 							/>
 						</li>
 					))}
