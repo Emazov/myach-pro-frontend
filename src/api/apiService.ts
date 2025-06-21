@@ -21,8 +21,8 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
 		const result = await response.json();
 
 		// Преобразуем данные в нужный формат
-		return result.clubs.map((club: any, index: number) => ({
-			id: index + 1, // Используем индекс как числовой ID
+		return result.clubs.map((club: any) => ({
+			id: club.id, // Используем реальный ID из API
 			name: club.name,
 			img_url: club.logoUrl || '',
 		}));
@@ -157,6 +157,118 @@ export const createPlayer = async (
 		return await response.json();
 	} catch (error) {
 		console.error('Ошибка при создании игрока:', error);
+		throw error;
+	}
+};
+
+/**
+ * Получить конкретную команду с игроками по ID
+ */
+export const fetchClubById = async (
+	initData: string,
+	clubId: string,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
+			headers: {
+				Authorization: `tma ${initData}`,
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error(`Ошибка при получении команды: ${response.status}`);
+		}
+
+		const result = await response.json();
+		return result.club;
+	} catch (error) {
+		console.error('Ошибка при запросе команды:', error);
+		throw error;
+	}
+};
+
+/**
+ * Обновить команду - только для админа
+ */
+export const updateClub = async (
+	initData: string,
+	clubId: string,
+	formData: FormData,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
+			method: 'PUT',
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
+			body: formData,
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при обновлении команды');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при обновлении команды:', error);
+		throw error;
+	}
+};
+
+/**
+ * Удалить команду - только для админа
+ */
+export const deleteClub = async (
+	initData: string,
+	clubId: string,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
+			method: 'DELETE',
+			headers: {
+				Authorization: `tma ${initData}`,
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при удалении команды');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при удалении команды:', error);
+		throw error;
+	}
+};
+
+/**
+ * Удалить игрока - только для админа
+ */
+export const deletePlayer = async (
+	initData: string,
+	playerId: string,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/players/${playerId}`, {
+			method: 'DELETE',
+			headers: {
+				Authorization: `tma ${initData}`,
+				'Content-Type': 'application/json',
+			},
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при удалении игрока');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при удалении игрока:', error);
 		throw error;
 	}
 };

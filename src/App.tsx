@@ -10,6 +10,9 @@ import Results from './pages/Results';
 import AdminPage from './pages/AdminPage';
 import AddClubPage from './pages/AddClubPage';
 import AddPlayersPage from './pages/AddPlayersPage';
+import ManageClubPage from './pages/ManageClubPage';
+import EditClubPage from './pages/EditClubPage';
+import EditPlayersPage from './pages/EditPlayersPage';
 
 function App() {
 	const { tg, initData } = useTelegram();
@@ -42,6 +45,12 @@ function App() {
 				<Route path='/admin/add-club' element={<AddClubPage />} />
 				<Route path='/admin/add-players' element={<AddPlayersPage />} />
 				<Route path='/admin/add-players/:clubId' element={<AddPlayersPage />} />
+				<Route path='/admin/manage-club' element={<ManageClubPage />} />
+				<Route path='/admin/edit-club/:clubId' element={<EditClubPage />} />
+				<Route
+					path='/admin/edit-players/:clubId'
+					element={<EditPlayersPage />}
+				/>
 			</Routes>
 		</div>
 	);

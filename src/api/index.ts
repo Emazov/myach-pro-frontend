@@ -4,4 +4,8 @@ export {
 	authenticateTelegramUser,
 	createClub,
 	createPlayer,
+	fetchClubById,
+	updateClub,
+	deleteClub,
+	deletePlayer,
 } from './apiService';
