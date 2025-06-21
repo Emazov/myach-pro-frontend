@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
-import { fetchAdmins, addAdmin, removeAdmin } from '../api';
+import {
+	fetchAdmins,
+	removeAdmin,
+	searchUsers,
+	addAdminByUsername,
+} from '../api';
 
 interface AdminUser {
 	id: string;
@@ -11,14 +16,22 @@ interface AdminUser {
 	createdAt: string;
 }
 
+interface User {
+	telegramId: string;
+	username: string | null;
+	role: string;
+}
+
 const ManageAdminsPage: React.FC = () => {
 	const { initData } = useTelegram();
 	const navigate = useNavigate();
 	const [admins, setAdmins] = useState<AdminUser[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-	const [newAdminTelegramId, setNewAdminTelegramId] = useState('');
-	const [newAdminUsername, setNewAdminUsername] = useState('');
+	const [searchQuery, setSearchQuery] = useState('');
+	const [searchResults, setSearchResults] = useState<User[]>([]);
+	const [searchLoading, setSearchLoading] = useState(false);
+	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [operationLoading, setOperationLoading] = useState(false);
 
 	useEffect(() => {
@@ -39,22 +52,39 @@ const ManageAdminsPage: React.FC = () => {
 		}
 	};
 
+	// Поиск пользователей
+	const handleSearch = async (query: string) => {
+		if (!initData || !query.trim()) {
+			setSearchResults([]);
+			return;
+		}
+
+		try {
+			setSearchLoading(true);
+			const users = await searchUsers(initData, query.trim());
+			setSearchResults(users);
+		} catch (error) {
+			console.error('Ошибка при поиске пользователей:', error);
+			setSearchResults([]);
+		} finally {
+			setSearchLoading(false);
+		}
+	};
+
+	// Добавление админа
 	const handleAddAdmin = async () => {
-		if (!initData || !newAdminTelegramId.trim()) return;
+		if (!initData || !selectedUser?.username) return;
 
 		try {
 			setOperationLoading(true);
-			const result = await addAdmin(
-				initData,
-				newAdminTelegramId.trim(),
-				newAdminUsername.trim() || undefined,
-			);
+			const result = await addAdminByUsername(initData, selectedUser.username);
 
 			if (result.success) {
 				alert('Админ успешно добавлен!');
 				setIsAddModalOpen(false);
-				setNewAdminTelegramId('');
-				setNewAdminUsername('');
+				setSearchQuery('');
+				setSearchResults([]);
+				setSelectedUser(null);
 				await loadAdmins();
 			} else {
 				alert(`Ошибка: ${result.message}`);
@@ -123,6 +153,25 @@ const ManageAdminsPage: React.FC = () => {
 					</button>
 				</div>
 
+				{/* Информационная панель */}
+				<div className='bg-blue-900 border border-blue-700 rounded-lg p-4 mb-6'>
+					<h3 className='text-lg font-semibold mb-2 text-blue-300'>
+						💡 Как добавить админа?
+					</h3>
+					<div className='text-sm text-blue-200 space-y-2'>
+						<p>• Пользователь должен сначала запустить бота хотя бы один раз</p>
+						<p>
+							• У пользователя должен быть установлен @username в настройках
+							Telegram
+						</p>
+						<p>• Введите @username в поле поиска (например: @ivan_petrov)</p>
+						<p>
+							• Если пользователя нет в списке - попросите его перезапустить
+							бота
+						</p>
+					</div>
+				</div>
+
 				{/* Список админов */}
 				<div className='space-y-4'>
 					{admins.map((admin) => (
@@ -181,44 +230,100 @@ const ManageAdminsPage: React.FC = () => {
 						<div className='space-y-4'>
 							<div>
 								<label className='block text-sm font-medium mb-2'>
-									Telegram ID *
+									Поиск пользователя *
 								</label>
 								<input
 									type='text'
-									value={newAdminTelegramId}
-									onChange={(e) => setNewAdminTelegramId(e.target.value)}
+									value={searchQuery}
+									onChange={(e) => {
+										setSearchQuery(e.target.value);
+										handleSearch(e.target.value);
+									}}
 									className='w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2'
-									placeholder='Введите Telegram ID'
+									placeholder='Введите @username пользователя'
 								/>
+								{searchLoading && (
+									<div className='text-sm text-gray-400 mt-1'>Поиск...</div>
+								)}
 							</div>
 
-							<div>
-								<label className='block text-sm font-medium mb-2'>
-									Имя пользователя (необязательно)
-								</label>
-								<input
-									type='text'
-									value={newAdminUsername}
-									onChange={(e) => setNewAdminUsername(e.target.value)}
-									className='w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2'
-									placeholder='Введите имя пользователя'
-								/>
-							</div>
+							{/* Результаты поиска */}
+							{searchResults.length > 0 && (
+								<div className='max-h-40 overflow-y-auto bg-gray-700 rounded-lg'>
+									{searchResults.map((user) => (
+										<div
+											key={user.telegramId}
+											onClick={() => {
+												setSelectedUser(user);
+												setSearchQuery(user.username || '');
+												setSearchResults([]);
+											}}
+											className={`p-3 cursor-pointer hover:bg-gray-600 border-b border-gray-600 last:border-b-0 ${
+												selectedUser?.telegramId === user.telegramId
+													? 'bg-gray-600'
+													: ''
+											}`}
+										>
+											<div className='font-medium'>
+												{user.username ? `@${user.username}` : 'Без username'}
+											</div>
+											<div className='text-sm text-gray-400'>
+												{user.role === 'admin'
+													? '⚠️ Уже админ'
+													: 'Пользователь'}
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+
+							{/* Выбранный пользователь */}
+							{selectedUser && (
+								<div className='bg-gray-700 rounded-lg p-3'>
+									<div className='text-sm text-gray-400 mb-1'>
+										Выбранный пользователь:
+									</div>
+									<div className='font-medium'>
+										{selectedUser.username
+											? `@${selectedUser.username}`
+											: 'Без username'}
+									</div>
+									<div className='text-sm text-gray-400'>
+										ID: {selectedUser.telegramId}
+									</div>
+									{selectedUser.role === 'admin' && (
+										<div className='text-sm text-yellow-400 mt-1'>
+											⚠️ Этот пользователь уже является админом
+										</div>
+									)}
+								</div>
+							)}
+
+							{searchQuery && searchResults.length === 0 && !searchLoading && (
+								<div className='text-sm text-gray-400'>
+									Пользователи не найдены. Попробуйте другой запрос.
+								</div>
+							)}
 						</div>
 
 						<div className='flex gap-3 mt-6'>
 							<button
 								onClick={handleAddAdmin}
-								disabled={operationLoading || !newAdminTelegramId.trim()}
+								disabled={
+									operationLoading ||
+									!selectedUser?.username ||
+									selectedUser.role === 'admin'
+								}
 								className='flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 px-4 py-2 rounded-lg'
 							>
-								{operationLoading ? 'Добавление...' : 'Добавить'}
+								{operationLoading ? 'Добавление...' : 'Добавить админа'}
 							</button>
 							<button
 								onClick={() => {
 									setIsAddModalOpen(false);
-									setNewAdminTelegramId('');
-									setNewAdminUsername('');
+									setSearchQuery('');
+									setSearchResults([]);
+									setSelectedUser(null);
 								}}
 								disabled={operationLoading}
 								className='flex-1 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg'

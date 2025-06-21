@@ -12,4 +12,6 @@ export {
 	fetchAdmins,
 	addAdmin,
 	removeAdmin,
+	searchUsers,
+	addAdminByUsername,
 } from './apiService';

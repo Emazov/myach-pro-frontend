@@ -301,12 +301,15 @@ export const deletePlayer = async (
  */
 export const fetchAdmins = async (initData: string): Promise<any[]> => {
 	try {
-		const response = await fetch(`${API_URL}/admin/admins?initData=${encodeURIComponent(initData)}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json',
+		const response = await fetch(
+			`${API_URL}/admin/admins?initData=${encodeURIComponent(initData)}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
 			},
-		});
+		);
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -379,6 +382,70 @@ export const removeAdmin = async (
 		return { success: true, message: result.message };
 	} catch (error) {
 		console.error('Ошибка при удалении админа:', error);
+		return { success: false, message: 'Ошибка сети' };
+	}
+};
+
+/**
+ * Поиск пользователей по username
+ */
+export const searchUsers = async (
+	initData: string,
+	query: string,
+): Promise<any[]> => {
+	try {
+		const response = await fetch(
+			`${API_URL}/admin/search-users?query=${encodeURIComponent(
+				query,
+			)}&initData=${encodeURIComponent(initData)}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			},
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const result = await response.json();
+		return result.users || [];
+	} catch (error) {
+		console.error('Ошибка при поиске пользователей:', error);
+		throw error;
+	}
+};
+
+/**
+ * Добавить админа по username
+ */
+export const addAdminByUsername = async (
+	initData: string,
+	username: string,
+): Promise<{ success: boolean; message: string }> => {
+	try {
+		const response = await fetch(`${API_URL}/admin/admins/by-username`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				initData,
+				username,
+			}),
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			return { success: false, message: result.error || 'Ошибка сервера' };
+		}
+
+		return { success: true, message: result.message };
+	} catch (error) {
+		console.error('Ошибка при добавлении админа по username:', error);
 		return { success: false, message: 'Ошибка сети' };
 	}
 };
