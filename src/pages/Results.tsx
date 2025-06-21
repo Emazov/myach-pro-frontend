@@ -87,14 +87,42 @@ const Results = () => {
 			// Предварительно загружаем все изображения
 			await preloadImages();
 
+			// Подготавливаем DOM для создания скриншота
+			// Принудительно устанавливаем размеры и видимость всех изображений
+			const prepareDOM = () => {
+				const allImages = document.querySelectorAll('img');
+				allImages.forEach((img) => {
+					img.style.visibility = 'visible';
+					img.style.opacity = '1';
+
+					// Добавление альтернативных источников для изображений
+					const originalSrc = img.getAttribute('src');
+					if (originalSrc && !img.hasAttribute('data-original-src')) {
+						img.setAttribute('data-original-src', originalSrc);
+						// Проверяем, корректно ли загрузилось изображение
+						if (img.complete && img.naturalWidth === 0) {
+							console.warn(`Проблема с загрузкой изображения: ${originalSrc}`);
+							// Пробуем добавить кэш-бастинг параметр
+							img.src = `${originalSrc}?t=${new Date().getTime()}`;
+						}
+					}
+				});
+			};
+
+			// Подготавливаем DOM
+			prepareDOM();
+
+			// Дополнительное ожидание для гарантированной загрузки изображений
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
 			// Создаём скриншот результатов
 			const canvas = await html2canvas(resultsRef.current, {
 				backgroundColor: '#ffffff',
 				scale: 2, // Увеличиваем качество
 				useCORS: true,
-				allowTaint: false, // Изменили на false для лучшей совместимости
-				foreignObjectRendering: true, // Включаем для лучшей поддержки внешних объектов
-				logging: false, // Отключаем логирование для производительности
+				allowTaint: true, // Разрешаем "taint" для работы с проблемными изображениями
+				imageTimeout: 5000, // Увеличиваем время ожидания загрузки изображений
+				logging: true, // Включаем логирование для отладки
 				width: resultsRef.current.offsetWidth,
 				height: resultsRef.current.offsetHeight,
 				scrollX: 0,
@@ -104,6 +132,16 @@ const Results = () => {
 					const images = clonedDoc.querySelectorAll('img');
 					images.forEach((img) => {
 						img.crossOrigin = 'anonymous';
+						// Применяем принудительную видимость
+						img.style.visibility = 'visible';
+						img.style.opacity = '1';
+
+						// Для изображений, которые не загрузились, подставляем плейсхолдер
+						if (img.complete && img.naturalWidth === 0) {
+							// Этот код будет выполняться в клонированном DOM, подставляем базовый плейсхолдер
+							img.src =
+								"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23cccccc'/%3E%3Ctext x='50%25' y='50%25' font-size='8' text-anchor='middle' dy='.3em' fill='%23666666'%3E?%3C/text%3E%3C/svg%3E";
+						}
 					});
 				},
 			});
@@ -141,23 +179,68 @@ const Results = () => {
 					}
 
 					// Если Web Share API недоступен, пробуем через Telegram Web App
-					if (tg && tg.switchInlineQuery) {
-						// Создаем текстовое сообщение с результатами для отправки
-						const resultText = categories
-							.map((category) => {
-								const players = categorizedPlayers[category.name] || [];
-								return `${category.name}: ${players
-									.map((p) => p.name)
-									.join(', ')}`;
-							})
-							.join('\n');
+					if (tg) {
+						try {
+							// Преобразуем blob в base64 для отправки через Telegram
+							const reader = new FileReader();
+							reader.readAsDataURL(blob);
+							reader.onloadend = () => {
+								const base64data = reader.result;
 
-						const shareText = `🏆 Результаты распределения - ${club?.name}\n\n${resultText}`;
+								// Создаем текстовое сообщение с результатами
+								const resultText = categories
+									.map((category) => {
+										const players = categorizedPlayers[category.name] || [];
+										return `${category.name}: ${players
+											.map((p) => p.name)
+											.join(', ')}`;
+									})
+									.join('\n');
 
-						tg.switchInlineQuery(shareText, ['users', 'groups']);
+								const shareText = `🏆 ТИР-ЛИСТ ${club?.name.toUpperCase()}\n\n${resultText}\n\n👉 Собери свой тир-лист в боте @MyachProBot`;
 
-						if (tg.showAlert) {
-							tg.showAlert('Выберите чат для отправки результатов');
+								// Отправляем через Telegram WebApp
+								if (tg.sendData) {
+									// Отправка изображения и данных через Telegram WebApp API
+									const data = JSON.stringify({
+										type: 'photo',
+										data: base64data,
+										text: shareText,
+									});
+									tg.sendData(data);
+									if (tg.showAlert) {
+										tg.showAlert('Результаты отправлены в чат!');
+									}
+									return;
+								} else if (tg.switchInlineQuery) {
+									// Запасной вариант - только текст
+									tg.switchInlineQuery(shareText, ['users', 'groups']);
+									if (tg.showAlert) {
+										tg.showAlert('Выберите чат для отправки результатов');
+									}
+									return;
+								}
+							};
+							return; // Ждем завершения асинхронной операции
+						} catch (err) {
+							console.error(
+								'Ошибка при подготовке изображения для отправки:',
+								err,
+							);
+							// Если не удалось отправить через API, используем switchInlineQuery
+							if (tg.switchInlineQuery) {
+								const resultText = categories
+									.map((category) => {
+										const players = categorizedPlayers[category.name] || [];
+										return `${category.name}: ${players
+											.map((p) => p.name)
+											.join(', ')}`;
+									})
+									.join('\n');
+
+								const shareText = `🏆 ТИР-ЛИСТ ${club?.name.toUpperCase()}\n\n${resultText}\n\n👉 Собери свой тир-лист в боте @MyachProBot`;
+								tg.switchInlineQuery(shareText, ['users', 'groups']);
+							}
 						}
 						return;
 					}
@@ -246,6 +329,14 @@ const Results = () => {
 									className='w-6 h-6 object-contain'
 									crossOrigin='anonymous'
 									loading='eager'
+									onError={(e) => {
+										// Если логотип не загрузился, подставляем плейсхолдер
+										const target = e.target as HTMLImageElement;
+										target.onerror = null;
+										target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23EC3381'/%3E%3Ctext x='50%25' y='50%25' font-size='12' text-anchor='middle' dy='.3em' fill='white'%3E${club.name.charAt(
+											0,
+										)}%3C/text%3E%3C/svg%3E`;
+									}}
 								/>
 								<span className='text-black font-semibold'>{club.name}</span>
 							</div>

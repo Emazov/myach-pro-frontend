@@ -34,6 +34,19 @@ const CategoryItem = ({
 								className='w-full h-full object-cover rounded-sm'
 								crossOrigin='anonymous'
 								loading='eager'
+								onError={(e) => {
+									// Если изображение не загрузилось, подставляем плейсхолдер
+									const target = e.target as HTMLImageElement;
+									target.onerror = null; // Предотвращаем бесконечную рекурсию
+									// Подставляем плейсхолдер с инициалами игрока
+									target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23${Math.floor(
+										Math.random() * 16777215,
+									).toString(
+										16,
+									)}'/%3E%3Ctext x='50%25' y='50%25' font-size='16' text-anchor='middle' dy='.3em' fill='white'%3E${player.name.charAt(
+										0,
+									)}%3C/text%3E%3C/svg%3E`;
+								}}
 							/>
 						</li>
 					))}
