@@ -126,8 +126,14 @@ const ManageClubPage = () => {
 
 	if (isLoading || isLoadingClubs) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold'>Загрузка...</div>
+			<div
+				className='min-h-screen flex items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
+				<div className='text-xl font-bold'>Загрузка...</div>
 			</div>
 		);
 	}
@@ -137,111 +143,158 @@ const ManageClubPage = () => {
 	}
 
 	return (
-		<div className='container flex flex-col justify-between h-full py-8'>
-			{/* Заголовок с крестиком */}
-			<div className='flex justify-between items-center mb-8'>
-				<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>Команды</h1>
-				<button
-					onClick={() => navigate('/admin')}
-					className='text-2xl font-bold text-gray-600'
-				>
-					×
-				</button>
-			</div>
-
-			{/* Уведомление об успехе */}
-			{successMessage && (
-				<div className='mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded'>
-					{successMessage}
-				</div>
-			)}
-
-			{/* Ошибка */}
-			{error && (
-				<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
-					{error}
-				</div>
-			)}
-
-			{/* Список команд */}
-			<div className='flex-1 mb-8'>
-				{clubs.length === 0 ? (
-					<div className='text-center text-gray-500 mt-8'>
-						Команды не найдены
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-4xl mx-auto'>
+				{/* Заголовок */}
+				<div className='flex items-center justify-between mb-8'>
+					<div className='flex items-center gap-4'>
+						<button
+							onClick={() => navigate('/admin')}
+							className='text-lg transition-opacity hover:opacity-70'
+							style={{ color: 'var(--tg-theme-link-color)' }}
+						>
+							← Назад
+						</button>
+						<h1 className='text-2xl font-bold'>Команды</h1>
 					</div>
-				) : (
-					<div className='grid grid-cols-2 gap-4'>
-						{clubs.map((club) => (
-							<div
-								key={club.id}
-								onClick={() => handleClubClick(club)}
-								className='flex flex-col items-center p-4 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition-colors'
-							>
-								<div className='w-16 h-16 mb-2 overflow-hidden rounded-full bg-gray-300'>
-									{club.logoUrl ? (
-										<img
-											src={club.logoUrl}
-											alt={club.name}
-											className='w-full h-full object-cover'
-										/>
-									) : (
-										<div className='w-full h-full flex items-center justify-center text-gray-500'>
-											?
-										</div>
-									)}
+				</div>
+
+				{/* Уведомление об успехе */}
+				{successMessage && (
+					<div
+						className='mb-6 p-4 rounded-lg'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						{successMessage}
+					</div>
+				)}
+
+				{/* Ошибка */}
+				{error && (
+					<div
+						className='mb-6 p-4 rounded-lg'
+						style={{
+							background: '#fee2e2',
+							color: '#dc2626',
+							border: '1px solid #fca5a5',
+						}}
+					>
+						{error}
+					</div>
+				)}
+
+				{/* Список команд */}
+				<div className='flex-1 mb-8'>
+					{clubs.length === 0 ? (
+						<div
+							className='text-center mt-8'
+							style={{ color: 'var(--tg-theme-hint-color)' }}
+						>
+							Команды не найдены
+						</div>
+					) : (
+						<div className='grid grid-cols-2 gap-4'>
+							{clubs.map((club) => (
+								<div
+									key={club.id}
+									onClick={() => handleClubClick(club)}
+									className='flex flex-col items-center p-4 rounded-lg cursor-pointer transition-opacity hover:opacity-80'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
+									<div
+										className='w-16 h-16 mb-2 overflow-hidden rounded-full'
+										style={{ background: 'var(--tg-theme-hint-color)' }}
+									>
+										{club.logoUrl ? (
+											<img
+												src={club.logoUrl}
+												alt={club.name}
+												className='w-full h-full object-cover'
+											/>
+										) : (
+											<div
+												className='w-full h-full flex items-center justify-center'
+												style={{ color: 'var(--tg-theme-bg-color)' }}
+											>
+												?
+											</div>
+										)}
+									</div>
+									<span className='text-sm text-center font-medium'>
+										{club.name}
+									</span>
 								</div>
-								<span className='text-sm text-center font-medium'>
-									{club.name}
-								</span>
+							))}
+						</div>
+					)}
+				</div>
+
+				{/* Модальное окно опций команды */}
+				{showModal && (
+					<div
+						className='fixed inset-0 flex items-end justify-center z-50'
+						style={{ background: 'rgba(0,0,0,0.5)' }}
+					>
+						<div
+							className='rounded-t-3xl p-6 w-full min-h-[300px]'
+							style={{
+								background: 'var(--tg-theme-bg-color)',
+								color: 'var(--tg-theme-text-color)',
+							}}
+						>
+							<div className='flex justify-between items-center mb-6'>
+								<h2 className='text-xl font-bold'>{selectedClub?.name}</h2>
+								<button
+									onClick={() => {
+										setShowModal(false);
+										setSelectedClub(null);
+									}}
+									className='text-2xl font-bold transition-opacity hover:opacity-70'
+									style={{ color: 'var(--tg-theme-hint-color)' }}
+								>
+									×
+								</button>
 							</div>
-						))}
+
+							<div className='flex flex-col gap-4'>
+								<button
+									onClick={handleEditClub}
+									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80'
+									style={{ background: '#EC3381', color: 'white' }}
+								>
+									Изменить лого и название
+								</button>
+
+								<button
+									onClick={handleEditPlayers}
+									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80'
+									style={{ background: '#EC3381', color: 'white' }}
+								>
+									Изменить игроков
+								</button>
+
+								<button
+									onClick={handleDeleteClub}
+									disabled={isDeleting}
+									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50'
+									style={{ background: '#dc2626', color: 'white' }}
+								>
+									{isDeleting ? 'Удаление...' : 'Удалить команду'}
+								</button>
+							</div>
+						</div>
 					</div>
 				)}
 			</div>
-
-			{/* Модальное окно опций команды */}
-			{showModal && (
-				<div className='fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50'>
-					<div className='bg-white rounded-t-3xl p-6 w-full min-h-[300px]'>
-						<div className='flex justify-between items-center mb-6'>
-							<h2 className='text-xl font-bold'>{selectedClub?.name}</h2>
-							<button
-								onClick={() => {
-									setShowModal(false);
-									setSelectedClub(null);
-								}}
-								className='text-2xl font-bold text-gray-600'
-							>
-								×
-							</button>
-						</div>
-
-						<div className='flex flex-col gap-4'>
-							<button
-								onClick={handleEditClub}
-								className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.2rem)] font-medium'
-							>
-								Изменить лого и название
-							</button>
-
-							<button
-								onClick={handleEditPlayers}
-								className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.2rem)] font-medium'
-							>
-								Изменить игроков
-							</button>
-
-							<button
-								onClick={handleDeleteClub}
-								disabled={isDeleting}
-								className='bg-black text-white py-4 rounded-full text-[clamp(1rem,3vw,1.2rem)] font-medium disabled:opacity-50'
-							>
-								{isDeleting ? 'Удаление...' : 'Удалить команду'}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };

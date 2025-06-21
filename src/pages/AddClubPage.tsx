@@ -83,8 +83,14 @@ const AddClubPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold'>Загрузка...</div>
+			<div
+				className='min-h-screen flex items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
+				<div className='text-xl font-bold'>Загрузка...</div>
 			</div>
 		);
 	}
@@ -94,76 +100,110 @@ const AddClubPage = () => {
 	}
 
 	return (
-		<div className='container flex flex-col justify-between h-full py-8'>
-			{/* Заголовок с крестиком */}
-			<div className='flex justify-between items-center mb-8'>
-				<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-					Добавить команду
-				</h1>
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-2xl mx-auto'>
+				{/* Заголовок */}
+				<div className='flex items-center justify-between mb-8'>
+					<div className='flex items-center gap-4'>
+						<button
+							onClick={() => navigate('/admin')}
+							className='text-lg transition-opacity hover:opacity-70'
+							style={{ color: 'var(--tg-theme-link-color)' }}
+						>
+							← Назад
+						</button>
+						<h1 className='text-2xl font-bold'>Добавить команду</h1>
+					</div>
+				</div>
+
+				{/* Логотип команды */}
+				<div className='flex flex-col items-center mb-8'>
+					<div
+						onClick={handleImageClick}
+						className='w-24 h-24 rounded-full flex items-center justify-center cursor-pointer overflow-hidden transition-opacity hover:opacity-80'
+						style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+					>
+						{imagePreview ? (
+							<img
+								src={imagePreview}
+								alt='Превью логотипа'
+								className='w-full h-full object-cover'
+							/>
+						) : (
+							<span
+								className='text-sm text-center'
+								style={{ color: 'var(--tg-theme-hint-color)' }}
+							>
+								Выберите
+								<br />
+								логотип
+							</span>
+						)}
+					</div>
+					<input
+						ref={fileInputRef}
+						type='file'
+						accept='image/*'
+						onChange={handleImageSelect}
+						className='hidden'
+					/>
+				</div>
+
+				{/* Поле ввода названия */}
+				<div className='mb-8'>
+					<input
+						type='text'
+						value={clubName}
+						onChange={(e) => setClubName(e.target.value)}
+						placeholder='Название команды'
+						className='w-full p-4 border-b-2 bg-transparent text-lg focus:outline-none transition-colors'
+						style={{
+							borderColor: 'var(--tg-theme-hint-color)',
+							color: 'var(--tg-theme-text-color)',
+						}}
+						onFocus={(e) =>
+							(e.target.style.borderColor = 'var(--tg-theme-link-color)')
+						}
+						onBlur={(e) =>
+							(e.target.style.borderColor = 'var(--tg-theme-hint-color)')
+						}
+						disabled={isSubmitting}
+					/>
+				</div>
+
+				{/* Ошибка */}
+				{error && (
+					<div
+						className='mb-6 p-4 rounded-lg'
+						style={{
+							background: '#fee2e2',
+							color: '#dc2626',
+							border: '1px solid #fca5a5',
+						}}
+					>
+						{error}
+					</div>
+				)}
+
+				{/* Кнопка сохранения */}
 				<button
-					onClick={() => navigate('/admin')}
-					className='text-2xl font-bold text-gray-600'
+					onClick={handleSubmit}
+					disabled={isSubmitting || !clubName.trim() || !selectedImage}
+					className='w-full py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed'
+					style={{
+						background: '#EC3381',
+						color: 'white',
+					}}
 				>
-					×
+					{isSubmitting ? 'Сохранение...' : 'Дальше'}
 				</button>
 			</div>
-
-			{/* Логотип команды */}
-			<div className='flex flex-col items-center mb-8'>
-				<div
-					onClick={handleImageClick}
-					className='w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center cursor-pointer overflow-hidden'
-				>
-					{imagePreview ? (
-						<img
-							src={imagePreview}
-							alt='Превью логотипа'
-							className='w-full h-full object-cover'
-						/>
-					) : (
-						<span className='text-gray-500 text-sm text-center'>
-							Выберите
-							<br />
-							логотип
-						</span>
-					)}
-				</div>
-				<input
-					ref={fileInputRef}
-					type='file'
-					accept='image/*'
-					onChange={handleImageSelect}
-					className='hidden'
-				/>
-			</div>
-
-			{/* Поле ввода названия */}
-			<div className='mb-8'>
-				<input
-					type='text'
-					value={clubName}
-					onChange={(e) => setClubName(e.target.value)}
-					placeholder='Название команды'
-					className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
-					disabled={isSubmitting}
-				/>
-			</div>
-
-			{/* Ошибка */}
-			{error && (
-				<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
-					{error}
-				</div>
-			)}
-
-			{/* Кнопка сохранения */}
-			<button
-				onClick={handleSubmit}
-				disabled={isSubmitting || !clubName.trim() || !selectedImage}
-				className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
-			>
-				{isSubmitting ? 'Сохранение...' : 'Дальше'}
-			</button>
 		</div>
 	);
 };

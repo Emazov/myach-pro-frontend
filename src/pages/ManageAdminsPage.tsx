@@ -131,14 +131,21 @@ const ManageAdminsPage: React.FC = () => {
 	}
 
 	return (
-		<div className='min-h-screen bg-gray-900 text-white p-4'>
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
 			<div className='max-w-4xl mx-auto'>
 				{/* Заголовок */}
 				<div className='flex items-center justify-between mb-6'>
 					<div className='flex items-center gap-4'>
 						<button
 							onClick={() => navigate('/admin')}
-							className='text-blue-400 hover:text-blue-300 text-lg'
+							className='text-lg transition-opacity hover:opacity-70'
+							style={{ color: 'var(--tg-theme-link-color)' }}
 						>
 							← Назад
 						</button>
@@ -146,7 +153,11 @@ const ManageAdminsPage: React.FC = () => {
 					</div>
 					<button
 						onClick={() => setIsAddModalOpen(true)}
-						className='bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg'
+						className='px-4 py-2 rounded-lg transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
 						disabled={operationLoading}
 					>
 						Добавить админа
@@ -154,11 +165,23 @@ const ManageAdminsPage: React.FC = () => {
 				</div>
 
 				{/* Информационная панель */}
-				<div className='bg-blue-900 border border-blue-700 rounded-lg p-4 mb-6'>
-					<h3 className='text-lg font-semibold mb-2 text-blue-300'>
+				<div
+					className='rounded-lg p-4 mb-6 border'
+					style={{
+						background: 'var(--tg-theme-secondary-bg-color)',
+						borderColor: 'var(--tg-theme-hint-color)',
+					}}
+				>
+					<h3
+						className='text-lg font-semibold mb-2'
+						style={{ color: 'var(--tg-theme-link-color)' }}
+					>
 						💡 Как добавить админа?
 					</h3>
-					<div className='text-sm text-blue-200 space-y-2'>
+					<div
+						className='text-sm space-y-2'
+						style={{ color: 'var(--tg-theme-hint-color)' }}
+					>
 						<p>• Пользователь должен сначала запустить бота хотя бы один раз</p>
 						<p>
 							• У пользователя должен быть установлен @username в настройках
@@ -177,21 +200,31 @@ const ManageAdminsPage: React.FC = () => {
 					{admins.map((admin) => (
 						<div
 							key={admin.id}
-							className='bg-gray-800 rounded-lg p-4 flex items-center justify-between'
+							className='rounded-lg p-4 flex items-center justify-between'
+							style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
 						>
 							<div>
 								<div className='text-lg font-semibold'>
 									{admin.username || 'Без имени'}
 								</div>
-								<div className='text-gray-400 text-sm'>
+								<div
+									className='text-sm'
+									style={{ color: 'var(--tg-theme-hint-color)' }}
+								>
 									ID: {admin.telegramId}
 								</div>
-								<div className='text-gray-500 text-xs'>
+								<div
+									className='text-xs'
+									style={{ color: 'var(--tg-theme-hint-color)' }}
+								>
 									{admin.addedBy
 										? `Добавлен админом: ${admin.addedBy}`
 										: 'Главный админ'}
 								</div>
-								<div className='text-gray-500 text-xs'>
+								<div
+									className='text-xs'
+									style={{ color: 'var(--tg-theme-hint-color)' }}
+								>
 									{new Date(admin.createdAt).toLocaleString('ru-RU')}
 								</div>
 							</div>
@@ -200,14 +233,20 @@ const ManageAdminsPage: React.FC = () => {
 								{admin.id !== 'main-admin' && (
 									<button
 										onClick={() => handleRemoveAdmin(admin)}
-										className='bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm'
+										className='px-3 py-1 rounded text-sm transition-opacity hover:opacity-80'
+										style={{ background: '#dc2626', color: 'white' }}
 										disabled={operationLoading}
 									>
 										Удалить
 									</button>
 								)}
 								{admin.id === 'main-admin' && (
-									<span className='text-gray-400 text-sm'>Главный админ</span>
+									<span
+										className='text-sm'
+										style={{ color: 'var(--tg-theme-hint-color)' }}
+									>
+										Главный админ
+									</span>
 								)}
 							</div>
 						</div>
@@ -215,7 +254,10 @@ const ManageAdminsPage: React.FC = () => {
 				</div>
 
 				{admins.length === 0 && (
-					<div className='text-center text-gray-400 py-8'>
+					<div
+						className='text-center py-8'
+						style={{ color: 'var(--tg-theme-hint-color)' }}
+					>
 						Админы не найдены
 					</div>
 				)}
@@ -223,8 +265,14 @@ const ManageAdminsPage: React.FC = () => {
 
 			{/* Модальное окно добавления админа */}
 			{isAddModalOpen && (
-				<div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50'>
-					<div className='bg-gray-800 rounded-lg p-6 w-full max-w-md'>
+				<div
+					className='fixed inset-0 flex items-center justify-center p-4 z-50'
+					style={{ background: 'rgba(0,0,0,0.5)' }}
+				>
+					<div
+						className='rounded-lg p-6 w-full max-w-md'
+						style={{ background: 'var(--tg-theme-bg-color)' }}
+					>
 						<h2 className='text-xl font-bold mb-4'>Добавить нового админа</h2>
 
 						<div className='space-y-4'>
@@ -239,17 +287,30 @@ const ManageAdminsPage: React.FC = () => {
 										setSearchQuery(e.target.value);
 										handleSearch(e.target.value);
 									}}
-									className='w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2'
+									className='w-full rounded-lg px-3 py-2 border'
+									style={{
+										background: 'var(--tg-theme-secondary-bg-color)',
+										borderColor: 'var(--tg-theme-hint-color)',
+										color: 'var(--tg-theme-text-color)',
+									}}
 									placeholder='Введите @username пользователя'
 								/>
 								{searchLoading && (
-									<div className='text-sm text-gray-400 mt-1'>Поиск...</div>
+									<div
+										className='text-sm mt-1'
+										style={{ color: 'var(--tg-theme-hint-color)' }}
+									>
+										Поиск...
+									</div>
 								)}
 							</div>
 
 							{/* Результаты поиска */}
 							{searchResults.length > 0 && (
-								<div className='max-h-40 overflow-y-auto bg-gray-700 rounded-lg'>
+								<div
+									className='max-h-40 overflow-y-auto rounded-lg'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
 									{searchResults.map((user) => (
 										<div
 											key={user.telegramId}
@@ -258,16 +319,26 @@ const ManageAdminsPage: React.FC = () => {
 												setSearchQuery(user.username || '');
 												setSearchResults([]);
 											}}
-											className={`p-3 cursor-pointer hover:bg-gray-600 border-b border-gray-600 last:border-b-0 ${
+											className={`p-3 cursor-pointer hover:opacity-80 border-b last:border-b-0 ${
 												selectedUser?.telegramId === user.telegramId
-													? 'bg-gray-600'
+													? 'opacity-80'
 													: ''
 											}`}
+											style={{
+												borderColor: 'var(--tg-theme-hint-color)',
+												background:
+													selectedUser?.telegramId === user.telegramId
+														? 'var(--tg-theme-button-color)'
+														: 'transparent',
+											}}
 										>
 											<div className='font-medium'>
 												{user.username ? `@${user.username}` : 'Без username'}
 											</div>
-											<div className='text-sm text-gray-400'>
+											<div
+												className='text-sm'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
+											>
 												{user.role === 'admin'
 													? '⚠️ Уже админ'
 													: 'Пользователь'}
@@ -279,8 +350,14 @@ const ManageAdminsPage: React.FC = () => {
 
 							{/* Выбранный пользователь */}
 							{selectedUser && (
-								<div className='bg-gray-700 rounded-lg p-3'>
-									<div className='text-sm text-gray-400 mb-1'>
+								<div
+									className='rounded-lg p-3'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
+									<div
+										className='text-sm mb-1'
+										style={{ color: 'var(--tg-theme-hint-color)' }}
+									>
 										Выбранный пользователь:
 									</div>
 									<div className='font-medium'>
@@ -288,11 +365,14 @@ const ManageAdminsPage: React.FC = () => {
 											? `@${selectedUser.username}`
 											: 'Без username'}
 									</div>
-									<div className='text-sm text-gray-400'>
+									<div
+										className='text-sm'
+										style={{ color: 'var(--tg-theme-hint-color)' }}
+									>
 										ID: {selectedUser.telegramId}
 									</div>
 									{selectedUser.role === 'admin' && (
-										<div className='text-sm text-yellow-400 mt-1'>
+										<div className='text-sm mt-1' style={{ color: '#f59e0b' }}>
 											⚠️ Этот пользователь уже является админом
 										</div>
 									)}
@@ -300,7 +380,10 @@ const ManageAdminsPage: React.FC = () => {
 							)}
 
 							{searchQuery && searchResults.length === 0 && !searchLoading && (
-								<div className='text-sm text-gray-400'>
+								<div
+									className='text-sm'
+									style={{ color: 'var(--tg-theme-hint-color)' }}
+								>
 									Пользователи не найдены. Попробуйте другой запрос.
 								</div>
 							)}
@@ -314,7 +397,11 @@ const ManageAdminsPage: React.FC = () => {
 									!selectedUser?.username ||
 									selectedUser.role === 'admin'
 								}
-								className='flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 px-4 py-2 rounded-lg'
+								className='flex-1 px-4 py-2 rounded-lg transition-opacity hover:opacity-80 disabled:opacity-50'
+								style={{
+									background: 'var(--tg-theme-button-color)',
+									color: 'var(--tg-theme-button-text-color)',
+								}}
 							>
 								{operationLoading ? 'Добавление...' : 'Добавить админа'}
 							</button>
@@ -326,7 +413,12 @@ const ManageAdminsPage: React.FC = () => {
 									setSelectedUser(null);
 								}}
 								disabled={operationLoading}
-								className='flex-1 bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-lg'
+								className='flex-1 px-4 py-2 rounded-lg transition-opacity hover:opacity-80'
+								style={{
+									background: 'var(--tg-theme-secondary-bg-color)',
+									color: 'var(--tg-theme-text-color)',
+									border: '1px solid var(--tg-theme-hint-color)',
+								}}
 							>
 								Отмена
 							</button>

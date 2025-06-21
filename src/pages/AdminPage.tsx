@@ -37,62 +37,91 @@ const AdminPage = () => {
 	}
 
 	return (
-		<div className='container flex flex-col justify-around h-full py-8'>
-			<div className='hero flex flex-col items-center'>
-				<h1 className='text-[clamp(2rem,6vw,3rem)] font-bold text-center mb-8'>
-					Панель администратора
-				</h1>
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-4xl mx-auto'>
+				{/* Заголовок */}
+				<div className='flex items-center justify-center mb-8'>
+					<h1 className='text-2xl font-bold text-center'>
+						Панель администратора
+					</h1>
+				</div>
 
 				{/* Уведомление об успехе */}
 				{successMessage && (
-					<div className='mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded'>
+					<div
+						className='mb-6 p-4 rounded-lg'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
 						{successMessage}
 					</div>
 				)}
-			</div>
 
-			<div className='admin-buttons flex flex-col gap-4'>
-				<Link
-					to='/admin/add-club'
-					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					Добавить команду
-				</Link>
+				{/* Сетка кнопок */}
+				<div className='grid grid-cols-1 gap-4 max-w-2xl mx-auto'>
+					<Link
+						to='/admin/add-club'
+						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						<span className='text-lg'>➕ Добавить команду</span>
+					</Link>
 
-				<Link
-					to='/admin/manage-club'
-					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					Изменить команду
-				</Link>
+					<Link
+						to='/admin/manage-club'
+						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						<span className='text-lg'>✏️ Изменить команду</span>
+					</Link>
 
-				<Link
-					to='/admin/manage-admins'
-					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					Управление админами
-				</Link>
+					<Link
+						to='/admin/manage-admins'
+						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						<span className='text-lg'>👥 Управление админами</span>
+					</Link>
 
-				<Link
-					to='/admin/user-instructions'
-					className='admin-btn bg-blue-600 text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					📋 Инструкция для пользователей
-				</Link>
+					<Link
+						to='/admin/analytics'
+						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						<span className='text-lg'>📊 Аналитика</span>
+					</Link>
 
-				<Link
-					to='/admin/analytics'
-					className='admin-btn bg-black text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					Аналитика
-				</Link>
-
-				<Link
-					to='/guide'
-					className='admin-btn bg-[#EC3381] text-white text-[clamp(1rem,3vw,1.5rem)] py-4 rounded-full text-center font-medium'
-				>
-					Играть
-				</Link>
+					<Link
+						to='/guide'
+						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
+						style={{
+							background: '#EC3381',
+							color: 'white',
+						}}
+					>
+						<span className='text-lg'>🎮 Играть</span>
+					</Link>
+				</div>
 			</div>
 		</div>
 	);
