@@ -40,12 +40,31 @@ const StartPage = () => {
 						</div>
 					)}
 				</div>
-				<Link
-					to='/guide'
-					className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
-				>
-					Поехали!
-				</Link>
+
+				{/* Разные кнопки для админов и обычных пользователей */}
+				{isAdmin ? (
+					<div className='flex flex-col gap-3'>
+						<Link
+							to='/admin'
+							className='link_btn bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] text-white py-[clamp(1rem,1vh,2rem)]'
+						>
+							Админ
+						</Link>
+						<Link
+							to='/guide'
+							className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
+						>
+							Играть
+						</Link>
+					</div>
+				) : (
+					<Link
+						to='/guide'
+						className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
+					>
+						Поехали!
+					</Link>
+				)}
 			</div>
 		</div>
 	);

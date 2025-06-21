@@ -1,6 +1,6 @@
 import type { Club, Player, User } from '../types';
 
-const API_URL = `http://localhost:3001/api`;
+const API_URL = `https://myach-pro-backend-production.up.railway.app/`;
 
 /**
  * Получить список клубов с сервера
@@ -101,6 +101,62 @@ export const authenticateTelegramUser = async (
 		};
 	} catch (error) {
 		console.error('Ошибка при аутентификации пользователя:', error);
+		throw error;
+	}
+};
+
+/**
+ * Создать новый клуб (команду) - только для админа
+ */
+export const createClub = async (
+	initData: string,
+	formData: FormData,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/clubs`, {
+			method: 'POST',
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
+			body: formData,
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при создании команды');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при создании команды:', error);
+		throw error;
+	}
+};
+
+/**
+ * Создать нового игрока - только для админа
+ */
+export const createPlayer = async (
+	initData: string,
+	formData: FormData,
+): Promise<any> => {
+	try {
+		const response = await fetch(`${API_URL}/players`, {
+			method: 'POST',
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
+			body: formData,
+		});
+
+		if (!response.ok) {
+			const errorData = await response.json();
+			throw new Error(errorData.error || 'Ошибка при создании игрока');
+		}
+
+		return await response.json();
+	} catch (error) {
+		console.error('Ошибка при создании игрока:', error);
 		throw error;
 	}
 };

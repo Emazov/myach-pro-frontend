@@ -7,6 +7,9 @@ import StartPage from './pages/StartPage';
 import Guide from './pages/Guide';
 import Game from './pages/Game';
 import Results from './pages/Results';
+import AdminPage from './pages/AdminPage';
+import AddClubPage from './pages/AddClubPage';
+import AddPlayersPage from './pages/AddPlayersPage';
 
 function App() {
 	const { tg, initData } = useTelegram();
@@ -33,6 +36,11 @@ function App() {
 				<Route path='/guide' element={<Guide />} />
 				<Route path='/game' element={<Game />} />
 				<Route path='/results' element={<Results />} />
+
+				{/* Админские маршруты */}
+				<Route path='/admin' element={<AdminPage />} />
+				<Route path='/admin/add-club' element={<AddClubPage />} />
+				<Route path='/admin/add-players' element={<AddPlayersPage />} />
 			</Routes>
 		</div>
 	);
