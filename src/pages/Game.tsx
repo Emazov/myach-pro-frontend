@@ -182,11 +182,13 @@ const Game = () => {
 						<h3 className='text-[clamp(1rem,5vw,3rem)] font-[500]'>
 							{player.name}
 						</h3>
-						<img
-							src={player.img_url}
-							alt='player'
-							className='rounded-[2rem] w-[clamp(1rem,50vw,20rem)]'
-						/>
+						<div className='w-[clamp(10rem,50vw,20rem)] h-[clamp(10rem,50vw,20rem)] overflow-hidden rounded-[2rem]'>
+							<img
+								src={player.img_url}
+								alt='player'
+								className='w-full h-full object-cover'
+							/>
+						</div>
 					</>
 				)}
 			</div>

@@ -308,27 +308,26 @@ const EditPlayersPage = () => {
 							<div
 								key={player.id}
 								onClick={() => handleSlotClick(index)}
-								className='aspect-square bg-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden'
+								className='aspect-square bg-gray-200 rounded-lg flex flex-col cursor-pointer overflow-hidden'
 							>
-								{player.imagePreview ? (
-									<div className='w-full h-full flex flex-col'>
+								<div className='flex-1 flex items-center justify-center overflow-hidden'>
+									{player.imagePreview ? (
 										<img
 											src={player.imagePreview}
 											alt={player.name}
-											className='flex-1 w-full object-cover'
+											className='w-full h-full object-cover'
 										/>
-										<div className='bg-black bg-opacity-50 text-white text-xs p-1 text-center'>
-											{player.name}
-										</div>
-									</div>
-								) : (
-									<>
-										<span className='text-2xl text-gray-500 mb-1'>+</span>
-										<span className='text-xs text-gray-500 text-center'>
-											Игрок
-										</span>
-									</>
-								)}
+									) : (
+										<>
+											<span className='text-2xl text-gray-500 mb-1'>+</span>
+										</>
+									)}
+								</div>
+								<div className='bg-black bg-opacity-50 text-white text-xs p-1 text-center min-h-[20px] flex items-center justify-center'>
+									<span className='truncate w-full px-1'>
+										{player.name || `Игрок ${index + 1}`}
+									</span>
+								</div>
 							</div>
 						))}
 					</div>
@@ -367,19 +366,26 @@ const EditPlayersPage = () => {
 						{players.slice(0, 5).map((player, index) => (
 							<div
 								key={player.id}
-								className={`aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ${
+								className={`aspect-square bg-gray-200 rounded-lg flex flex-col overflow-hidden ${
 									index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
 								}`}
 							>
-								{player.imagePreview ? (
-									<img
-										src={player.imagePreview}
-										alt={player.name}
-										className='w-full h-full object-cover'
-									/>
-								) : (
-									<span className='text-lg text-gray-500'>+</span>
-								)}
+								<div className='flex-1 flex items-center justify-center overflow-hidden'>
+									{player.imagePreview ? (
+										<img
+											src={player.imagePreview}
+											alt={player.name}
+											className='w-full h-full object-cover'
+										/>
+									) : (
+										<span className='text-lg text-gray-500'>+</span>
+									)}
+								</div>
+								<div className='bg-black bg-opacity-50 text-white text-[10px] p-0.5 text-center min-h-[16px] flex items-center justify-center'>
+									<span className='truncate w-full px-0.5'>
+										{player.name || `Игрок ${index + 1}`}
+									</span>
+								</div>
 							</div>
 						))}
 					</div>

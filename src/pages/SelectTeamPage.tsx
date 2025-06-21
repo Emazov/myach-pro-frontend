@@ -45,7 +45,13 @@ const SelectTeamPage = () => {
 
 	if (isLoading) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
+			<div
+				className='min-h-screen flex items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
 				<div className='text-2xl font-bold'>Загрузка команд...</div>
 			</div>
 		);
@@ -53,13 +59,23 @@ const SelectTeamPage = () => {
 
 	if (error || clubs.length === 0) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold text-red-500 text-center mb-4'>
+			<div
+				className='min-h-screen flex flex-col items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
+				<div className='text-2xl font-bold text-center mb-4'>
 					{error || 'Команды не найдены'}
 				</div>
 				<button
 					onClick={() => navigate('/guide')}
-					className='link_btn bg-[var(--tg-theme-text-color)] py-3 px-6 rounded-lg'
+					className='py-3 px-6 rounded-lg transition-opacity hover:opacity-80'
+					style={{
+						background: 'var(--tg-theme-button-color)',
+						color: 'var(--tg-theme-button-text-color)',
+					}}
 				>
 					Назад
 				</button>
@@ -68,76 +84,99 @@ const SelectTeamPage = () => {
 	}
 
 	return (
-		<div className='container flex flex-col justify-between h-full py-8'>
-			{/* Заголовок с кнопкой назад */}
-			<div className='flex justify-between items-center mb-8'>
-				<h1 className='text-[clamp(2rem,6vw,3rem)] font-bold text-center flex-1'>
-					Выберите команду
-				</h1>
-				<button
-					onClick={() => navigate('/guide')}
-					className='text-2xl font-bold text-gray-600 ml-4'
-				>
-					×
-				</button>
-			</div>
-
-			{/* Список команд */}
-			<div className='flex-1 mb-8'>
-				{clubs.length === 1 && clubs[0] ? (
-					/* Если команда одна - показываем её по центру */
-					<div className='flex justify-center items-center h-full'>
-						<div
-							onClick={() => handleTeamSelect(clubs[0]!)}
-							className='flex flex-col items-center p-6 bg-[var(--tg-theme-text-color)] rounded-lg text-[var(--tg-theme-bg-color)] min-w-[200px]'
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-4xl mx-auto'>
+				{/* Заголовок с кнопкой назад */}
+				<div className='flex items-center justify-between mb-8'>
+					<div className='flex items-center gap-4'>
+						<button
+							onClick={() => navigate('/guide')}
+							className='text-lg transition-opacity hover:opacity-70'
+							style={{ color: 'var(--tg-theme-link-color)' }}
 						>
-							<div className='w-24 h-24 mb-4 overflow-hidden rounded-full'>
-								{clubs[0]!.img_url ? (
-									<img
-										src={clubs[0]!.img_url}
-										alt={clubs[0]!.name}
-										className='w-full h-full object-cover'
-									/>
-								) : (
-									<div className='w-full h-full flex items-center justify-center text-gray-500'>
-										?
-									</div>
-								)}
-							</div>
-							<span className='text-lg text-center font-bold'>
-								{clubs[0]!.name}
-							</span>
-						</div>
+							← Назад
+						</button>
+						<h1 className='text-2xl font-bold'>Выберите команду</h1>
 					</div>
-				) : (
-					/* Если команд много - показываем сетку */
-					<div className='grid grid-cols-2 gap-4'>
-						{clubs.map((club) => (
+				</div>
+
+				{/* Список команд */}
+				<div className='flex-1 mb-8'>
+					{clubs.length === 1 && clubs[0] ? (
+						/* Если команда одна - показываем её по центру */
+						<div className='flex justify-center items-center'>
 							<div
-								key={club.id}
-								onClick={() => handleTeamSelect(club)}
-								className='flex flex-col items-center p-4 bg-[var(--tg-theme-text-color)] rounded-lg text-[var(--tg-theme-bg-color)] cursor-pointer'
+								onClick={() => handleTeamSelect(clubs[0]!)}
+								className='flex flex-col items-center p-6 rounded-lg cursor-pointer transition-opacity hover:opacity-80 min-w-[200px]'
+								style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
 							>
-								<div className='w-16 h-16 mb-2 overflow-hidden rounded-full'>
-									{club.img_url ? (
+								<div
+									className='w-24 h-24 mb-4 overflow-hidden rounded-full'
+									style={{ background: 'var(--tg-theme-hint-color)' }}
+								>
+									{clubs[0]!.img_url ? (
 										<img
-											src={club.img_url}
-											alt={club.name}
+											src={clubs[0]!.img_url}
+											alt={clubs[0]!.name}
 											className='w-full h-full object-cover'
 										/>
 									) : (
-										<div className='w-full h-full flex items-center justify-center text-gray-500'>
+										<div
+											className='w-full h-full flex items-center justify-center text-2xl font-bold'
+											style={{ color: 'var(--tg-theme-bg-color)' }}
+										>
 											?
 										</div>
 									)}
 								</div>
-								<span className='text-sm text-center font-medium'>
-									{club.name}
+								<span className='text-lg text-center font-bold'>
+									{clubs[0]!.name}
 								</span>
 							</div>
-						))}
-					</div>
-				)}
+						</div>
+					) : (
+						/* Если команд много - показываем сетку */
+						<div className='grid grid-cols-2 gap-4'>
+							{clubs.map((club) => (
+								<div
+									key={club.id}
+									onClick={() => handleTeamSelect(club)}
+									className='flex flex-col items-center p-4 rounded-lg cursor-pointer transition-opacity hover:opacity-80'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
+									<div
+										className='w-16 h-16 mb-2 overflow-hidden rounded-full'
+										style={{ background: 'var(--tg-theme-hint-color)' }}
+									>
+										{club.img_url ? (
+											<img
+												src={club.img_url}
+												alt={club.name}
+												className='w-full h-full object-cover'
+											/>
+										) : (
+											<div
+												className='w-full h-full flex items-center justify-center text-xl font-bold'
+												style={{ color: 'var(--tg-theme-bg-color)' }}
+											>
+												?
+											</div>
+										)}
+									</div>
+									<span className='text-sm text-center font-medium'>
+										{club.name}
+									</span>
+								</div>
+							))}
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);

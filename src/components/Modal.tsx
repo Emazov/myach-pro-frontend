@@ -41,12 +41,16 @@ const Modal = ({
 								onClick={() => handleReplacePlayer(player)}
 								className='flex flex-col items-center rounded-lg'
 							>
-								<img
-									src={player.img_url}
-									alt={player.name}
-									className='w-16 object-cover rounded-lg mb-2'
-								/>
-								<span className='text-sm text-center'>{player.name}</span>
+								<div className='w-16 h-16 overflow-hidden rounded-lg mb-2'>
+									<img
+										src={player.img_url}
+										alt={player.name}
+										className='w-full h-full object-cover'
+									/>
+								</div>
+								<span className='text-sm text-center truncate w-full'>
+									{player.name}
+								</span>
 							</button>
 						))}
 					</div>
