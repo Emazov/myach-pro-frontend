@@ -42,19 +42,72 @@ const Results = () => {
 		loadClub();
 	}, [initData]);
 
+	// Функция для предварительной загрузки изображений
+	const preloadImages = async (): Promise<void> => {
+		const imageUrls: string[] = [];
+
+		// Добавляем логотип клуба
+		if (club?.img_url) {
+			imageUrls.push(club.img_url);
+		}
+
+		// Добавляем изображения всех игроков
+		categories.forEach((category) => {
+			const players = categorizedPlayers[category.name] || [];
+			players.forEach((player) => {
+				if (player.img_url) {
+					imageUrls.push(player.img_url);
+				}
+			});
+		});
+
+		// Загружаем все изображения
+		const loadPromises = imageUrls.map((url) => {
+			return new Promise<void>((resolve) => {
+				const img = new Image();
+				img.crossOrigin = 'anonymous'; // Для работы с CORS
+				img.onload = () => resolve();
+				img.onerror = () => {
+					console.warn(`Не удалось загрузить изображение: ${url}`);
+					resolve(); // Продолжаем даже если одно изображение не загрузилось
+				};
+				img.src = url;
+			});
+		});
+
+		await Promise.all(loadPromises);
+
+		// Дополнительная задержка для рендеринга
+		await new Promise((resolve) => setTimeout(resolve, 500));
+	};
+
 	const handleShare = async () => {
 		if (!resultsRef.current) return;
 
 		setIsSharing(true);
 		try {
+			// Предварительно загружаем все изображения
+			await preloadImages();
+
 			// Создаём скриншот результатов
 			const canvas = await html2canvas(resultsRef.current, {
 				backgroundColor: '#ffffff',
 				scale: 2, // Увеличиваем качество
 				useCORS: true,
-				allowTaint: true,
-				height: resultsRef.current.offsetHeight,
+				allowTaint: false, // Изменили на false для лучшей совместимости
+				foreignObjectRendering: true, // Включаем для лучшей поддержки внешних объектов
+				logging: false, // Отключаем логирование для производительности
 				width: resultsRef.current.offsetWidth,
+				height: resultsRef.current.offsetHeight,
+				scrollX: 0,
+				scrollY: 0,
+				onclone: (clonedDoc) => {
+					// Обеспечиваем правильную загрузку изображений в клоне
+					const images = clonedDoc.querySelectorAll('img');
+					images.forEach((img) => {
+						img.crossOrigin = 'anonymous';
+					});
+				},
 			});
 
 			// Конвертируем canvas в blob
@@ -181,6 +234,8 @@ const Results = () => {
 						src={club.img_url}
 						alt={club.name}
 						className='w-24 h-24 object-contain mb-4'
+						crossOrigin='anonymous'
+						loading='eager'
 					/>
 					<h1 className='text-[clamp(1.5rem,5vw,3rem)] font-bold text-center mb-2'>
 						{club.name}

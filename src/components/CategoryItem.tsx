@@ -32,6 +32,8 @@ const CategoryItem = ({
 								src={player.img_url}
 								alt={player.name}
 								className='w-full h-full object-cover rounded-sm'
+								crossOrigin='anonymous'
+								loading='eager'
 							/>
 						</li>
 					))}
