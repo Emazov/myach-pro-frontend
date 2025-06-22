@@ -261,7 +261,7 @@ const AddPlayersPage = () => {
 								<div
 									key={player.id}
 									onClick={() => handleSlotClick(index)}
-									className={`aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-opacity hover:opacity-80 ${
+									className={`aspect-square rounded-lg flex flex-col cursor-pointer overflow-hidden transition-opacity hover:opacity-80 ${
 										player.isSaved ? 'ring-2' : ''
 									}`}
 									style={{
@@ -290,7 +290,7 @@ const AddPlayersPage = () => {
 												</div>
 											)}
 											<div
-												className='text-xs p-1 text-center'
+												className='text-xs p-1 text-center truncate'
 												style={{
 													background: 'var(--tg-theme-bg-color)',
 													color: 'var(--tg-theme-text-color)',
@@ -300,20 +300,29 @@ const AddPlayersPage = () => {
 											</div>
 										</div>
 									) : (
-										<>
-											<span
-												className='text-2xl mb-1'
-												style={{ color: 'var(--tg-theme-hint-color)' }}
+										<div className='w-full h-full flex flex-col'>
+											<div className='flex-1 flex items-center justify-center'>
+												<span
+													className='text-2xl'
+													style={{ color: 'var(--tg-theme-hint-color)' }}
+												>
+													+
+												</span>
+											</div>
+											<div
+												className='text-xs p-1 text-center truncate'
+												style={{
+													background: player.name
+														? 'var(--tg-theme-bg-color)'
+														: 'transparent',
+													color: player.name
+														? 'var(--tg-theme-text-color)'
+														: 'var(--tg-theme-hint-color)',
+												}}
 											>
-												+
-											</span>
-											<span
-												className='text-xs text-center'
-												style={{ color: 'var(--tg-theme-hint-color)' }}
-											>
-												Имя
-											</span>
-										</>
+												{player.name || 'Имя'}
+											</div>
+										</div>
 									)}
 								</div>
 							))}
@@ -360,7 +369,7 @@ const AddPlayersPage = () => {
 							{players.slice(0, 5).map((player, index) => (
 								<div
 									key={player.id}
-									className={`aspect-square rounded-lg flex items-center justify-center overflow-hidden transition-opacity ${
+									className={`aspect-square rounded-lg flex flex-col overflow-hidden transition-opacity ${
 										index === selectedPlayerIndex
 											? 'ring-2 opacity-100'
 											: 'opacity-60 hover:opacity-80'
@@ -374,18 +383,55 @@ const AddPlayersPage = () => {
 									}}
 								>
 									{player.imagePreview ? (
-										<img
-											src={player.imagePreview}
-											alt={player.name}
-											className='w-full h-full object-cover'
-										/>
+										<div className='w-full h-full flex flex-col relative'>
+											<img
+												src={player.imagePreview}
+												alt={player.name}
+												className='flex-1 w-full object-cover'
+											/>
+											{player.isSaved && (
+												<div
+													className='absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center text-xs font-bold'
+													style={{
+														background: 'var(--tg-theme-button-color)',
+														color: 'var(--tg-theme-button-text-color)',
+													}}
+												>
+													✓
+												</div>
+											)}
+											<div
+												className='text-xs p-0.5 text-center truncate text-[10px]'
+												style={{
+													background: 'var(--tg-theme-bg-color)',
+													color: 'var(--tg-theme-text-color)',
+												}}
+											>
+												{player.name}
+											</div>
+										</div>
 									) : (
-										<span
-											className='text-lg'
-											style={{ color: 'var(--tg-theme-hint-color)' }}
-										>
-											+
-										</span>
+										<div className='w-full h-full flex flex-col'>
+											<div className='flex-1 flex items-center justify-center'>
+												<span
+													className='text-lg'
+													style={{ color: 'var(--tg-theme-hint-color)' }}
+												>
+													+
+												</span>
+											</div>
+											{player.name && (
+												<div
+													className='text-xs p-0.5 text-center truncate text-[10px]'
+													style={{
+														background: 'var(--tg-theme-bg-color)',
+														color: 'var(--tg-theme-text-color)',
+													}}
+												>
+													{player.name}
+												</div>
+											)}
+										</div>
 									)}
 								</div>
 							))}
