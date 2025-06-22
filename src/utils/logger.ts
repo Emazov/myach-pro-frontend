@@ -26,12 +26,6 @@ class Logger {
 			const method = level === 'debug' ? 'log' : level;
 			console[method](`[${level.toUpperCase()}] ${message}`, data || '');
 		}
-
-		// В production логи можно отправлять на сервер
-		if (!this.isDevelopment && level === 'error') {
-			// TODO: Отправка критических ошибок на сервер
-			this.sendErrorToServer(entry);
-		}
 	}
 
 	debug(message: string, data?: any) {
@@ -69,19 +63,6 @@ class Logger {
 	// Очистить логи
 	clearLogs() {
 		this.logs = [];
-	}
-
-	private async sendErrorToServer(entry: LogEntry) {
-		try {
-			// TODO: Реализовать отправку ошибок на сервер
-			// await fetch('/api/logs', {
-			//   method: 'POST',
-			//   headers: { 'Content-Type': 'application/json' },
-			//   body: JSON.stringify(entry)
-			// });
-		} catch (error) {
-			// Избегаем рекурсии при ошибке отправки логов
-		}
 	}
 }
 
