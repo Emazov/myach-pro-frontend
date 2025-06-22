@@ -153,14 +153,14 @@ const Guide = () => {
 					{isAdmin && (
 						<button
 							onClick={handleGoToAdmin}
-							className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
+							className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 transition-opacity hover:opacity-80'
 							style={{
-								background: '#EC3381',
-								color: '#fff',
+								color: '#EC3381',
 								borderColor: '#EC3381',
+								background: 'transparent',
 							}}
 						>
-							👤 Админ
+							Админ
 						</button>
 					)}
 					<button
