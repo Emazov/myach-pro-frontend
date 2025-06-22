@@ -21,8 +21,10 @@ const ManageClubPage = () => {
 	const [showModal, setShowModal] = useState(false);
 	const [isLoadingClubs, setIsLoadingClubs] = useState(true);
 	const [isDeleting, setIsDeleting] = useState(false);
+	const [isActionLoading, setIsActionLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [successMessage, setSuccessMessage] = useState<string | null>(null);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	// Проверяем права доступа
 	useEffect(() => {
@@ -75,6 +77,7 @@ const ManageClubPage = () => {
 
 	const handleEditClub = () => {
 		if (selectedClub) {
+			setIsActionLoading(true);
 			setShowModal(false);
 			navigate(`/admin/edit-club/${selectedClub.id}`, {
 				state: { club: selectedClub },
@@ -84,6 +87,7 @@ const ManageClubPage = () => {
 
 	const handleEditPlayers = () => {
 		if (selectedClub) {
+			setIsActionLoading(true);
 			setShowModal(false);
 			navigate(`/admin/edit-players/${selectedClub.id}`, {
 				state: { clubName: selectedClub.name },
@@ -142,6 +146,11 @@ const ManageClubPage = () => {
 		return null;
 	}
 
+	// Фильтрация команд по поисковому запросу
+	const filteredClubs = clubs.filter((club) =>
+		club.name.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
+
 	return (
 		<div
 			className='min-h-screen p-4'
@@ -181,20 +190,45 @@ const ManageClubPage = () => {
 				{/* Ошибка */}
 				{error && (
 					<div
-						className='mb-6 p-4 rounded-lg'
+						className='mb-6 p-4 rounded-lg border'
 						style={{
-							background: '#fee2e2',
-							color: '#dc2626',
-							border: '1px solid #fca5a5',
+							background: 'var(--tg-theme-secondary-bg-color)',
+							color: 'var(--tg-theme-destructive-text-color, #dc2626)',
+							borderColor: 'var(--tg-theme-destructive-text-color, #fca5a5)',
 						}}
 					>
 						{error}
 					</div>
 				)}
 
+				{/* Поиск команд */}
+				{clubs.length > 0 && (
+					<div className='mb-6'>
+						<input
+							type='text'
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							placeholder='Поиск команд...'
+							className='w-full p-3 rounded-lg border'
+							style={{
+								background: 'var(--tg-theme-secondary-bg-color)',
+								borderColor: 'var(--tg-theme-hint-color)',
+								color: 'var(--tg-theme-text-color)',
+							}}
+						/>
+					</div>
+				)}
+
 				{/* Список команд */}
 				<div className='flex-1 mb-8'>
-					{clubs.length === 0 ? (
+					{filteredClubs.length === 0 && clubs.length > 0 ? (
+						<div
+							className='text-center mt-8'
+							style={{ color: 'var(--tg-theme-hint-color)' }}
+						>
+							Команды не найдены по запросу "{searchQuery}"
+						</div>
+					) : clubs.length === 0 ? (
 						<div
 							className='text-center mt-8'
 							style={{ color: 'var(--tg-theme-hint-color)' }}
@@ -203,7 +237,7 @@ const ManageClubPage = () => {
 						</div>
 					) : (
 						<div className='grid grid-cols-2 gap-4'>
-							{clubs.map((club) => (
+							{filteredClubs.map((club) => (
 								<div
 									key={club.id}
 									onClick={() => handleClubClick(club)}
@@ -268,25 +302,37 @@ const ManageClubPage = () => {
 							<div className='flex flex-col gap-4'>
 								<button
 									onClick={handleEditClub}
-									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80'
-									style={{ background: '#EC3381', color: 'white' }}
+									disabled={isActionLoading}
+									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50'
+									style={{
+										background: 'var(--tg-theme-button-color)',
+										color: 'var(--tg-theme-button-text-color)',
+									}}
 								>
-									Изменить лого и название
+									{isActionLoading ? 'Загрузка...' : 'Изменить лого и название'}
 								</button>
 
 								<button
 									onClick={handleEditPlayers}
-									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80'
-									style={{ background: '#EC3381', color: 'white' }}
+									disabled={isActionLoading}
+									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50'
+									style={{
+										background: 'var(--tg-theme-button-color)',
+										color: 'var(--tg-theme-button-text-color)',
+									}}
 								>
-									Изменить игроков
+									{isActionLoading ? 'Загрузка...' : 'Изменить игроков'}
 								</button>
 
 								<button
 									onClick={handleDeleteClub}
-									disabled={isDeleting}
+									disabled={isDeleting || isActionLoading}
 									className='py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50'
-									style={{ background: '#dc2626', color: 'white' }}
+									style={{
+										background:
+											'var(--tg-theme-destructive-text-color, #dc2626)',
+										color: 'white',
+									}}
 								>
 									{isDeleting ? 'Удаление...' : 'Удалить команду'}
 								</button>

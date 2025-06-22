@@ -171,32 +171,54 @@ const EditPlayersPage = () => {
 				await createPlayer(initData, formData);
 			}
 
-			// Успешно сохранено
+			// Обновляем игрока в локальном состоянии без перезагрузки
+			if (
+				player.isExisting &&
+				player.id &&
+				!player.id.startsWith('new-player-')
+			) {
+				// Обновление существующего игрока
+				setPlayers((prev) =>
+					prev.map((p, index) =>
+						index === selectedPlayerIndex
+							? {
+									...p,
+									name: player.name.trim(),
+									imagePreview: player.image
+										? player.imagePreview
+										: p.avatarUrl || null,
+									avatarUrl: player.image
+										? player.imagePreview || p.avatarUrl
+										: p.avatarUrl,
+							  }
+							: p,
+					),
+				);
+			} else {
+				// Добавление нового игрока - перезагружаем только для получения правильного ID
+				const club = await fetchClubById(initData, clubId);
+				const newPlayer = club.players?.find(
+					(p: any) => p.name === player.name.trim(),
+				);
+				if (newPlayer) {
+					setPlayers((prev) =>
+						prev.map((p, index) =>
+							index === selectedPlayerIndex
+								? {
+										id: newPlayer.id,
+										name: newPlayer.name,
+										avatarUrl: newPlayer.avatarUrl,
+										imagePreview: newPlayer.avatarUrl,
+										isExisting: true,
+								  }
+								: p,
+						),
+					);
+				}
+			}
+
 			setShowPlayerForm(false);
 			setSelectedPlayerIndex(null);
-
-			// Перезагружаем игроков
-			const club = await fetchClubById(initData, clubId);
-			const playersArray: Player[] = Array.from({ length: 20 }, (_, index) => {
-				const existingPlayer = club.players?.[index];
-				if (existingPlayer) {
-					return {
-						id: existingPlayer.id,
-						name: existingPlayer.name,
-						avatarUrl: existingPlayer.avatarUrl,
-						imagePreview: existingPlayer.avatarUrl,
-						isExisting: true,
-					};
-				}
-				return {
-					id: `new-player-${index}`,
-					name: '',
-					image: null,
-					imagePreview: null,
-					isExisting: false,
-				};
-			});
-			setPlayers(playersArray);
 		} catch (err) {
 			console.error('Ошибка при сохранении игрока:', err);
 			setError(err instanceof Error ? err.message : 'Произошла ошибка');
@@ -274,196 +296,232 @@ const EditPlayersPage = () => {
 		selectedPlayerIndex !== null ? players[selectedPlayerIndex] : null;
 
 	return (
-		<div className='container flex flex-col justify-between h-full py-8'>
-			{!showPlayerForm ? (
-				<>
-					{/* Заголовок с крестиком */}
-					<div className='flex justify-between items-center mb-8'>
-						<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-							Изменить игроков
-							{state?.clubName && (
-								<span className='block text-[clamp(1rem,3vw,1.2rem)] text-gray-600 mt-1'>
-									команды "{state.clubName}"
-								</span>
-							)}
-						</h1>
-						<button
-							onClick={() => navigate('/admin/manage-club')}
-							className='text-2xl font-bold text-gray-600'
-						>
-							×
-						</button>
-					</div>
-
-					{/* Ошибка */}
-					{error && (
-						<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
-							{error}
-						</div>
-					)}
-
-					{/* Сетка игроков */}
-					<div className='grid grid-cols-5 gap-4 mb-8 flex-1'>
-						{players.map((player, index) => (
-							<div
-								key={player.id}
-								onClick={() => handleSlotClick(index)}
-								className='aspect-square bg-gray-200 rounded-lg flex flex-col cursor-pointer overflow-hidden'
-							>
-								<div className='flex-1 flex items-center justify-center overflow-hidden'>
-									{player.imagePreview ? (
-										<img
-											src={player.imagePreview}
-											alt={player.name}
-											className='w-full h-full object-cover'
-										/>
-									) : (
-										<>
-											<span className='text-2xl text-gray-500 mb-1'>+</span>
-										</>
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-4xl mx-auto'>
+				{!showPlayerForm ? (
+					<>
+						{/* Заголовок с кнопкой назад */}
+						<div className='flex items-center justify-between mb-8'>
+							<div className='flex items-center gap-4'>
+								<button
+									onClick={() => navigate('/admin/manage-club')}
+									className='text-lg transition-opacity hover:opacity-70'
+									style={{ color: 'var(--tg-theme-link-color)' }}
+								>
+									← Назад
+								</button>
+								<div>
+									<h1 className='text-2xl font-bold'>Изменить игроков</h1>
+									{state?.clubName && (
+										<span
+											className='block text-lg mt-1'
+											style={{ color: 'var(--tg-theme-hint-color)' }}
+										>
+											команды "{state.clubName}"
+										</span>
 									)}
 								</div>
-								<div className='bg-black bg-opacity-50 text-white text-xs p-1 text-center min-h-[20px] flex items-center justify-center'>
-									<span className='truncate w-full px-1'>
-										{player.name || `Игрок ${index + 1}`}
-									</span>
-								</div>
 							</div>
-						))}
-					</div>
+						</div>
 
-					{/* Кнопка завершения */}
-					<button
-						onClick={handleFinish}
-						className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium'
-					>
-						Готово
-					</button>
-				</>
-			) : (
-				<>
-					{/* Форма редактирования игрока */}
-					<div className='flex justify-between items-center mb-8'>
-						<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-							{currentPlayer?.isExisting
-								? 'Изменить игрока'
-								: 'Добавить игрока'}
-						</h1>
-						<button
-							onClick={() => {
-								setShowPlayerForm(false);
-								setSelectedPlayerIndex(null);
-								setError(null);
-							}}
-							className='text-2xl font-bold text-gray-600'
-						>
-							×
-						</button>
-					</div>
-
-					{/* Сетка игроков (уменьшенная) */}
-					<div className='grid grid-cols-5 gap-2 mb-8'>
-						{players.slice(0, 5).map((player, index) => (
+						{/* Ошибка */}
+						{error && (
 							<div
-								key={player.id}
-								className={`aspect-square bg-gray-200 rounded-lg flex flex-col overflow-hidden ${
-									index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
-								}`}
+								className='mb-4 p-3 border rounded'
+								style={{
+									background: 'var(--tg-theme-secondary-bg-color)',
+									color: 'var(--tg-theme-destructive-text-color, #dc2626)',
+									borderColor:
+										'var(--tg-theme-destructive-text-color, #fca5a5)',
+								}}
 							>
-								<div className='flex-1 flex items-center justify-center overflow-hidden'>
-									{player.imagePreview ? (
-										<img
-											src={player.imagePreview}
-											alt={player.name}
-											className='w-full h-full object-cover'
-										/>
-									) : (
-										<span className='text-lg text-gray-500'>+</span>
-									)}
-								</div>
-								<div className='bg-black bg-opacity-50 text-white text-[10px] p-0.5 text-center min-h-[16px] flex items-center justify-center'>
-									<span className='truncate w-full px-0.5'>
-										{player.name || `Игрок ${index + 1}`}
-									</span>
-								</div>
+								{error}
 							</div>
-						))}
-					</div>
-
-					{/* Фото игрока */}
-					<div className='flex flex-col items-center mb-8'>
-						<div
-							onClick={() => fileInputRef.current?.click()}
-							className='w-32 h-32 bg-yellow-400 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden'
-						>
-							{currentPlayer?.imagePreview ? (
-								<img
-									src={currentPlayer.imagePreview}
-									alt='Превью игрока'
-									className='w-full h-full object-cover'
-								/>
-							) : (
-								<span className='text-white text-sm text-center'>
-									Добавить
-									<br />
-									фото
-								</span>
-							)}
-						</div>
-						<input
-							ref={fileInputRef}
-							type='file'
-							accept='image/*'
-							onChange={handleImageSelect}
-							className='hidden'
-						/>
-					</div>
-
-					{/* Поле ввода имени */}
-					<div className='mb-8'>
-						<input
-							type='text'
-							value={currentPlayer?.name || ''}
-							onChange={(e) => handleNameChange(e.target.value)}
-							placeholder='Имя игрока'
-							className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
-							disabled={isSubmitting}
-						/>
-					</div>
-
-					{/* Ошибка */}
-					{error && (
-						<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
-							{error}
-						</div>
-					)}
-
-					{/* Кнопки действий */}
-					<div className='flex flex-col gap-3'>
-						<button
-							onClick={handleSavePlayer}
-							disabled={
-								isSubmitting ||
-								!currentPlayer?.name.trim() ||
-								(!currentPlayer?.image && !currentPlayer?.avatarUrl)
-							}
-							className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
-						>
-							{isSubmitting ? 'Сохранение...' : 'Сохранить'}
-						</button>
-
-						{currentPlayer?.isExisting && (
-							<button
-								onClick={handleDeletePlayer}
-								disabled={isSubmitting}
-								className='bg-black text-white py-4 rounded-full text-[clamp(0.9rem,2.5vw,1.2rem)] font-medium disabled:opacity-50'
-							>
-								{isSubmitting ? 'Удаление...' : 'Удалить игрока'}
-							</button>
 						)}
-					</div>
-				</>
-			)}
+
+						{/* Сетка игроков */}
+						<div className='grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4 mb-8'>
+							{players.map((player, index) => (
+								<div
+									key={player.id}
+									onClick={() => handleSlotClick(index)}
+									className='aspect-square rounded-lg flex flex-col cursor-pointer overflow-hidden transition-opacity hover:opacity-80'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
+									<div className='flex-1 flex items-center justify-center overflow-hidden'>
+										{player.imagePreview ? (
+											<img
+												src={player.imagePreview}
+												alt={player.name}
+												className='w-full h-full object-cover'
+											/>
+										) : (
+											<span
+												className='text-2xl mb-1'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
+											>
+												+
+											</span>
+										)}
+									</div>
+									<div
+										className='text-xs p-1 text-center min-h-[20px] flex items-center justify-center'
+										style={{
+											background: 'var(--tg-theme-bg-color)',
+											color: 'var(--tg-theme-text-color)',
+										}}
+									>
+										<span className='truncate w-full px-1'>
+											{player.name || `Игрок ${index + 1}`}
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+
+						{/* Кнопка завершения */}
+						<button
+							onClick={handleFinish}
+							className='py-4 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80'
+							style={{
+								background: 'var(--tg-theme-button-color)',
+								color: 'var(--tg-theme-button-text-color)',
+							}}
+						>
+							Готово
+						</button>
+					</>
+				) : (
+					<>
+						{/* Форма редактирования игрока */}
+						<div className='flex justify-between items-center mb-8'>
+							<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
+								{currentPlayer?.isExisting
+									? 'Изменить игрока'
+									: 'Добавить игрока'}
+							</h1>
+							<button
+								onClick={() => {
+									setShowPlayerForm(false);
+									setSelectedPlayerIndex(null);
+									setError(null);
+								}}
+								className='text-2xl font-bold text-gray-600'
+							>
+								×
+							</button>
+						</div>
+
+						{/* Сетка игроков (уменьшенная) */}
+						<div className='grid grid-cols-5 gap-2 mb-8'>
+							{players.slice(0, 5).map((player, index) => (
+								<div
+									key={player.id}
+									className={`aspect-square bg-gray-200 rounded-lg flex flex-col overflow-hidden ${
+										index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
+									}`}
+								>
+									<div className='flex-1 flex items-center justify-center overflow-hidden'>
+										{player.imagePreview ? (
+											<img
+												src={player.imagePreview}
+												alt={player.name}
+												className='w-full h-full object-cover'
+											/>
+										) : (
+											<span className='text-lg text-gray-500'>+</span>
+										)}
+									</div>
+									<div className='bg-black bg-opacity-50 text-white text-[10px] p-0.5 text-center min-h-[16px] flex items-center justify-center'>
+										<span className='truncate w-full px-0.5'>
+											{player.name || `Игрок ${index + 1}`}
+										</span>
+									</div>
+								</div>
+							))}
+						</div>
+
+						{/* Фото игрока */}
+						<div className='flex flex-col items-center mb-8'>
+							<div
+								onClick={() => fileInputRef.current?.click()}
+								className='w-32 h-32 bg-yellow-400 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden'
+							>
+								{currentPlayer?.imagePreview ? (
+									<img
+										src={currentPlayer.imagePreview}
+										alt='Превью игрока'
+										className='w-full h-full object-cover'
+									/>
+								) : (
+									<span className='text-white text-sm text-center'>
+										Добавить
+										<br />
+										фото
+									</span>
+								)}
+							</div>
+							<input
+								ref={fileInputRef}
+								type='file'
+								accept='image/*'
+								onChange={handleImageSelect}
+								className='hidden'
+							/>
+						</div>
+
+						{/* Поле ввода имени */}
+						<div className='mb-8'>
+							<input
+								type='text'
+								value={currentPlayer?.name || ''}
+								onChange={(e) => handleNameChange(e.target.value)}
+								placeholder='Имя игрока'
+								className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
+								disabled={isSubmitting}
+							/>
+						</div>
+
+						{/* Ошибка */}
+						{error && (
+							<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
+								{error}
+							</div>
+						)}
+
+						{/* Кнопки действий */}
+						<div className='flex flex-col gap-3'>
+							<button
+								onClick={handleSavePlayer}
+								disabled={
+									isSubmitting ||
+									!currentPlayer?.name.trim() ||
+									(!currentPlayer?.image && !currentPlayer?.avatarUrl)
+								}
+								className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
+							>
+								{isSubmitting ? 'Сохранение...' : 'Сохранить'}
+							</button>
+
+							{currentPlayer?.isExisting && (
+								<button
+									onClick={handleDeletePlayer}
+									disabled={isSubmitting}
+									className='bg-black text-white py-4 rounded-full text-[clamp(0.9rem,2.5vw,1.2rem)] font-medium disabled:opacity-50'
+								>
+									{isSubmitting ? 'Удаление...' : 'Удалить игрока'}
+								</button>
+							)}
+						</div>
+					</>
+				)}
+			</div>
 		</div>
 	);
 };
