@@ -3,7 +3,6 @@ import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
-import { createClubLogoPlaceholder } from '../utils/imageUtils';
 
 const Results = () => {
 	const { initData } = useTelegram();
@@ -85,15 +84,14 @@ const Results = () => {
 							<h2 className='text-black text-lg font-bold'>ТИР-ЛИСТ ИГРОКОВ</h2>
 							<div className='flex items-center gap-2 mt-1'>
 								<img
-									src={club.img_url || createClubLogoPlaceholder(club.name)}
+									src={club.img_url}
 									alt={club.name}
 									className='w-6 h-6 object-contain'
 									loading='eager'
 									onError={(e) => {
-										// Если логотип не загрузился, подставляем плейсхолдер
+										// Если логотип не загрузился, скрываем изображение
 										const target = e.target as HTMLImageElement;
-										target.onerror = null;
-										target.src = createClubLogoPlaceholder(club.name);
+										target.style.display = 'none';
 									}}
 								/>
 								<span className='text-black font-semibold'>{club.name}</span>
@@ -120,17 +118,17 @@ const Results = () => {
 						})}
 					</ul>
 
-					{/* Ссылка на бота */}
+					{/* Кнопка поделиться */}
 					<div className='text-center mt-10 mb-6'>
-						<a
-							href='https://t.me/MyachProBot'
-							className='inline-flex items-center gap-2 text-blue-600 text-sm font-medium'
-							target='_blank'
-							rel='noopener noreferrer'
+						<button
+							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto'
+							onClick={() => {
+								// Здесь можно добавить логику для шеринга
+								console.log('Поделиться результатом');
+							}}
 						>
-							<span>🔗</span>
-							Собери свой тир-лист в боте
-						</a>
+							Поделиться
+						</button>
 					</div>
 				</div>
 			</div>

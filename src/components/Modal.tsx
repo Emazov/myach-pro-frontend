@@ -1,4 +1,5 @@
 import type { ModalProps } from '../types';
+import { createPlayerSkeleton } from '../utils/imageUtils';
 
 const Modal = ({
 	isOpen,
@@ -46,6 +47,12 @@ const Modal = ({
 										src={player.img_url}
 										alt={player.name}
 										className='w-full h-full object-cover'
+										onError={(e) => {
+											// Если изображение не загрузилось, показываем скелетон
+											const target = e.target as HTMLImageElement;
+											target.onerror = null;
+											target.src = createPlayerSkeleton();
+										}}
 									/>
 								</div>
 								<span className='text-xs text-center truncate w-full'>

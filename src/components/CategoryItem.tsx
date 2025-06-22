@@ -1,8 +1,5 @@
 import type { Category, Player } from '../types';
-import {
-	createPlayerImagePlaceholder,
-	createPlayerSkeleton,
-} from '../utils/imageUtils';
+import { createPlayerSkeleton } from '../utils/imageUtils';
 
 interface CategoryItemProps {
 	category: Category;
@@ -36,18 +33,16 @@ const CategoryItem = ({
 							key={`slot-${player.id}`}
 						>
 							<img
-								src={
-									player.img_url || createPlayerImagePlaceholder(player.name)
-								}
+								src={player.img_url}
 								alt={player.name}
 								className='w-full h-full object-cover rounded-md'
 								crossOrigin='anonymous'
 								loading='eager'
 								onError={(e) => {
-									// Если изображение не загрузилось, подставляем плейсхолдер
+									// Если изображение не загрузилось, показываем скелетон
 									const target = e.target as HTMLImageElement;
 									target.onerror = null; // Предотвращаем бесконечную рекурсию
-									target.src = createPlayerImagePlaceholder(player.name);
+									target.src = createPlayerSkeleton();
 								}}
 							/>
 						</li>
