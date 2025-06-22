@@ -35,11 +35,20 @@ const CategoryItem = ({
 								className='w-full h-full object-cover rounded-sm'
 								crossOrigin='anonymous'
 								loading='eager'
+								onLoad={() => {
+									console.log(
+										`✅ Изображение загружено: ${player.name} - ${player.img_url}`,
+									);
+								}}
 								onError={(e) => {
 									// Если изображение не загрузилось, подставляем плейсхолдер
+									console.log(
+										`❌ Ошибка загрузки изображения: ${player.name} - ${player.img_url}`,
+									);
 									const target = e.target as HTMLImageElement;
 									target.onerror = null; // Предотвращаем бесконечную рекурсию
 									target.src = createPlayerImagePlaceholder(player.name);
+									console.log(`🎨 Использован placeholder для: ${player.name}`);
 								}}
 							/>
 						</li>
