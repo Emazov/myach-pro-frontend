@@ -101,7 +101,21 @@ export const OptimizedImageUpload: React.FC<OptimizedImageUploadProps> = ({
 			if (file) {
 				// Создаем искусственное событие для обработки файла
 				const fakeEvent = {
-					target: { files: [file] },
+					target: { files: [file] as any },
+					preventDefault: () => {},
+					nativeEvent: {} as Event,
+					currentTarget: {} as HTMLInputElement,
+					bubbles: false,
+					cancelable: false,
+					defaultPrevented: false,
+					eventPhase: 0,
+					isTrusted: false,
+					stopPropagation: () => {},
+					timeStamp: 0,
+					type: 'change',
+					persist: () => {},
+					isDefaultPrevented: () => false,
+					isPropagationStopped: () => false,
 				} as React.ChangeEvent<HTMLInputElement>;
 
 				handleFileSelect(fakeEvent);
