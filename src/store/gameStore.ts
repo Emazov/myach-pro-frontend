@@ -209,6 +209,7 @@ export const useGameStore = create<GameState>()(
 					progressPercentage: state.progressPercentage,
 					categories: state.categories,
 					maxPlayersToProcess: state.maxPlayersToProcess,
+					playerQueue: state.playerQueue, // Добавляем playerQueue для сохранения полной информации об игроках
 				}),
 			},
 		),

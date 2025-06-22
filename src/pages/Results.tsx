@@ -6,10 +6,26 @@ import { useTelegram } from '../hooks/useTelegram';
 
 const Results = () => {
 	const { initData } = useTelegram();
-	const { categorizedPlayers, categories } = useGameStore();
+	const { categorizedPlayers, categories, playerQueue } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+
+	// Временная очистка localStorage для тестирования
+	// localStorage.removeItem('game-storage');
+
+	// Добавляем отладочную информацию
+	console.log('Results - categorizedPlayers:', categorizedPlayers);
+	console.log('Results - categories:', categories);
+	console.log('Results - playerQueue:', playerQueue);
+
+	// Проверяем, есть ли данные игры
+	const hasGameData =
+		categories.length > 0 &&
+		Object.keys(categorizedPlayers).length > 0 &&
+		Object.values(categorizedPlayers).some((players) => players.length > 0);
+
+	console.log('Results - hasGameData:', hasGameData);
 
 	useEffect(() => {
 		const loadClub = async () => {
@@ -63,38 +79,65 @@ const Results = () => {
 		);
 	}
 
+	// Показываем сообщение, если нет данных игры
+	if (!hasGameData) {
+		return (
+			<div className='container flex flex-col items-center justify-center h-full'>
+				<div className='text-2xl font-bold text-center mb-4'>
+					Нет данных для отображения результатов
+				</div>
+				<div className='text-lg text-center mb-6'>
+					Сначала пройдите игру, чтобы увидеть результаты
+				</div>
+				<button
+					className='px-6 py-3 bg-blue-500 text-white rounded-lg'
+					onClick={() => window.history.back()}
+				>
+					Вернуться назад
+				</button>
+			</div>
+		);
+	}
+
 	return (
 		<div className='min-h-screen bg-gradient-to-b from-[#EC3381] to-[#FF6B9D] flex flex-col'>
 			<div className='flex-1 flex flex-col'>
 				{/* Заголовок с мячом */}
 				<div className='text-center py-6'>
 					<div className='flex items-center justify-center gap-3 mb-2'>
-						<div className='w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-yellow-400 flex items-center justify-center'>
-							<span className='text-2xl'>⚽</span>
-						</div>
+						<img
+							src='./main_logo.png'
+							alt='main_logo'
+							className='w-16 h-16 object-contain'
+							loading='eager'
+						/>
 					</div>
 					<h1 className='text-white text-3xl font-bold'>РЕЗУЛЬТАТ</h1>
 				</div>
 
 				{/* Основной контент */}
-				<div className='bg-white rounded-t-3xl flex-1 px-4 pt-6 pb-16'>
+				<div className='bg-[var(--tg-theme-bg-color)] rounded-t-3xl flex-1 px-4 pt-6 pb-16'>
 					{/* Заголовок тир-листа и логотип */}
 					<div className='flex items-center justify-between mb-6'>
 						<div>
-							<h2 className='text-black text-lg font-bold'>ТИР-ЛИСТ ИГРОКОВ</h2>
+							<h2 className='text-lg font-bold uppercase'>
+								ТИР-ЛИСТ ИГРОКОВ КЛУБА
+							</h2>
 							<div className='flex items-center gap-2 mt-1'>
-								<img
-									src={club.img_url}
-									alt={club.name}
-									className='w-6 h-6 object-contain'
-									loading='eager'
-									onError={(e) => {
-										// Если логотип не загрузился, скрываем изображение
-										const target = e.target as HTMLImageElement;
-										target.style.display = 'none';
-									}}
-								/>
-								<span className='text-black font-semibold'>{club.name}</span>
+								{club.img_url && (
+									<img
+										src={club.img_url}
+										alt={club.name}
+										className='w-8 h-8 object-contain rounded'
+										loading='eager'
+										onError={(e) => {
+											// Если логотип не загрузился, скрываем изображение
+											const target = e.target as HTMLImageElement;
+											target.style.display = 'none';
+										}}
+									/>
+								)}
+								<span className='text-lg font-semibold'>{club.name}</span>
 							</div>
 						</div>
 						<div className='text-right'>
@@ -106,6 +149,7 @@ const Results = () => {
 					<ul className='category_list flex flex-col gap-3 mb-6'>
 						{categories.map((category) => {
 							const players = categorizedPlayers[category.name] || [];
+							console.log(`Category ${category.name}:`, players);
 							return (
 								<CategoryItem
 									key={`category-${category.name}`}

@@ -188,7 +188,7 @@ const Game = () => {
 						<h3 className='text-[clamp(1rem,5vw,3rem)] font-[500]'>
 							{player.name}
 						</h3>
-						<div className='w-[clamp(10rem,50vw,20rem)] h-[clamp(10rem,50vw,20rem)] overflow-hidden rounded-[2rem]'>
+						<div className='w-[clamp(8rem,40vw,16rem)] h-[clamp(10rem,50vw,20rem)] overflow-hidden rounded-[2rem]'>
 							<img
 								src={player.img_url}
 								alt='player'
