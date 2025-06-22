@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
+import { useUserStore } from '../store';
 import { navigateToGame } from '../utils/navigation';
+import { fetchClubs } from '../api';
 
 const players = Array.from({ length: 20 }, (_, i) => i + 1);
 
@@ -15,8 +17,10 @@ const categories = [
 const Guide = () => {
 	const [nextStep, setNextStep] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [showNoClubsMessage, setShowNoClubsMessage] = useState(false);
 	const navigate = useNavigate();
 	const { initData } = useTelegram();
+	const { isAdmin } = useUserStore();
 
 	const handleStartGame = async () => {
 		if (!initData) {
@@ -26,14 +30,52 @@ const Guide = () => {
 
 		setIsLoading(true);
 		try {
+			// Проверяем наличие команд перед переходом к игре
+			const clubs = await fetchClubs(initData);
+
+			if (clubs.length === 0) {
+				// Показываем сообщение об отсутствии команд
+				setShowNoClubsMessage(true);
+				return;
+			}
+
+			// Если команды есть, переходим к игре
 			await navigateToGame(initData, navigate);
+		} catch (error) {
+			console.error('Ошибка при загрузке команд:', error);
+			// Показываем общее сообщение об ошибке
+			setShowNoClubsMessage(true);
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
+	const handleGoToAdmin = () => {
+		navigate('/admin');
+	};
+
+	const handleCreateFirstClub = () => {
+		navigate('/admin/add-club');
+	};
+
 	return (
 		<div className='container flex flex-col justify-around h-full'>
+			{/* Кнопка админ панели (показывается только для админов) */}
+			{isAdmin && (
+				<div className='fixed top-4 right-4 z-10'>
+					<button
+						onClick={handleGoToAdmin}
+						className='px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+					>
+						👤 Админ панель
+					</button>
+				</div>
+			)}
+
 			{!nextStep && (
 				<>
 					<div className='guide_item'>
@@ -43,7 +85,11 @@ const Guide = () => {
 						<div className='player_list grid grid-cols-10 gap-1'>
 							{players.map((num) => (
 								<div
-									className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold bg-[#FFEC13] text-[#EC3381] rounded-lg'
+									className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg'
+									style={{
+										background: 'var(--tg-theme-button-color)',
+										color: 'var(--tg-theme-button-text-color)',
+									}}
 									key={`player-${num}`}
 								>
 									<p>{num}</p>
@@ -95,7 +141,11 @@ const Guide = () => {
 											(_, i) => i + 1,
 										).map((num) => (
 											<li
-												className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold bg-[#FFEC13] text-[#EC3381] rounded-lg w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vh,4rem)]'
+												className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vh,4rem)]'
+												style={{
+													background: 'var(--tg-theme-button-color)',
+													color: 'var(--tg-theme-button-text-color)',
+												}}
 												key={`slot-${num}`}
 											>
 												{num}
@@ -116,7 +166,11 @@ const Guide = () => {
 			)}
 			{!nextStep && (
 				<button
-					className='link_btn bg-[#EC3381] border-1 border-[#EC3381] text-white py-[clamp(1rem,2vh,2rem)] text-[clamp(1rem,2vh,1.5rem)]'
+					className='link_btn py-[clamp(1rem,2vh,2rem)] text-[clamp(1rem,2vh,1.5rem)] transition-opacity hover:opacity-80'
+					style={{
+						background: 'var(--tg-theme-button-color)',
+						color: 'var(--tg-theme-button-text-color)',
+					}}
 					onClick={() => setNextStep(true)}
 				>
 					Дальше
@@ -125,7 +179,12 @@ const Guide = () => {
 			{nextStep && (
 				<div className='guide_btns flex gap-3 items-center'>
 					<button
-						className='link_btn text-[#EC3381] border-2 text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)]'
+						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 transition-opacity hover:opacity-80'
+						style={{
+							color: 'var(--tg-theme-link-color)',
+							borderColor: 'var(--tg-theme-link-color)',
+							background: 'transparent',
+						}}
 						onClick={() => setNextStep(false)}
 					>
 						Назад
@@ -133,10 +192,69 @@ const Guide = () => {
 					<button
 						onClick={handleStartGame}
 						disabled={isLoading}
-						className='link_btn text-white bg-[#EC3381] text-[clamp(1rem,2vh,1.5rem)] border-2 border-[#EC3381] py-[clamp(0.5rem,2vh,1rem)] disabled:opacity-50 disabled:cursor-not-allowed'
+						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+							borderColor: 'var(--tg-theme-button-color)',
+						}}
 					>
 						{isLoading ? 'Загрузка...' : 'Начать игру'}
 					</button>
+				</div>
+			)}
+
+			{/* Модальное окно при отсутствии команд */}
+			{showNoClubsMessage && (
+				<div
+					className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'
+					onClick={() => setShowNoClubsMessage(false)}
+				>
+					<div
+						className='rounded-lg p-6 max-w-sm w-full'
+						style={{
+							background: 'var(--tg-theme-bg-color)',
+							color: 'var(--tg-theme-text-color)',
+						}}
+						onClick={(e) => e.stopPropagation()}
+					>
+						<h3 className='text-xl font-bold mb-4 text-center'>
+							Команды не найдены
+						</h3>
+						<p
+							className='text-center mb-6'
+							style={{ color: 'var(--tg-theme-hint-color)' }}
+						>
+							{isAdmin
+								? 'Для начала игры необходимо создать хотя бы одну команду с игроками.'
+								: 'В системе пока нет команд. Обратитесь к администратору для добавления команд.'}
+						</p>
+
+						<div className='flex flex-col gap-3'>
+							{isAdmin && (
+								<button
+									onClick={handleCreateFirstClub}
+									className='py-3 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80'
+									style={{
+										background: 'var(--tg-theme-button-color)',
+										color: 'var(--tg-theme-button-text-color)',
+									}}
+								>
+									Создать команду
+								</button>
+							)}
+							<button
+								onClick={() => setShowNoClubsMessage(false)}
+								className='py-3 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80'
+								style={{
+									background: 'var(--tg-theme-secondary-bg-color)',
+									color: 'var(--tg-theme-text-color)',
+								}}
+							>
+								Закрыть
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 		</div>
