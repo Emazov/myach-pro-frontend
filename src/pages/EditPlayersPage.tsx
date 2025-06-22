@@ -400,22 +400,25 @@ const EditPlayersPage = () => {
 				) : (
 					<>
 						{/* Форма редактирования игрока */}
-						<div className='flex justify-between items-center mb-8'>
-							<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-								{currentPlayer?.isExisting
-									? 'Изменить игрока'
-									: 'Добавить игрока'}
-							</h1>
-							<button
-								onClick={() => {
-									setShowPlayerForm(false);
-									setSelectedPlayerIndex(null);
-									setError(null);
-								}}
-								className='text-2xl font-bold text-gray-600'
-							>
-								×
-							</button>
+						<div className='flex items-center justify-between mb-8'>
+							<div className='flex items-center gap-4'>
+								<button
+									onClick={() => {
+										setShowPlayerForm(false);
+										setSelectedPlayerIndex(null);
+										setError(null);
+									}}
+									className='text-lg transition-opacity hover:opacity-70'
+									style={{ color: 'var(--tg-theme-link-color)' }}
+								>
+									← Назад
+								</button>
+								<h1 className='text-2xl font-bold'>
+									{currentPlayer?.isExisting
+										? 'Изменить игрока'
+										: 'Добавить игрока'}
+								</h1>
+							</div>
 						</div>
 
 						{/* Сетка игроков (уменьшенная) */}
@@ -423,9 +426,18 @@ const EditPlayersPage = () => {
 							{players.slice(0, 5).map((player, index) => (
 								<div
 									key={player.id}
-									className={`aspect-square bg-gray-200 rounded-lg flex flex-col overflow-hidden ${
-										index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
+									className={`aspect-square rounded-lg flex flex-col overflow-hidden transition-opacity ${
+										index === selectedPlayerIndex
+											? 'ring-2 opacity-100'
+											: 'opacity-60 hover:opacity-80'
 									}`}
+									style={{
+										background: 'var(--tg-theme-secondary-bg-color)',
+										borderColor:
+											index === selectedPlayerIndex
+												? 'var(--tg-theme-link-color)'
+												: 'transparent',
+									}}
 								>
 									<div className='flex-1 flex items-center justify-center overflow-hidden'>
 										{player.imagePreview ? (
@@ -435,10 +447,21 @@ const EditPlayersPage = () => {
 												className='w-full h-full object-cover'
 											/>
 										) : (
-											<span className='text-lg text-gray-500'>+</span>
+											<span
+												className='text-lg'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
+											>
+												+
+											</span>
 										)}
 									</div>
-									<div className='bg-black bg-opacity-50 text-white text-[10px] p-0.5 text-center min-h-[16px] flex items-center justify-center'>
+									<div
+										className='text-[10px] p-0.5 text-center min-h-[16px] flex items-center justify-center'
+										style={{
+											background: 'var(--tg-theme-bg-color)',
+											color: 'var(--tg-theme-text-color)',
+										}}
+									>
 										<span className='truncate w-full px-0.5'>
 											{player.name || `Игрок ${index + 1}`}
 										</span>
@@ -451,7 +474,8 @@ const EditPlayersPage = () => {
 						<div className='flex flex-col items-center mb-8'>
 							<div
 								onClick={() => fileInputRef.current?.click()}
-								className='w-32 h-32 bg-yellow-400 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden'
+								className='w-32 h-32 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden transition-opacity hover:opacity-80'
+								style={{ background: 'var(--tg-theme-button-color)' }}
 							>
 								{currentPlayer?.imagePreview ? (
 									<img
@@ -460,7 +484,10 @@ const EditPlayersPage = () => {
 										className='w-full h-full object-cover'
 									/>
 								) : (
-									<span className='text-white text-sm text-center'>
+									<span
+										className='text-sm text-center'
+										style={{ color: 'var(--tg-theme-button-text-color)' }}
+									>
 										Добавить
 										<br />
 										фото
@@ -483,14 +510,32 @@ const EditPlayersPage = () => {
 								value={currentPlayer?.name || ''}
 								onChange={(e) => handleNameChange(e.target.value)}
 								placeholder='Имя игрока'
-								className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
+								className='w-full p-4 border-b-2 bg-transparent text-lg focus:outline-none transition-colors'
+								style={{
+									borderColor: 'var(--tg-theme-hint-color)',
+									color: 'var(--tg-theme-text-color)',
+								}}
+								onFocus={(e) =>
+									(e.target.style.borderColor = 'var(--tg-theme-link-color)')
+								}
+								onBlur={(e) =>
+									(e.target.style.borderColor = 'var(--tg-theme-hint-color)')
+								}
 								disabled={isSubmitting}
 							/>
 						</div>
 
 						{/* Ошибка */}
 						{error && (
-							<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
+							<div
+								className='mb-4 p-3 border rounded'
+								style={{
+									background: 'var(--tg-theme-secondary-bg-color)',
+									color: 'var(--tg-theme-destructive-text-color, #dc2626)',
+									borderColor:
+										'var(--tg-theme-destructive-text-color, #fca5a5)',
+								}}
+							>
 								{error}
 							</div>
 						)}
@@ -504,7 +549,11 @@ const EditPlayersPage = () => {
 									!currentPlayer?.name.trim() ||
 									(!currentPlayer?.image && !currentPlayer?.avatarUrl)
 								}
-								className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
+								className='py-4 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed'
+								style={{
+									background: 'var(--tg-theme-button-color)',
+									color: 'var(--tg-theme-button-text-color)',
+								}}
 							>
 								{isSubmitting ? 'Сохранение...' : 'Сохранить'}
 							</button>
@@ -513,7 +562,12 @@ const EditPlayersPage = () => {
 								<button
 									onClick={handleDeletePlayer}
 									disabled={isSubmitting}
-									className='bg-black text-white py-4 rounded-full text-[clamp(0.9rem,2.5vw,1.2rem)] font-medium disabled:opacity-50'
+									className='py-4 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80 disabled:opacity-50'
+									style={{
+										background:
+											'var(--tg-theme-destructive-text-color, #dc2626)',
+										color: 'white',
+									}}
 								>
 									{isSubmitting ? 'Удаление...' : 'Удалить игрока'}
 								</button>
