@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTelegram } from './hooks/useTelegram';
 import { useUserStore } from './store';
 import { Routes, Route } from 'react-router-dom';
+import { ErrorBoundary } from './components';
 
 import StartPage from './pages/StartPage';
 import Guide from './pages/Guide';
@@ -35,28 +36,33 @@ function App() {
 	}, [tg, initData, authenticateUser]);
 
 	return (
-		<div className='w-full h-screen'>
-			<Routes>
-				<Route index element={<StartPage />} />
-				<Route path='/guide' element={<Guide />} />
-				<Route path='/select-team' element={<SelectTeamPage />} />
-				<Route path='/game' element={<Game />} />
-				<Route path='/results' element={<Results />} />
+		<ErrorBoundary>
+			<div className='w-full h-screen'>
+				<Routes>
+					<Route index element={<StartPage />} />
+					<Route path='/guide' element={<Guide />} />
+					<Route path='/select-team' element={<SelectTeamPage />} />
+					<Route path='/game' element={<Game />} />
+					<Route path='/results' element={<Results />} />
 
-				{/* Админские маршруты */}
-				<Route path='/admin' element={<AdminPage />} />
-				<Route path='/admin/add-club' element={<AddClubPage />} />
-				<Route path='/admin/add-players' element={<AddPlayersPage />} />
-				<Route path='/admin/add-players/:clubId' element={<AddPlayersPage />} />
-				<Route path='/admin/manage-club' element={<ManageClubPage />} />
-				<Route path='/admin/edit-club/:clubId' element={<EditClubPage />} />
-				<Route
-					path='/admin/edit-players/:clubId'
-					element={<EditPlayersPage />}
-				/>
-				<Route path='/admin/manage-admins' element={<ManageAdminsPage />} />
-			</Routes>
-		</div>
+					{/* Админские маршруты */}
+					<Route path='/admin' element={<AdminPage />} />
+					<Route path='/admin/add-club' element={<AddClubPage />} />
+					<Route path='/admin/add-players' element={<AddPlayersPage />} />
+					<Route
+						path='/admin/add-players/:clubId'
+						element={<AddPlayersPage />}
+					/>
+					<Route path='/admin/manage-club' element={<ManageClubPage />} />
+					<Route path='/admin/edit-club/:clubId' element={<EditClubPage />} />
+					<Route
+						path='/admin/edit-players/:clubId'
+						element={<EditPlayersPage />}
+					/>
+					<Route path='/admin/manage-admins' element={<ManageAdminsPage />} />
+				</Routes>
+			</div>
+		</ErrorBoundary>
 	);
 }
 

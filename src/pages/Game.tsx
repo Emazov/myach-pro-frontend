@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameStore, useModalStore } from '../store';
-import { Modal, CategoryItem } from '../components';
+import { Modal, CategoryItem, LoadingSpinner } from '../components';
 import { useTelegram } from '../hooks/useTelegram';
 
 const Game = () => {
@@ -127,11 +127,7 @@ const Game = () => {
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading || loadingClub) {
-		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold'>Загрузка...</div>
-			</div>
-		);
+		return <LoadingSpinner fullScreen message='Загрузка игры...' />;
 	}
 
 	// Показываем ошибку, если что-то пошло не так

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
 import { fetchClubs } from '../api';
+import { LoadingSpinner } from '../components';
 import type { Club } from '../types';
 
 const SelectTeamPage = () => {
@@ -44,17 +45,7 @@ const SelectTeamPage = () => {
 	};
 
 	if (isLoading) {
-		return (
-			<div
-				className='min-h-screen flex items-center justify-center p-4'
-				style={{
-					background: 'var(--tg-theme-bg-color)',
-					color: 'var(--tg-theme-text-color)',
-				}}
-			>
-				<div className='text-2xl font-bold'>Загрузка команд...</div>
-			</div>
-		);
+		return <LoadingSpinner fullScreen message='Загрузка команд...' />;
 	}
 
 	if (error || clubs.length === 0) {

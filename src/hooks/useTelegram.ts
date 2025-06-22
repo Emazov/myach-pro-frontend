@@ -5,8 +5,11 @@ const tg = (window as any).Telegram?.WebApp;
 // Проверяем, запущено ли приложение в Telegram WebApp
 const isTelegramWebApp = Boolean(tg);
 
-// Fallback данные для разработки
-const developmentFallback = {
+// Проверяем, находимся ли мы в режиме разработки
+const isDevelopment = import.meta.env.DEV;
+
+// Fallback данные ТОЛЬКО для разработки
+const developmentFallback = isDevelopment ? {
 	user: {
 		id: 123456789,
 		first_name: 'Test',
@@ -16,7 +19,7 @@ const developmentFallback = {
 	initData:
 		'query_id=AAHdF6IQAAAAAN0XohDhrOrc&user=%7B%22id%22%3A279058397%2C%22first_name%22%3A%22Владимир%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22vdmrv%22%2C%22language_code%22%3A%22ru%22%7D&auth_date=1703179173&hash=example_hash',
 	queryId: 'AAHdF6IQAAAAAN0XohDhrOrc',
-};
+} : null;
 
 export function useTelegram() {
 	useEffect(() => {
@@ -28,7 +31,7 @@ export function useTelegram() {
 	const onClose = () => {
 		if (tg) {
 			tg.close();
-		} else {
+		} else if (isDevelopment) {
 			console.log('Telegram WebApp не доступен - режим разработки');
 		}
 	};
@@ -43,17 +46,37 @@ export function useTelegram() {
 		}
 	};
 
+	// В production возвращаем только реальные данные Telegram
+	// В development можем использовать fallback
+	const getUser = () => {
+		if (isTelegramWebApp) {
+			return tg?.initDataUnsafe?.user;
+		}
+		return isDevelopment ? developmentFallback?.user : undefined;
+	};
+
+	const getInitData = () => {
+		if (isTelegramWebApp) {
+			return tg?.initData;
+		}
+		return isDevelopment ? developmentFallback?.initData : undefined;
+	};
+
+	const getQueryId = () => {
+		if (isTelegramWebApp) {
+			return tg?.initDataUnsafe?.query_id;
+		}
+		return isDevelopment ? developmentFallback?.queryId : undefined;
+	};
+
 	return {
 		onClose,
 		onToggleButton,
 		tg: tg || null,
-		user: isTelegramWebApp
-			? tg?.initDataUnsafe?.user
-			: developmentFallback.user,
-		initData: isTelegramWebApp ? tg?.initData : developmentFallback.initData,
-		queryId: isTelegramWebApp
-			? tg?.initDataUnsafe?.query_id
-			: developmentFallback.queryId,
+		user: getUser(),
+		initData: getInitData(),
+		queryId: getQueryId(),
 		isTelegramWebApp,
+		isDevelopment,
 	};
 }

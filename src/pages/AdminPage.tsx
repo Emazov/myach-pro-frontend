@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '../store';
+import { LoadingSpinner } from '../components';
 import { useEffect, useState } from 'react';
 
 const AdminPage = () => {
@@ -25,11 +26,7 @@ const AdminPage = () => {
 	}, [location.state]);
 
 	if (isLoading) {
-		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold'>Загрузка...</div>
-			</div>
-		);
+		return <LoadingSpinner fullScreen message='Проверка прав доступа...' />;
 	}
 
 	if (!isAdmin) {
