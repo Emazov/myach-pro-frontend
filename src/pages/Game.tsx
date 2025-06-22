@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameStore, useModalStore } from '../store';
 import { Modal, CategoryItem, LoadingSpinner } from '../components';
 import { useTelegram } from '../hooks/useTelegram';
+import { startGameSession } from '../api/analyticsService';
 
 const Game = () => {
 	const navigate = useNavigate();
@@ -66,6 +67,11 @@ const Game = () => {
 
 				// Загружаем данные игры для выбранной команды
 				await initializeGame(initData, selectedClub.id);
+
+				// Логируем начало игровой сессии
+				startGameSession(initData, selectedClub.id).catch((error) => {
+					console.error('Ошибка при логировании начала игры:', error);
+				});
 			} catch (err) {
 				console.error('Ошибка при загрузке данных:', err);
 				showMessageModal(

@@ -19,6 +19,7 @@ const ManageClubPage = lazy(() => import('./pages/ManageClubPage'));
 const EditClubPage = lazy(() => import('./pages/EditClubPage'));
 const EditPlayersPage = lazy(() => import('./pages/EditPlayersPage'));
 const ManageAdminsPage = lazy(() => import('./pages/ManageAdminsPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 
 function App() {
 	const { tg, initData, isDevelopment } = useTelegram();
@@ -84,6 +85,7 @@ function App() {
 							element={<EditPlayersPage />}
 						/>
 						<Route path='/admin/manage-admins' element={<ManageAdminsPage />} />
+						<Route path='/admin/analytics' element={<AnalyticsPage />} />
 					</Routes>
 				</Suspense>
 			</div>

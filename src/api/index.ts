@@ -16,3 +16,12 @@ export {
 	searchUsers,
 	addAdminByUsername,
 } from './apiService';
+
+export {
+	logEvent,
+	startGameSession,
+	completeGameSession,
+	getStats,
+	getDetailedStats,
+	EventType,
+} from './analyticsService';

@@ -4,6 +4,7 @@ import { CategoryItem, LoadingSpinner } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
+import { completeGameSession } from '../api/analyticsService';
 
 const Results = () => {
 	const { initData } = useTelegram();
@@ -53,6 +54,13 @@ const Results = () => {
 				} else {
 					setError('Не удалось загрузить информацию о клубе');
 				}
+
+				// Логируем завершение игры при заходе на страницу результатов
+				if (hasGameData) {
+					completeGameSession(initData).catch((error) => {
+						console.error('Ошибка при логировании завершения игры:', error);
+					});
+				}
 			} catch (err) {
 				console.error('Ошибка при загрузке данных о клубе:', err);
 				setError('Ошибка при загрузке данных о клубе');
@@ -62,7 +70,7 @@ const Results = () => {
 		};
 
 		loadClub();
-	}, [initData]);
+	}, [initData, hasGameData]);
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
