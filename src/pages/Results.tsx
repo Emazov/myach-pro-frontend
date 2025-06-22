@@ -7,7 +7,7 @@ import { getProxyImageUrl } from '../utils/imageUtils';
 
 const Results = () => {
 	const { initData } = useTelegram();
-	const { categorizedPlayers, categories, playerQueue } = useGameStore();
+	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
