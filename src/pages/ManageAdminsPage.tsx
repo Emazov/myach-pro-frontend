@@ -34,6 +34,10 @@ const ManageAdminsPage: React.FC = () => {
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [operationLoading, setOperationLoading] = useState(false);
 	const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
+	const [notification, setNotification] = useState<{
+		message: string;
+		type: 'success' | 'error';
+	} | null>(null);
 
 	useEffect(() => {
 		loadAdmins();
@@ -117,18 +121,30 @@ const ManageAdminsPage: React.FC = () => {
 			const result = await addAdminByUsername(initData, selectedUser.username);
 
 			if (result.success) {
-				alert('Админ успешно добавлен!');
+				setNotification({
+					message: 'Админ успешно добавлен!',
+					type: 'success',
+				});
+				setTimeout(() => setNotification(null), 3000);
 				setIsAddModalOpen(false);
 				setSearchQuery('');
 				setSearchResults([]);
 				setSelectedUser(null);
 				await loadAdmins();
 			} else {
-				alert(`Ошибка: ${result.message}`);
+				setNotification({
+					message: `Ошибка: ${result.message}`,
+					type: 'error',
+				});
+				setTimeout(() => setNotification(null), 3000);
 			}
 		} catch (error) {
 			console.error('Ошибка при добавлении админа:', error);
-			alert('Ошибка при добавлении админа');
+			setNotification({
+				message: 'Ошибка при добавлении админа',
+				type: 'error',
+			});
+			setTimeout(() => setNotification(null), 3000);
 		} finally {
 			setOperationLoading(false);
 		}
@@ -146,14 +162,20 @@ const ManageAdminsPage: React.FC = () => {
 			const result = await removeAdmin(initData, admin.telegramId);
 
 			if (result.success) {
-				alert('Админ успешно удален!');
+				setNotification({ message: 'Админ успешно удален!', type: 'success' });
+				setTimeout(() => setNotification(null), 3000);
 				await loadAdmins();
 			} else {
-				alert(`Ошибка: ${result.message}`);
+				setNotification({
+					message: `Ошибка: ${result.message}`,
+					type: 'error',
+				});
+				setTimeout(() => setNotification(null), 3000);
 			}
 		} catch (error) {
 			console.error('Ошибка при удалении админа:', error);
-			alert('Ошибка при удалении админа');
+			setNotification({ message: 'Ошибка при удалении админа', type: 'error' });
+			setTimeout(() => setNotification(null), 3000);
 		} finally {
 			setOperationLoading(false);
 		}
@@ -200,6 +222,29 @@ const ManageAdminsPage: React.FC = () => {
 						Добавить админа
 					</button>
 				</div>
+
+				{/* Уведомления */}
+				{notification && (
+					<div
+						className='mb-6 p-4 rounded-lg border'
+						style={{
+							background:
+								notification.type === 'success'
+									? 'var(--tg-theme-button-color)'
+									: 'var(--tg-theme-secondary-bg-color)',
+							color:
+								notification.type === 'success'
+									? 'var(--tg-theme-button-text-color)'
+									: 'var(--tg-theme-destructive-text-color, #dc2626)',
+							borderColor:
+								notification.type === 'success'
+									? 'var(--tg-theme-button-color)'
+									: 'var(--tg-theme-destructive-text-color, #fca5a5)',
+						}}
+					>
+						{notification.message}
+					</div>
+				)}
 
 				{/* Информационная панель */}
 				<div

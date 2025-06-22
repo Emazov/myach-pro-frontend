@@ -180,11 +180,11 @@ const AddClubPage = () => {
 				{/* Ошибка */}
 				{error && (
 					<div
-						className='mb-6 p-4 rounded-lg'
+						className='mb-6 p-4 rounded-lg border'
 						style={{
-							background: '#fee2e2',
-							color: '#dc2626',
-							border: '1px solid #fca5a5',
+							background: 'var(--tg-theme-secondary-bg-color)',
+							color: 'var(--tg-theme-destructive-text-color, #dc2626)',
+							borderColor: 'var(--tg-theme-destructive-text-color, #fca5a5)',
 						}}
 					>
 						{error}
@@ -197,8 +197,8 @@ const AddClubPage = () => {
 					disabled={isSubmitting || !clubName.trim() || !selectedImage}
 					className='w-full py-4 rounded-lg text-lg font-medium transition-opacity hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed'
 					style={{
-						background: '#EC3381',
-						color: 'white',
+						background: 'var(--tg-theme-button-color)',
+						color: 'var(--tg-theme-button-text-color)',
 					}}
 				>
 					{isSubmitting ? 'Сохранение...' : 'Дальше'}

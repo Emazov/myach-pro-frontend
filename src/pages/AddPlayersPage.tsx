@@ -149,169 +149,202 @@ const AddPlayersPage = () => {
 		selectedPlayerIndex !== null ? players[selectedPlayerIndex] : null;
 
 	return (
-		<div className='container flex flex-col justify-between h-full py-8'>
-			{!showPlayerForm ? (
-				<>
-					{/* Заголовок с крестиком */}
-					<div className='flex justify-between items-center mb-8'>
-						<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-							Добавьте игроков
-							{state?.clubName && (
-								<span className='block text-[clamp(1rem,3vw,1.2rem)] text-gray-600 mt-1'>
-									в команду "{state.clubName}"
-								</span>
-							)}
-						</h1>
-						<button
-							onClick={() => navigate('/admin')}
-							className='text-2xl font-bold text-gray-600'
-						>
-							×
-						</button>
-					</div>
+		<div
+			className='min-h-screen p-4'
+			style={{
+				background: 'var(--tg-theme-bg-color)',
+				color: 'var(--tg-theme-text-color)',
+			}}
+		>
+			<div className='max-w-4xl mx-auto'>
+				{!showPlayerForm ? (
+					<>
+						{/* Заголовок с кнопкой назад */}
+						<div className='flex items-center justify-between mb-8'>
+							<div className='flex items-center gap-4'>
+								<button
+									onClick={() => navigate('/admin')}
+									className='text-lg transition-opacity hover:opacity-70'
+									style={{ color: 'var(--tg-theme-link-color)' }}
+								>
+									← Назад
+								</button>
+								<div>
+									<h1 className='text-2xl font-bold'>Добавьте игроков</h1>
+									{state?.clubName && (
+										<span
+											className='block text-lg mt-1'
+											style={{ color: 'var(--tg-theme-hint-color)' }}
+										>
+											в команду "{state.clubName}"
+										</span>
+									)}
+								</div>
+							</div>
+						</div>
 
-					{/* Сетка игроков */}
-					<div className='grid grid-cols-5 gap-4 mb-8 flex-1'>
-						{players.map((player, index) => (
-							<div
-								key={player.id}
-								onClick={() => handleSlotClick(index)}
-								className='aspect-square bg-gray-200 rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden'
+						{/* Сетка игроков */}
+						<div className='grid grid-cols-4 sm:grid-cols-5 gap-2 sm:gap-4 mb-8 flex-1'>
+							{players.map((player, index) => (
+								<div
+									key={player.id}
+									onClick={() => handleSlotClick(index)}
+									className='aspect-square rounded-lg flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-opacity hover:opacity-80'
+									style={{ background: 'var(--tg-theme-secondary-bg-color)' }}
+								>
+									{player.imagePreview ? (
+										<div className='w-full h-full flex flex-col'>
+											<img
+												src={player.imagePreview}
+												alt={player.name}
+												className='flex-1 w-full object-cover'
+											/>
+											<div
+												className='text-xs p-1 text-center'
+												style={{
+													background: 'var(--tg-theme-bg-color)',
+													color: 'var(--tg-theme-text-color)',
+												}}
+											>
+												{player.name}
+											</div>
+										</div>
+									) : (
+										<>
+											<span
+												className='text-2xl mb-1'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
+											>
+												+
+											</span>
+											<span
+												className='text-xs text-center'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
+											>
+												Имя
+											</span>
+										</>
+									)}
+								</div>
+							))}
+						</div>
+
+						{/* Кнопка сохранения */}
+						<button
+							onClick={handleFinish}
+							className='py-4 rounded-lg text-lg font-medium w-full transition-opacity hover:opacity-80'
+							style={{
+								background: 'var(--tg-theme-button-color)',
+								color: 'var(--tg-theme-button-text-color)',
+							}}
+						>
+							Сохранить
+						</button>
+					</>
+				) : (
+					<>
+						{/* Форма добавления игрока */}
+						<div className='flex justify-between items-center mb-8'>
+							<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
+								Добавить игрока
+							</h1>
+							<button
+								onClick={() => {
+									setShowPlayerForm(false);
+									setSelectedPlayerIndex(null);
+									setError(null);
+								}}
+								className='text-2xl font-bold text-gray-600'
 							>
-								{player.imagePreview ? (
-									<div className='w-full h-full flex flex-col'>
+								×
+							</button>
+						</div>
+
+						{/* Сетка игроков (уменьшенная) */}
+						<div className='grid grid-cols-5 gap-2 mb-8'>
+							{players.slice(0, 5).map((player, index) => (
+								<div
+									key={player.id}
+									className={`aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ${
+										index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
+									}`}
+								>
+									{player.imagePreview ? (
 										<img
 											src={player.imagePreview}
 											alt={player.name}
-											className='flex-1 w-full object-cover'
+											className='w-full h-full object-cover'
 										/>
-										<div className='bg-black bg-opacity-50 text-white text-xs p-1 text-center'>
-											{player.name}
-										</div>
-									</div>
-								) : (
-									<>
-										<span className='text-2xl text-gray-500 mb-1'>+</span>
-										<span className='text-xs text-gray-500 text-center'>
-											Имя
-										</span>
-									</>
-								)}
-							</div>
-						))}
-					</div>
+									) : (
+										<span className='text-lg text-gray-500'>+</span>
+									)}
+								</div>
+							))}
+						</div>
 
-					{/* Кнопка сохранения */}
-					<button
-						onClick={handleFinish}
-						className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium'
-					>
-						Сохранить
-					</button>
-				</>
-			) : (
-				<>
-					{/* Форма добавления игрока */}
-					<div className='flex justify-between items-center mb-8'>
-						<h1 className='text-[clamp(1.5rem,5vw,2rem)] font-bold'>
-							Добавить игрока
-						</h1>
-						<button
-							onClick={() => {
-								setShowPlayerForm(false);
-								setSelectedPlayerIndex(null);
-								setError(null);
-							}}
-							className='text-2xl font-bold text-gray-600'
-						>
-							×
-						</button>
-					</div>
-
-					{/* Сетка игроков (уменьшенная) */}
-					<div className='grid grid-cols-5 gap-2 mb-8'>
-						{players.slice(0, 5).map((player, index) => (
+						{/* Фото игрока */}
+						<div className='flex flex-col items-center mb-8'>
 							<div
-								key={player.id}
-								className={`aspect-square bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden ${
-									index === selectedPlayerIndex ? 'ring-2 ring-[#EC3381]' : ''
-								}`}
+								onClick={() => fileInputRef.current?.click()}
+								className='w-32 h-32 bg-yellow-400 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden'
 							>
-								{player.imagePreview ? (
+								{currentPlayer?.imagePreview ? (
 									<img
-										src={player.imagePreview}
-										alt={player.name}
+										src={currentPlayer.imagePreview}
+										alt='Превью игрока'
 										className='w-full h-full object-cover'
 									/>
 								) : (
-									<span className='text-lg text-gray-500'>+</span>
+									<span className='text-white text-sm text-center'>
+										Добавить
+										<br />
+										фото
+									</span>
 								)}
 							</div>
-						))}
-					</div>
+							<input
+								ref={fileInputRef}
+								type='file'
+								accept='image/*'
+								onChange={handleImageSelect}
+								className='hidden'
+							/>
+						</div>
 
-					{/* Фото игрока */}
-					<div className='flex flex-col items-center mb-8'>
-						<div
-							onClick={() => fileInputRef.current?.click()}
-							className='w-32 h-32 bg-yellow-400 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden'
+						{/* Поле ввода имени */}
+						<div className='mb-8'>
+							<input
+								type='text'
+								value={currentPlayer?.name || ''}
+								onChange={(e) => handleNameChange(e.target.value)}
+								placeholder='Имя игрока'
+								className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
+								disabled={isSubmitting}
+							/>
+						</div>
+
+						{/* Ошибка */}
+						{error && (
+							<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
+								{error}
+							</div>
+						)}
+
+						{/* Кнопка сохранения */}
+						<button
+							onClick={handleSavePlayer}
+							disabled={
+								isSubmitting ||
+								!currentPlayer?.name.trim() ||
+								!currentPlayer?.image
+							}
+							className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
 						>
-							{currentPlayer?.imagePreview ? (
-								<img
-									src={currentPlayer.imagePreview}
-									alt='Превью игрока'
-									className='w-full h-full object-cover'
-								/>
-							) : (
-								<span className='text-white text-sm text-center'>
-									Добавить
-									<br />
-									фото
-								</span>
-							)}
-						</div>
-						<input
-							ref={fileInputRef}
-							type='file'
-							accept='image/*'
-							onChange={handleImageSelect}
-							className='hidden'
-						/>
-					</div>
-
-					{/* Поле ввода имени */}
-					<div className='mb-8'>
-						<input
-							type='text'
-							value={currentPlayer?.name || ''}
-							onChange={(e) => handleNameChange(e.target.value)}
-							placeholder='Имя игрока'
-							className='w-full p-4 border-b-2 border-gray-300 bg-transparent text-[clamp(1rem,3vw,1.2rem)] focus:outline-none focus:border-[#EC3381]'
-							disabled={isSubmitting}
-						/>
-					</div>
-
-					{/* Ошибка */}
-					{error && (
-						<div className='mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded'>
-							{error}
-						</div>
-					)}
-
-					{/* Кнопка сохранения */}
-					<button
-						onClick={handleSavePlayer}
-						disabled={
-							isSubmitting ||
-							!currentPlayer?.name.trim() ||
-							!currentPlayer?.image
-						}
-						className='bg-[#EC3381] text-white py-4 rounded-full text-[clamp(1rem,3vw,1.5rem)] font-medium disabled:opacity-50 disabled:cursor-not-allowed'
-					>
-						{isSubmitting ? 'Сохранение...' : 'Сохранить'}
-					</button>
-				</>
-			)}
+							{isSubmitting ? 'Сохранение...' : 'Сохранить'}
+						</button>
+					</>
+				)}
+			</div>
 		</div>
 	);
 };

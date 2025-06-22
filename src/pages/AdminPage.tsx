@@ -98,22 +98,11 @@ const AdminPage = () => {
 					</Link>
 
 					<Link
-						to='/admin/analytics'
+						to='/guide'
 						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
 						style={{
 							background: 'var(--tg-theme-button-color)',
 							color: 'var(--tg-theme-button-text-color)',
-						}}
-					>
-						<span className='text-lg'>📊 Аналитика</span>
-					</Link>
-
-					<Link
-						to='/guide'
-						className='flex items-center justify-center p-4 rounded-lg font-medium text-center transition-opacity hover:opacity-80'
-						style={{
-							background: '#EC3381',
-							color: 'white',
 						}}
 					>
 						<span className='text-lg'>🎮 Играть</span>
