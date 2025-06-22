@@ -1,5 +1,5 @@
 import type { Category, Player } from '../types';
-import { createPlayerSkeleton } from '../utils/imageUtils';
+import { createPlayerSkeleton, getProxyImageUrl } from '../utils/imageUtils';
 
 interface CategoryItemProps {
 	category: Category;
@@ -16,18 +16,7 @@ const CategoryItem = ({
 	showPlayerImages = false,
 	showSkeletons = false,
 }: CategoryItemProps) => {
-	// Отладочная информация
-	if (showPlayerImages) {
-		console.log(`CategoryItem ${category.name} - players:`, players);
-		players.forEach((player, index) => {
-			console.log(`Player ${index}:`, {
-				id: player.id,
-				name: player.name,
-				img_url: player.img_url,
-				hasImage: !!player.img_url,
-			});
-		});
-	}
+	// Отладочная информация была здесь
 
 	if (showPlayerImages) {
 		return (
@@ -46,17 +35,12 @@ const CategoryItem = ({
 							key={`slot-${player.id}`}
 						>
 							<img
-								src={player.img_url || createPlayerSkeleton()}
+								src={getProxyImageUrl(player.img_url)}
 								alt={player.name}
 								className='w-full h-full object-cover rounded-md'
-								crossOrigin='anonymous'
 								loading='eager'
 								onError={(e) => {
 									// Если изображение не загрузилось, показываем скелетон
-									console.log(
-										`Failed to load image for player ${player.name}:`,
-										player.img_url,
-									);
 									const target = e.target as HTMLImageElement;
 									target.onerror = null; // Предотвращаем бесконечную рекурсию
 									target.src = createPlayerSkeleton();

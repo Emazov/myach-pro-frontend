@@ -3,6 +3,7 @@ import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
+import { getProxyImageUrl } from '../utils/imageUtils';
 
 const Results = () => {
 	const { initData } = useTelegram();
@@ -11,21 +12,11 @@ const Results = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	// Временная очистка localStorage для тестирования
-	// localStorage.removeItem('game-storage');
-
-	// Добавляем отладочную информацию
-	console.log('Results - categorizedPlayers:', categorizedPlayers);
-	console.log('Results - categories:', categories);
-	console.log('Results - playerQueue:', playerQueue);
-
 	// Проверяем, есть ли данные игры
 	const hasGameData =
 		categories.length > 0 &&
 		Object.keys(categorizedPlayers).length > 0 &&
 		Object.values(categorizedPlayers).some((players) => players.length > 0);
-
-	console.log('Results - hasGameData:', hasGameData);
 
 	useEffect(() => {
 		const loadClub = async () => {
@@ -124,19 +115,17 @@ const Results = () => {
 								ТИР-ЛИСТ ИГРОКОВ КЛУБА
 							</h2>
 							<div className='flex items-center gap-2 mt-1'>
-								{club.img_url && (
-									<img
-										src={club.img_url}
-										alt={club.name}
-										className='w-8 h-8 object-contain rounded'
-										loading='eager'
-										onError={(e) => {
-											// Если логотип не загрузился, скрываем изображение
-											const target = e.target as HTMLImageElement;
-											target.style.display = 'none';
-										}}
-									/>
-								)}
+								<img
+									src={getProxyImageUrl(club.img_url)}
+									alt={club.name}
+									className='w-8 h-8 object-contain rounded'
+									loading='eager'
+									onError={(e) => {
+										// Если логотип не загрузился, скрываем изображение
+										const target = e.target as HTMLImageElement;
+										target.style.display = 'none';
+									}}
+								/>
 								<span className='text-lg font-semibold'>{club.name}</span>
 							</div>
 						</div>

@@ -78,3 +78,37 @@ export function createPlayerSkeleton(
 		height * 0.2
 	}' fill='%23d1d5db'/%3E%3C/svg%3E`;
 }
+
+/**
+ * Преобразует URL изображения для решения проблем с CORS
+ * Если URL указывает на Cloudflare R2, возвращает скелетон вместо него
+ */
+export function getProxyImageUrl(
+	originalUrl: string | null | undefined,
+): string {
+	if (!originalUrl) {
+		return createPlayerSkeleton();
+	}
+
+	// Если URL уже является data URL или относительным путем, возвращаем как есть
+	if (
+		originalUrl.startsWith('data:') ||
+		originalUrl.startsWith('./') ||
+		originalUrl.startsWith('/')
+	) {
+		return originalUrl;
+	}
+
+	try {
+		// Проверяем, содержит ли URL домен cloudflare storage
+		if (originalUrl.includes('r2.cloudflarestorage.com')) {
+			// Возвращаем скелетон вместо внешнего URL с CORS проблемами
+			return createPlayerSkeleton();
+		}
+
+		return originalUrl;
+	} catch (error) {
+		console.error('Error processing image URL:', error);
+		return createPlayerSkeleton();
+	}
+}
