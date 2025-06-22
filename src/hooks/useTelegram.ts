@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const tg = (window as any).Telegram?.WebApp;
 
@@ -8,8 +8,8 @@ const isTelegramWebApp = Boolean(tg);
 // Проверяем, находимся ли мы в режиме разработки
 const isDevelopment = import.meta.env.DEV;
 
-// Fallback данные ТОЛЬКО для разработки
-const developmentFallback = isDevelopment ? {
+// Конфигурация для development режима
+const DEVELOPMENT_CONFIG = {
 	user: {
 		id: 123456789,
 		first_name: 'Test',
@@ -19,13 +19,19 @@ const developmentFallback = isDevelopment ? {
 	initData:
 		'query_id=AAHdF6IQAAAAAN0XohDhrOrc&user=%7B%22id%22%3A279058397%2C%22first_name%22%3A%22Владимир%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22vdmrv%22%2C%22language_code%22%3A%22ru%22%7D&auth_date=1703179173&hash=example_hash',
 	queryId: 'AAHdF6IQAAAAAN0XohDhrOrc',
-} : null;
+} as const;
 
 export function useTelegram() {
+	// Мемоизируем fallback данные
+	const developmentFallback = useMemo(
+		() => (isDevelopment ? DEVELOPMENT_CONFIG : null),
+		[],
+	);
+
+	// Убираем ready() отсюда - будет вызываться только в App.tsx
 	useEffect(() => {
-		if (tg) {
-			tg.ready();
-		}
+		// Здесь можно добавить другую инициализацию если нужно
+		// например, подписки на события Telegram
 	}, []);
 
 	const onClose = () => {
@@ -46,37 +52,77 @@ export function useTelegram() {
 		}
 	};
 
-	// В production возвращаем только реальные данные Telegram
-	// В development можем использовать fallback
-	const getUser = () => {
+	// Мемоизируем функции получения данных
+	const getUser = useMemo(() => {
 		if (isTelegramWebApp) {
 			return tg?.initDataUnsafe?.user;
 		}
-		return isDevelopment ? developmentFallback?.user : undefined;
-	};
+		return developmentFallback?.user;
+	}, [developmentFallback]);
 
-	const getInitData = () => {
+	const getInitData = useMemo(() => {
 		if (isTelegramWebApp) {
 			return tg?.initData;
 		}
-		return isDevelopment ? developmentFallback?.initData : undefined;
-	};
+		return developmentFallback?.initData;
+	}, [developmentFallback]);
 
-	const getQueryId = () => {
+	const getQueryId = useMemo(() => {
 		if (isTelegramWebApp) {
 			return tg?.initDataUnsafe?.query_id;
 		}
-		return isDevelopment ? developmentFallback?.queryId : undefined;
+		return developmentFallback?.queryId;
+	}, [developmentFallback]);
+
+	// Дополнительные утилиты для работы с Telegram
+	const setMainButtonText = (text: string) => {
+		if (tg?.MainButton) {
+			tg.MainButton.setText(text);
+		}
+	};
+
+	const enableMainButton = () => {
+		if (tg?.MainButton) {
+			tg.MainButton.enable();
+		}
+	};
+
+	const disableMainButton = () => {
+		if (tg?.MainButton) {
+			tg.MainButton.disable();
+		}
+	};
+
+	const showMainButton = () => {
+		if (tg?.MainButton) {
+			tg.MainButton.show();
+		}
+	};
+
+	const hideMainButton = () => {
+		if (tg?.MainButton) {
+			tg.MainButton.hide();
+		}
 	};
 
 	return {
-		onClose,
-		onToggleButton,
+		// Основные данные
 		tg: tg || null,
-		user: getUser(),
-		initData: getInitData(),
-		queryId: getQueryId(),
+		user: getUser,
+		initData: getInitData,
+		queryId: getQueryId,
+
+		// Флаги состояния
 		isTelegramWebApp,
 		isDevelopment,
+
+		// Методы управления
+		onClose,
+		onToggleButton,
+		setMainButtonText,
+		enableMainButton,
+		disableMainButton,
+		showMainButton,
+		hideMainButton,
 	};
 }
