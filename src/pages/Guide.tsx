@@ -60,22 +60,6 @@ const Guide = () => {
 
 	return (
 		<div className='container flex flex-col justify-around h-full'>
-			{/* Кнопка админ панели (показывается только для админов) */}
-			{isAdmin && (
-				<div className='fixed top-4 right-4 z-10'>
-					<button
-						onClick={handleGoToAdmin}
-						className='px-4 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-80'
-						style={{
-							background: 'var(--tg-theme-button-color)',
-							color: 'var(--tg-theme-button-text-color)',
-						}}
-					>
-						👤 Админ панель
-					</button>
-				</div>
-			)}
-
 			{!nextStep && (
 				<>
 					<div className='guide_item'>
@@ -87,8 +71,8 @@ const Guide = () => {
 								<div
 									className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg'
 									style={{
-										background: 'var(--tg-theme-button-color)',
-										color: 'var(--tg-theme-button-text-color)',
+										background: '#FFEC13',
+										color: '#EC3381',
 									}}
 									key={`player-${num}`}
 								>
@@ -143,8 +127,8 @@ const Guide = () => {
 											<li
 												className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vh,4rem)]'
 												style={{
-													background: 'var(--tg-theme-button-color)',
-													color: 'var(--tg-theme-button-text-color)',
+													background: '#FFEC13',
+													color: '#EC3381',
 												}}
 												key={`slot-${num}`}
 											>
@@ -165,24 +149,40 @@ const Guide = () => {
 				</>
 			)}
 			{!nextStep && (
-				<button
-					className='link_btn py-[clamp(1rem,2vh,2rem)] text-[clamp(1rem,2vh,1.5rem)] transition-opacity hover:opacity-80'
-					style={{
-						background: 'var(--tg-theme-button-color)',
-						color: 'var(--tg-theme-button-text-color)',
-					}}
-					onClick={() => setNextStep(true)}
-				>
-					Дальше
-				</button>
+				<div className='guide_btns flex gap-3 items-center'>
+					{isAdmin && (
+						<button
+							onClick={handleGoToAdmin}
+							className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
+							style={{
+								background: '#EC3381',
+								color: '#fff',
+								borderColor: '#EC3381',
+							}}
+						>
+							👤 Админ
+						</button>
+					)}
+					<button
+						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
+						style={{
+							background: '#EC3381',
+							color: '#fff',
+							borderColor: '#EC3381',
+						}}
+						onClick={() => setNextStep(true)}
+					>
+						Дальше
+					</button>
+				</div>
 			)}
 			{nextStep && (
 				<div className='guide_btns flex gap-3 items-center'>
 					<button
 						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 transition-opacity hover:opacity-80'
 						style={{
-							color: 'var(--tg-theme-link-color)',
-							borderColor: 'var(--tg-theme-link-color)',
+							color: '#EC3381',
+							borderColor: '#EC3381',
 							background: 'transparent',
 						}}
 						onClick={() => setNextStep(false)}
@@ -194,9 +194,9 @@ const Guide = () => {
 						disabled={isLoading}
 						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
 						style={{
-							background: 'var(--tg-theme-button-color)',
-							color: 'var(--tg-theme-button-text-color)',
-							borderColor: 'var(--tg-theme-button-color)',
+							background: '#EC3381',
+							color: '#fff',
+							borderColor: '#EC3381',
 						}}
 					>
 						{isLoading ? 'Загрузка...' : 'Начать игру'}
