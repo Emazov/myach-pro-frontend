@@ -1,6 +1,10 @@
 import React from 'react';
 import type { Category, Player } from '../types';
-import { createPlayerSkeleton, getProxyImageUrl } from '../utils/imageUtils';
+import {
+	createPlayerSkeleton,
+	getProxyImageUrl,
+	createPlayerPlaceholder,
+} from '../utils/imageUtils';
 
 interface CategoryItemProps {
 	category: Category;
@@ -40,10 +44,16 @@ const CategoryItem = React.memo<CategoryItemProps>(
 									className='w-full h-full object-cover rounded-md'
 									loading='eager'
 									onError={(e) => {
-										// Если изображение не загрузилось, показываем скелетон
+										// Если изображение не загрузилось, показываем плейсхолдер с именем игрока
 										const target = e.target as HTMLImageElement;
 										target.onerror = null; // Предотвращаем бесконечную рекурсию
-										target.src = createPlayerSkeleton();
+										target.src = createPlayerPlaceholder(player.name);
+										console.log(
+											`🖼️ Image failed for player "${player.name}", showing placeholder`,
+										);
+									}}
+									onLoad={() => {
+										console.log(`✅ Image loaded for player "${player.name}"`);
 									}}
 								/>
 							</li>

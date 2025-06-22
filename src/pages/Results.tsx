@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGameStore } from '../store';
-import { CategoryItem } from '../components';
+import { CategoryItem, LoadingSpinner } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
@@ -17,6 +17,26 @@ const Results = () => {
 		categories.length > 0 &&
 		Object.keys(categorizedPlayers).length > 0 &&
 		Object.values(categorizedPlayers).some((players) => players.length > 0);
+
+	// Отладка данных игроков
+	useEffect(() => {
+		console.group('🔍 Results Page Debug');
+		console.log('categories:', categories);
+		console.log('categorizedPlayers:', categorizedPlayers);
+		console.log('hasGameData:', hasGameData);
+
+		// Проверяем URL изображений игроков
+		Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+			console.log(`Category "${categoryName}" players:`, players);
+			players.forEach((player) => {
+				console.log(`Player "${player.name}":`, {
+					originalUrl: player.img_url,
+					processedUrl: getProxyImageUrl(player.img_url),
+				});
+			});
+		});
+		console.groupEnd();
+	}, [categories, categorizedPlayers, hasGameData]);
 
 	useEffect(() => {
 		const loadClub = async () => {
@@ -46,26 +66,34 @@ const Results = () => {
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
-		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold'>Загрузка...</div>
-			</div>
-		);
+		return <LoadingSpinner fullScreen message='Загрузка результатов...' />;
 	}
 
 	// Показываем ошибку, если что-то пошло не так
 	if (error || !club) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold text-red-500'>
-					{error || 'Произошла ошибка при загрузке данных'}
+			<div
+				className='min-h-screen flex flex-col items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
+				<div className='text-center max-w-md'>
+					<h2 className='text-2xl font-bold mb-4 text-red-500'>
+						{error || 'Произошла ошибка при загрузке данных'}
+					</h2>
+					<button
+						className='py-3 px-6 rounded-lg font-medium transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+						onClick={() => window.location.reload()}
+					>
+						Обновить страницу
+					</button>
 				</div>
-				<button
-					className='mt-4 px-4 py-2 bg-blue-500 text-white rounded'
-					onClick={() => window.location.reload()}
-				>
-					Обновить страницу
-				</button>
 			</div>
 		);
 	}
@@ -73,19 +101,31 @@ const Results = () => {
 	// Показываем сообщение, если нет данных игры
 	if (!hasGameData) {
 		return (
-			<div className='container flex flex-col items-center justify-center h-full'>
-				<div className='text-2xl font-bold text-center mb-4'>
-					Нет данных для отображения результатов
+			<div
+				className='min-h-screen flex flex-col items-center justify-center p-4'
+				style={{
+					background: 'var(--tg-theme-bg-color)',
+					color: 'var(--tg-theme-text-color)',
+				}}
+			>
+				<div className='text-center max-w-md'>
+					<h2 className='text-2xl font-bold mb-4'>
+						Нет данных для отображения результатов
+					</h2>
+					<p className='text-lg mb-6'>
+						Сначала пройдите игру, чтобы увидеть результаты
+					</p>
+					<button
+						className='py-3 px-6 rounded-lg font-medium transition-opacity hover:opacity-80'
+						style={{
+							background: 'var(--tg-theme-button-color)',
+							color: 'var(--tg-theme-button-text-color)',
+						}}
+						onClick={() => window.history.back()}
+					>
+						Вернуться назад
+					</button>
 				</div>
-				<div className='text-lg text-center mb-6'>
-					Сначала пройдите игру, чтобы увидеть результаты
-				</div>
-				<button
-					className='px-6 py-3 bg-blue-500 text-white rounded-lg'
-					onClick={() => window.history.back()}
-				>
-					Вернуться назад
-				</button>
 			</div>
 		);
 	}
@@ -138,7 +178,6 @@ const Results = () => {
 					<ul className='category_list flex flex-col gap-3 mb-6'>
 						{categories.map((category) => {
 							const players = categorizedPlayers[category.name] || [];
-							console.log(`Category ${category.name}:`, players);
 							return (
 								<CategoryItem
 									key={`category-${category.name}`}

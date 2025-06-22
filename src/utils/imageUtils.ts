@@ -81,7 +81,6 @@ export function createPlayerSkeleton(
 
 /**
  * Преобразует URL изображения для решения проблем с CORS
- * Если URL указывает на Cloudflare R2, возвращает скелетон вместо него
  */
 export function getProxyImageUrl(
 	originalUrl: string | null | undefined,
@@ -100,15 +99,18 @@ export function getProxyImageUrl(
 	}
 
 	try {
-		// Проверяем, содержит ли URL домен cloudflare storage
-		if (originalUrl.includes('r2.cloudflarestorage.com')) {
-			// Возвращаем скелетон вместо внешнего URL с CORS проблемами
-			return createPlayerSkeleton();
-		}
-
+		// Пытаемся использовать оригинальный URL
+		// Если есть проблемы с CORS, изображение будет обработано в onError
 		return originalUrl;
 	} catch (error) {
 		console.error('Error processing image URL:', error);
 		return createPlayerSkeleton();
 	}
+}
+
+/**
+ * Создает плейсхолдер на основе имени игрока для использования в onError
+ */
+export function createPlayerPlaceholder(playerName: string): string {
+	return createPlayerImagePlaceholder(playerName);
 }
