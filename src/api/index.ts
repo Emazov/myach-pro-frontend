@@ -13,8 +13,6 @@ export {
 	addAdmin,
 	removeAdmin,
 	updatePlayer,
-	sendTierListImage,
-	getBotChats,
 	searchUsers,
 	addAdminByUsername,
 } from './apiService';

@@ -3,6 +3,7 @@ import { useGameStore } from '../store';
 import { CategoryItem } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
+import { createClubLogoPlaceholder } from '../utils/imageUtils';
 
 const Results = () => {
 	const { initData } = useTelegram();
@@ -92,9 +93,7 @@ const Results = () => {
 										// Если логотип не загрузился, подставляем плейсхолдер
 										const target = e.target as HTMLImageElement;
 										target.onerror = null;
-										target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' fill='%23EC3381'/%3E%3Ctext x='50%25' y='50%25' font-size='12' text-anchor='middle' dy='.3em' fill='white'%3E${club.name.charAt(
-											0,
-										)}%3C/text%3E%3C/svg%3E`;
+										target.src = createClubLogoPlaceholder(club.name);
 									}}
 								/>
 								<span className='text-black font-semibold'>{club.name}</span>
