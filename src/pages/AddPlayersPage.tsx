@@ -271,59 +271,46 @@ const AddPlayersPage = () => {
 											: 'transparent',
 									}}
 								>
-									{player.imagePreview ? (
-										<div className='w-full h-full flex flex-col relative'>
-											<img
-												src={player.imagePreview}
-												alt={player.name}
-												className='flex-1 w-full object-cover'
-											/>
-											{player.isSaved && (
-												<div
-													className='absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold'
-													style={{
-														background: 'var(--tg-theme-button-color)',
-														color: 'var(--tg-theme-button-text-color)',
-													}}
-												>
-													✓
-												</div>
-											)}
-											<div
-												className='text-xs p-1 text-center truncate'
-												style={{
-													background: 'var(--tg-theme-bg-color)',
-													color: 'var(--tg-theme-text-color)',
-												}}
+									<div className='flex-1 flex items-center justify-center overflow-hidden relative'>
+										{player.imagePreview ? (
+											<>
+												<img
+													src={player.imagePreview}
+													alt={player.name}
+													className='w-full h-full object-cover'
+												/>
+												{player.isSaved && (
+													<div
+														className='absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold'
+														style={{
+															background: 'var(--tg-theme-button-color)',
+															color: 'var(--tg-theme-button-text-color)',
+														}}
+													>
+														✓
+													</div>
+												)}
+											</>
+										) : (
+											<span
+												className='text-2xl'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
 											>
-												{player.name}
-											</div>
-										</div>
-									) : (
-										<div className='w-full h-full flex flex-col'>
-											<div className='flex-1 flex items-center justify-center'>
-												<span
-													className='text-2xl'
-													style={{ color: 'var(--tg-theme-hint-color)' }}
-												>
-													+
-												</span>
-											</div>
-											<div
-												className='text-xs p-1 text-center truncate'
-												style={{
-													background: player.name
-														? 'var(--tg-theme-bg-color)'
-														: 'transparent',
-													color: player.name
-														? 'var(--tg-theme-text-color)'
-														: 'var(--tg-theme-hint-color)',
-												}}
-											>
-												{player.name || 'Имя'}
-											</div>
-										</div>
-									)}
+												+
+											</span>
+										)}
+									</div>
+									<div
+										className='text-xs p-1 text-center min-h-[20px] flex items-center justify-center'
+										style={{
+											background: 'var(--tg-theme-bg-color)',
+											color: 'var(--tg-theme-text-color)',
+										}}
+									>
+										<span className='truncate w-full px-1'>
+											{player.name || `Игрок ${index + 1}`}
+										</span>
+									</div>
 								</div>
 							))}
 						</div>
@@ -382,57 +369,46 @@ const AddPlayersPage = () => {
 												: 'transparent',
 									}}
 								>
-									{player.imagePreview ? (
-										<div className='w-full h-full flex flex-col relative'>
-											<img
-												src={player.imagePreview}
-												alt={player.name}
-												className='flex-1 w-full object-cover'
-											/>
-											{player.isSaved && (
-												<div
-													className='absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center text-xs font-bold'
-													style={{
-														background: 'var(--tg-theme-button-color)',
-														color: 'var(--tg-theme-button-text-color)',
-													}}
-												>
-													✓
-												</div>
-											)}
-											<div
-												className='text-xs p-0.5 text-center truncate text-[10px]'
-												style={{
-													background: 'var(--tg-theme-bg-color)',
-													color: 'var(--tg-theme-text-color)',
-												}}
+									<div className='flex-1 flex items-center justify-center overflow-hidden relative'>
+										{player.imagePreview ? (
+											<>
+												<img
+													src={player.imagePreview}
+													alt={player.name}
+													className='w-full h-full object-cover'
+												/>
+												{player.isSaved && (
+													<div
+														className='absolute top-1 right-1 w-3 h-3 rounded-full flex items-center justify-center text-xs font-bold'
+														style={{
+															background: 'var(--tg-theme-button-color)',
+															color: 'var(--tg-theme-button-text-color)',
+														}}
+													>
+														✓
+													</div>
+												)}
+											</>
+										) : (
+											<span
+												className='text-lg'
+												style={{ color: 'var(--tg-theme-hint-color)' }}
 											>
-												{player.name}
-											</div>
-										</div>
-									) : (
-										<div className='w-full h-full flex flex-col'>
-											<div className='flex-1 flex items-center justify-center'>
-												<span
-													className='text-lg'
-													style={{ color: 'var(--tg-theme-hint-color)' }}
-												>
-													+
-												</span>
-											</div>
-											{player.name && (
-												<div
-													className='text-xs p-0.5 text-center truncate text-[10px]'
-													style={{
-														background: 'var(--tg-theme-bg-color)',
-														color: 'var(--tg-theme-text-color)',
-													}}
-												>
-													{player.name}
-												</div>
-											)}
-										</div>
-									)}
+												+
+											</span>
+										)}
+									</div>
+									<div
+										className='text-xs p-0.5 text-center min-h-[16px] flex items-center justify-center text-[10px]'
+										style={{
+											background: 'var(--tg-theme-bg-color)',
+											color: 'var(--tg-theme-text-color)',
+										}}
+									>
+										<span className='truncate w-full px-0.5'>
+											{player.name || `${index + 1}`}
+										</span>
+									</div>
 								</div>
 							))}
 						</div>
