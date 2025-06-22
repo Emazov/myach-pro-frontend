@@ -16,6 +16,32 @@ const AnalyticsPage = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [selectedPeriod, setSelectedPeriod] = useState(7);
 
+	// Функция для безопасного форматирования даты
+	const formatDate = (dateString: string): string => {
+		try {
+			if (!dateString || dateString === 'Invalid Date') {
+				return 'Неизвестная дата';
+			}
+
+			// Если строка уже в правильном формате YYYY-MM-DD
+			if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+				const date = new Date(dateString + 'T00:00:00');
+				return date.toLocaleDateString('ru-RU');
+			}
+
+			// Попытка парсить как обычную дату
+			const date = new Date(dateString);
+			if (isNaN(date.getTime())) {
+				return dateString; // Возвращаем исходную строку если не смогли распарсить
+			}
+
+			return date.toLocaleDateString('ru-RU');
+		} catch (error) {
+			console.error('Ошибка форматирования даты:', error);
+			return dateString || 'Неизвестная дата';
+		}
+	};
+
 	useEffect(() => {
 		const loadAnalytics = async () => {
 			if (!initData) {
@@ -31,6 +57,7 @@ const AnalyticsPage = () => {
 					getDetailedStats(initData, selectedPeriod),
 				]);
 
+				console.log('Received analytics data:', { statsData, detailedData });
 				setStats(statsData);
 				setDetailedStats(detailedData);
 			} catch (err: any) {
@@ -82,10 +109,15 @@ const AnalyticsPage = () => {
 			<div className='text-center py-6'>
 				<div className='flex items-center justify-center gap-3 mb-2'>
 					<img
-						src='./main_logo.png'
+						src='/main_logo.png'
 						alt='main_logo'
 						className='w-16 h-16 object-contain'
 						loading='eager'
+						onError={(e) => {
+							// Если логотип не загрузился, скрываем изображение
+							const target = e.target as HTMLImageElement;
+							target.style.display = 'none';
+						}}
 					/>
 				</div>
 				<h1 className='text-white text-3xl font-bold'>АНАЛИТИКА</h1>
@@ -215,36 +247,38 @@ const AnalyticsPage = () => {
 					<div className='mb-6'>
 						<h3 className='text-lg font-semibold mb-3'>Статистика по дням</h3>
 						<div className='space-y-2'>
-							{detailedStats.dailyStats.map((day: any) => (
-								<div
-									key={day.date}
-									className='bg-white rounded-lg p-3 shadow-sm'
-								>
-									<div className='font-medium mb-1'>
-										{new Date(day.date).toLocaleDateString('ru-RU')}
-									</div>
-									<div className='grid grid-cols-2 gap-4 text-sm'>
-										<div>
-											<span className='text-gray-600'>Запуски: </span>
-											<span className='font-medium'>
-												{Number(day.app_starts) || 0}
-											</span>
+							{detailedStats.dailyStats &&
+							detailedStats.dailyStats.length > 0 ? (
+								detailedStats.dailyStats.map((day: any) => (
+									<div
+										key={day.date}
+										className='bg-white rounded-lg p-3 shadow-sm'
+									>
+										<div className='font-medium mb-1 text-black'>
+											{formatDate(day.date)}
 										</div>
-										<div>
-											<span className='text-gray-600'>Завершения: </span>
-											<span className='font-medium'>
-												{Number(day.game_completions) || 0}
-											</span>
+										<div className='grid grid-cols-2 gap-4 text-sm'>
+											<div>
+												<span className='text-gray-600'>Запуски: </span>
+												<span className='font-medium'>
+													{Number(day.app_starts) || 0}
+												</span>
+											</div>
+											<div>
+												<span className='text-gray-600'>Завершения: </span>
+												<span className='font-medium'>
+													{Number(day.game_completions) || 0}
+												</span>
+											</div>
 										</div>
 									</div>
+								))
+							) : (
+								<div className='text-center text-gray-500 py-4'>
+									Нет данных за выбранный период
 								</div>
-							))}
+							)}
 						</div>
-						{detailedStats.dailyStats.length === 0 && (
-							<div className='text-center text-gray-500 py-4'>
-								Нет данных за выбранный период
-							</div>
-						)}
 					</div>
 				)}
 
