@@ -12,12 +12,6 @@ const Results = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	// Дебаг информация
-	console.log('🎮 Состояние игры на странице результатов:');
-	console.log('📊 Категории:', categories);
-	console.log('👥 Распределенные игроки:', categorizedPlayers);
-	console.log('🔑 InitData:', initData ? 'есть' : 'нет');
-
 	useEffect(() => {
 		const loadClub = async () => {
 			if (!initData) {
@@ -27,13 +21,9 @@ const Results = () => {
 			}
 
 			try {
-				console.log('🔍 Загружаем данные клубов...');
 				const clubs = await fetchClubs(initData);
-				console.log('📋 Получены клубы:', clubs);
-
 				if (clubs && clubs.length > 0) {
 					setClub(clubs[0]);
-					console.log('🏆 Выбран клуб:', clubs[0]);
 				} else {
 					setError('Не удалось загрузить информацию о клубе');
 				}
@@ -95,26 +85,15 @@ const Results = () => {
 							<h2 className='text-black text-lg font-bold'>ТИР-ЛИСТ ИГРОКОВ</h2>
 							<div className='flex items-center gap-2 mt-1'>
 								<img
-									src={club.img_url}
+									src={club.img_url || createClubLogoPlaceholder(club.name)}
 									alt={club.name}
 									className='w-6 h-6 object-contain'
 									loading='eager'
-									onLoad={() => {
-										console.log(
-											`✅ Логотип клуба загружен: ${club.name} - ${club.img_url}`,
-										);
-									}}
 									onError={(e) => {
 										// Если логотип не загрузился, подставляем плейсхолдер
-										console.log(
-											`❌ Ошибка загрузки логотипа: ${club.name} - ${club.img_url}`,
-										);
 										const target = e.target as HTMLImageElement;
 										target.onerror = null;
 										target.src = createClubLogoPlaceholder(club.name);
-										console.log(
-											`🎨 Использован placeholder для логотипа: ${club.name}`,
-										);
 									}}
 								/>
 								<span className='text-black font-semibold'>{club.name}</span>
@@ -135,6 +114,7 @@ const Results = () => {
 									category={category}
 									players={players}
 									showPlayerImages={true}
+									showSkeletons={true}
 								/>
 							);
 						})}

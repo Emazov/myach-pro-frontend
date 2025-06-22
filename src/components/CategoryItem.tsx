@@ -1,11 +1,15 @@
 import type { Category, Player } from '../types';
-import { createPlayerImagePlaceholder } from '../utils/imageUtils';
+import {
+	createPlayerImagePlaceholder,
+	createPlayerSkeleton,
+} from '../utils/imageUtils';
 
 interface CategoryItemProps {
 	category: Category;
 	players?: Player[];
 	onClick?: () => void;
 	showPlayerImages?: boolean;
+	showSkeletons?: boolean; // Новый пропс для показа скелетонов
 }
 
 const CategoryItem = ({
@@ -13,6 +17,7 @@ const CategoryItem = ({
 	players = [],
 	onClick,
 	showPlayerImages = false,
+	showSkeletons = false,
 }: CategoryItemProps) => {
 	if (showPlayerImages) {
 		return (
@@ -24,35 +29,46 @@ const CategoryItem = ({
 					{category.name}
 				</p>
 				<ul className='player_list grid grid-cols-6 gap-1 items-center'>
+					{/* Отображаем игроков */}
 					{players.map((player) => (
 						<li
-							className='player_item flex items-center justify-center rounded-lg w-[clamp(2.5rem,4vw,4rem)] h-[clamp(2.5rem,4vw,4rem)] overflow-hidden'
+							className='player_item flex items-center justify-center rounded-lg w-[clamp(2rem,3.5vw,3rem)] h-[clamp(2.6rem,4.6vw,4rem)] overflow-hidden'
 							key={`slot-${player.id}`}
 						>
 							<img
-								src={player.img_url}
+								src={
+									player.img_url || createPlayerImagePlaceholder(player.name)
+								}
 								alt={player.name}
-								className='w-full h-full object-cover rounded-sm'
+								className='w-full h-full object-cover rounded-md'
 								crossOrigin='anonymous'
 								loading='eager'
-								onLoad={() => {
-									console.log(
-										`✅ Изображение загружено: ${player.name} - ${player.img_url}`,
-									);
-								}}
 								onError={(e) => {
 									// Если изображение не загрузилось, подставляем плейсхолдер
-									console.log(
-										`❌ Ошибка загрузки изображения: ${player.name} - ${player.img_url}`,
-									);
 									const target = e.target as HTMLImageElement;
 									target.onerror = null; // Предотвращаем бесконечную рекурсию
 									target.src = createPlayerImagePlaceholder(player.name);
-									console.log(`🎨 Использован placeholder для: ${player.name}`);
 								}}
 							/>
 						</li>
 					))}
+
+					{/* Отображаем скелетоны для пустых слотов, если включен showSkeletons */}
+					{showSkeletons &&
+						Array.from({ length: category.slots - players.length }).map(
+							(_, index) => (
+								<li
+									className='player_item flex items-center justify-center rounded-lg w-[clamp(2rem,3.5vw,3rem)] h-[clamp(2.6rem,4.6vw,4rem)] overflow-hidden'
+									key={`skeleton-${index}`}
+								>
+									<img
+										src={createPlayerSkeleton()}
+										alt='Пустой слот'
+										className='w-full h-full object-cover rounded-md opacity-60'
+									/>
+								</li>
+							),
+						)}
 				</ul>
 			</li>
 		);

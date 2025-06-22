@@ -30,18 +30,18 @@ function generateColorFromString(str: string): string {
 }
 
 /**
- * Создает SVG плейсхолдер для изображения игрока
+ * Создает SVG плейсхолдер для изображения игрока в портретном формате
  */
 export function createPlayerImagePlaceholder(
 	playerName: string,
-	width: number = 40,
-	height: number = 40,
+	width: number = 32,
+	height: number = 42,
 ): string {
 	const color = generateColorFromString(playerName);
 	const initial = playerName.charAt(0).toUpperCase();
-	const fontSize = Math.min(width, height) * 0.4;
+	const fontSize = Math.min(width, height) * 0.35;
 
-	return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='%23${color}'/%3E%3Ctext x='50%25' y='50%25' font-size='${fontSize}' text-anchor='middle' dy='.3em' fill='white' font-family='Arial, sans-serif'%3E${initial}%3C/text%3E%3C/svg%3E`;
+	return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='%23${color}' rx='4'/%3E%3Ctext x='50%25' y='50%25' font-size='${fontSize}' text-anchor='middle' dy='.3em' fill='white' font-family='Arial, sans-serif' font-weight='500'%3E${initial}%3C/text%3E%3C/svg%3E`;
 }
 
 /**
@@ -57,4 +57,24 @@ export function createClubLogoPlaceholder(
 	const fontSize = Math.min(width, height) * 0.5;
 
 	return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'%3E%3Crect width='${width}' height='${height}' fill='%23${color}' rx='2'/%3E%3Ctext x='50%25' y='50%25' font-size='${fontSize}' text-anchor='middle' dy='.3em' fill='white' font-family='Arial, sans-serif' font-weight='bold'%3E${initial}%3C/text%3E%3C/svg%3E`;
+}
+
+/**
+ * Создает SVG скелетон для пустого слота игрока в портретном формате
+ */
+export function createPlayerSkeleton(
+	width: number = 32,
+	height: number = 42,
+): string {
+	return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'%3E%3Cdefs%3E%3ClinearGradient id='shimmer' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:%23f3f4f6;stop-opacity:1' /%3E%3Cstop offset='50%25' style='stop-color:%23e5e7eb;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23f3f4f6;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='${width}' height='${height}' fill='url(%23shimmer)' rx='4'/%3E%3Cpath d='M${
+		width / 2 - 4
+	} ${
+		height * 0.35
+	}a4 4 0 1 1 8 0a4 4 0 0 1-8 0' fill='%23d1d5db'/%3E%3Cpath d='M${
+		width * 0.25
+	} ${height * 0.75}c0-${height * 0.15} ${width * 0.125}-${height * 0.2} ${
+		width * 0.25
+	}-${height * 0.2}s${width * 0.25} ${height * 0.05} ${width * 0.25} ${
+		height * 0.2
+	}' fill='%23d1d5db'/%3E%3C/svg%3E`;
 }
