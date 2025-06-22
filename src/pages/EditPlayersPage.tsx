@@ -456,7 +456,7 @@ const EditPlayersPage = () => {
 							<button
 								onClick={handleDeletePlayer}
 								disabled={isSubmitting}
-								className='bg-black text-white py-3 rounded-full text-[clamp(0.9rem,2.5vw,1.2rem)] font-medium disabled:opacity-50'
+								className='bg-black text-white py-4 rounded-full text-[clamp(0.9rem,2.5vw,1.2rem)] font-medium disabled:opacity-50'
 							>
 								{isSubmitting ? 'Удаление...' : 'Удалить игрока'}
 							</button>
