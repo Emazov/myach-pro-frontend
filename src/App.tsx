@@ -20,6 +20,7 @@ const EditClubPage = lazy(() => import('./pages/EditClubPage'));
 const EditPlayersPage = lazy(() => import('./pages/EditPlayersPage'));
 const ManageAdminsPage = lazy(() => import('./pages/ManageAdminsPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function App() {
 	const { tg, initData, isDevelopment } = useTelegram();
@@ -51,8 +52,6 @@ function App() {
 			});
 		}
 
-		console.log('stable')
-
 		// Логируем initData только в development
 		if (isDevelopment && initData) {
 			console.log('initData:', initData);
@@ -61,6 +60,7 @@ function App() {
 
 	return (
 		<ErrorBoundary>
+			<SpeedInsights />
 			<div className='w-full h-screen'>
 				<Suspense
 					fallback={<LoadingSpinner fullScreen message='Загрузка...' />}
@@ -90,6 +90,8 @@ function App() {
 						<Route path='/admin/analytics' element={<AnalyticsPage />} />
 					</Routes>
 				</Suspense>
+
+				<SpeedInsights />
 			</div>
 		</ErrorBoundary>
 	);
