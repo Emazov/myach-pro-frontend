@@ -152,7 +152,7 @@ const Results = () => {
 				{/* Основной контент */}
 				<div
 					ref={ref}
-					className='bg-[var(--tg-theme-bg-color)] rounded-lg flex-1 px-4 pt-6 pb-16'
+					className='bg-[var(--tg-theme-bg-color)] rounded-lg px-4 pt-6 pb-16 mb-2'
 				>
 					{/* Заголовок тир-листа и логотип */}
 					<div className='flex items-center justify-center mb-6'>
