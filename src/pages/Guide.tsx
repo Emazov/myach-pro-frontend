@@ -64,7 +64,7 @@ const Guide = () => {
 				<>
 					<div className='guide_item'>
 						<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
-							Покажем 20 игроков
+							Покажем 20 аватарок
 						</h2>
 						<div className='player_list grid grid-cols-10 gap-1'>
 							{players.map((num) => (
