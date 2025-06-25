@@ -223,8 +223,12 @@ const AnalyticsPage = () => {
 						<span>←</span>
 						<span>Назад</span>
 					</button>
-					<button onClick={() => window.location.reload()} className=''>
-						Обновить данные
+					<button
+						onClick={() => window.location.reload()}
+						className='flex items-center gap-2 text-blue-500'
+					>
+						<span>↻</span>
+						Обновить
 					</button>
 				</div>
 
@@ -377,7 +381,7 @@ const AnalyticsPage = () => {
 				)}
 
 				{/* Кнопка очистки */}
-				<div className='text-center mt-8'>
+				<div className='mt-10 flex justify-center'>
 					<button
 						onClick={handleClearClick}
 						disabled={isResetting}
