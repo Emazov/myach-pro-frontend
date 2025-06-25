@@ -203,7 +203,7 @@ const Results = () => {
 					{/* Кнопка поделиться */}
 					<div className='flex flex-col items-center justify-center gap-2'>
 						<button
-							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs'
+							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
 							onClick={() => {
 								// Здесь можно добавить логику для шеринга
 								console.log('Поделиться результатом');
@@ -214,7 +214,7 @@ const Results = () => {
 						{isAdmin && (
 							<Link
 								to='/admin'
-								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs]'
+								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
 							>
 								Админ
 							</Link>
