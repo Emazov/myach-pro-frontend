@@ -1,7 +1,16 @@
+import axios from 'axios';
 import type { Club, Player, User } from '../types';
 import { API_BASE_URL } from '../config/api';
 
 const API_URL = API_BASE_URL;
+
+// Создаем axios instance для использования в других сервисах
+export const api = axios.create({
+	baseURL: `${API_URL}/api`,
+	headers: {
+		'Content-Type': 'application/json',
+	},
+});
 
 /**
  * Получить список клубов с сервера

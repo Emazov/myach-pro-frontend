@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useGameStore, useUserStore } from '../store';
 import { CategoryItem, LoadingSpinner } from '../components';
-import { fetchClubs } from '../api';
+import { fetchClubs, shareResults, type ShareData } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
@@ -10,12 +10,13 @@ import { Link } from 'react-router-dom';
 // генерируем изображение
 
 const Results = () => {
-	const { initData } = useTelegram();
+	const { initData, tg } = useTelegram();
 	const { isAdmin } = useUserStore();
 	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [isSharing, setIsSharing] = useState(false);
 
 	// Проверяем, есть ли данные игры
 	const hasGameData =
@@ -55,6 +56,39 @@ const Results = () => {
 
 		loadClub();
 	}, [initData, hasGameData]);
+
+	// Функция для обработки клика по кнопке "Поделиться"
+	const handleShare = async () => {
+		if (!initData || !club || !hasGameData) {
+			alert('Недостаточно данных для создания изображения');
+			return;
+		}
+
+		setIsSharing(true);
+
+		try {
+			const shareData: ShareData = {
+				categorizedPlayers,
+				categories,
+				clubName: club.name,
+				clubLogoUrl: club.img_url,
+			};
+
+			const result = await shareResults(initData, shareData);
+
+			if (result.success) {
+				// Если сервер сообщил о необходимости закрыть веб-приложение
+				if (result.closeWebApp && tg) {
+					tg.close();
+				}
+			}
+		} catch (error: any) {
+			console.error('Ошибка при отправке результатов:', error);
+			alert(error.message || 'Произошла ошибка при отправке результатов');
+		} finally {
+			setIsSharing(false);
+		}
+	};
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
@@ -180,12 +214,11 @@ const Results = () => {
 				{/* Кнопка поделиться */}
 				<div className='flex flex-col items-center justify-center gap-2'>
 					<button
-						className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
-						onClick={() => {
-							console.log('click');
-						}}
+						className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed'
+						onClick={handleShare}
+						disabled={isSharing}
 					>
-						Поделиться
+						{isSharing ? 'Отправляем...' : 'Поделиться'}
 					</button>
 					{isAdmin && (
 						<Link

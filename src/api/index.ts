@@ -25,3 +25,9 @@ export {
 	getDetailedStats,
 	EventType,
 } from './analyticsService';
+
+export {
+	shareResults,
+	previewResultsImage,
+	type ShareData,
+} from './shareService';
