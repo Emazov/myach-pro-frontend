@@ -418,9 +418,9 @@ export const addAdmin = async (
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: `tma ${initData}`,
 			},
 			body: JSON.stringify({
-				initData,
 				telegramId,
 				username,
 			}),
@@ -451,8 +451,9 @@ export const removeAdmin = async (
 			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: `tma ${initData}`,
 			},
-			body: JSON.stringify({ initData }),
+			body: JSON.stringify({ telegramId }),
 		});
 
 		const result = await response.json();
@@ -512,9 +513,9 @@ export const addAdminByUsername = async (
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
+				Authorization: `tma ${initData}`,
 			},
 			body: JSON.stringify({
-				initData,
 				username,
 			}),
 		});
