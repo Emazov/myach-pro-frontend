@@ -201,9 +201,9 @@ const Results = () => {
 					</ul>
 
 					{/* Кнопка поделиться */}
-					<div className='text-center mt-10 mb-6'>
+					<div className='flex flex-col items-center justify-center gap-2'>
 						<button
-							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto'
+							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs'
 							onClick={() => {
 								// Здесь можно добавить логику для шеринга
 								console.log('Поделиться результатом');
@@ -214,7 +214,7 @@ const Results = () => {
 						{isAdmin && (
 							<Link
 								to='/admin'
-								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto mt-2]'
+								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs]'
 							>
 								Админ
 							</Link>
