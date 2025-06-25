@@ -125,21 +125,21 @@ const AnalyticsPage = () => {
 			{/* Основной контент */}
 			<div className='bg-[var(--tg-theme-bg-color)] rounded-t-3xl flex-1 px-4 pt-6 pb-16'>
 				{/* Кнопка назад */}
-				<div className='mb-6'>
+				<div className='mb-6 flex justify-between items-center'>
 					<button
 						onClick={() => navigate('/admin')}
-						className='flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors'
+						className='flex items-center gap-2 text-blue-500'
 					>
 						<span>←</span>
-						<span>Назад к админ панели</span>
+						<span>Назад</span>
 					</button>
 
 					<button
 						onDoubleClick={() => window.location.reload()}
-						className='flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors'
+						className='flex items-center gap-2 text-red-500'
 					>
 						<span>✕</span>
-						<span>Очистить кеш</span>
+						<span>Очистить</span>
 					</button>
 				</div>
 
