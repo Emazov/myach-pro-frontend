@@ -57,7 +57,6 @@ const AnalyticsPage = () => {
 					getDetailedStats(initData, selectedPeriod),
 				]);
 
-				console.log('Received analytics data:', { statsData, detailedData });
 				setStats(statsData);
 				setDetailedStats(detailedData);
 			} catch (err: any) {

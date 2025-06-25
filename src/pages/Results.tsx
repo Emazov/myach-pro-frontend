@@ -21,26 +21,6 @@ const Results = () => {
 		Object.keys(categorizedPlayers).length > 0 &&
 		Object.values(categorizedPlayers).some((players) => players.length > 0);
 
-	// Отладка данных игроков
-	useEffect(() => {
-		console.group('🔍 Results Page Debug');
-		console.log('categories:', categories);
-		console.log('categorizedPlayers:', categorizedPlayers);
-		console.log('hasGameData:', hasGameData);
-
-		// Проверяем URL изображений игроков
-		Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
-			console.log(`Category "${categoryName}" players:`, players);
-			players.forEach((player) => {
-				console.log(`Player "${player.name}":`, {
-					originalUrl: player.img_url,
-					processedUrl: getProxyImageUrl(player.img_url),
-				});
-			});
-		});
-		console.groupEnd();
-	}, [categories, categorizedPlayers, hasGameData]);
-
 	useEffect(() => {
 		const loadClub = async () => {
 			if (!initData) {
@@ -206,7 +186,7 @@ const Results = () => {
 							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
 							onClick={() => {
 								// Здесь можно добавить логику для шеринга
-								console.log('Поделиться результатом');
+								// TODO: Реализовать функцию шаринга
 							}}
 						>
 							Поделиться

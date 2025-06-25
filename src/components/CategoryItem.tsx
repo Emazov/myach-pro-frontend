@@ -48,12 +48,6 @@ const CategoryItem = React.memo<CategoryItemProps>(
 										const target = e.target as HTMLImageElement;
 										target.onerror = null; // Предотвращаем бесконечную рекурсию
 										target.src = createPlayerPlaceholder(player.name);
-										console.log(
-											`🖼️ Image failed for player "${player.name}", showing placeholder`,
-										);
-									}}
-									onLoad={() => {
-										console.log(`✅ Image loaded for player "${player.name}"`);
 									}}
 								/>
 							</li>
