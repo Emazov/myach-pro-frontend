@@ -201,7 +201,7 @@ export const authenticateTelegramUser = async (
 		// Преобразуем данные в нужный формат
 		return {
 			id: result.user.id,
-			telegramId: parseInt(result.user.telegramId),
+			telegramId: result.user.telegramId.toString(),
 			role: result.role,
 		};
 	} catch (error) {

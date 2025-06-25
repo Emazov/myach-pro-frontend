@@ -1,26 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
+import type { AdminUser, User } from '../types';
 import {
 	fetchAdmins,
 	removeAdmin,
 	searchUsers,
 	addAdminByUsername,
 } from '../api';
-
-interface AdminUser {
-	id: string;
-	telegramId: string;
-	username: string | null;
-	addedBy: string | null;
-	createdAt: string;
-}
-
-interface User {
-	telegramId: string;
-	username: string | null;
-	role: string;
-}
 
 const ManageAdminsPage: React.FC = () => {
 	const { initData } = useTelegram();
@@ -33,7 +20,9 @@ const ManageAdminsPage: React.FC = () => {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [operationLoading, setOperationLoading] = useState(false);
-	const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
+	const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+		null,
+	);
 	const [notification, setNotification] = useState<{
 		message: string;
 		type: 'success' | 'error';

@@ -43,6 +43,12 @@ export type UserRole = 'admin' | 'user';
 
 export interface User {
 	id: string;
-	telegramId: number;
+	telegramId: string;
+	username?: string | null;
 	role: UserRole;
+}
+
+export interface AdminUser extends User {
+	addedBy: string | null;
+	createdAt: string;
 }

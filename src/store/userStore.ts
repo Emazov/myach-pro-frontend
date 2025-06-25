@@ -4,7 +4,7 @@ import type { User } from '../types';
 import { authenticateTelegramUser } from '../api';
 
 interface UserState {
-	telegramId: number | null;
+	telegramId: string | null;
 	user: User | null;
 	isAdmin: boolean;
 	isLoading: boolean;

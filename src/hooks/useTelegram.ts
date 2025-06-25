@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+// Хук не использует React импорты
 
 const tg = (window as any).Telegram?.WebApp;
 
@@ -8,32 +8,7 @@ const isTelegramWebApp = Boolean(tg);
 // Проверяем, находимся ли мы в режиме разработки
 const isDevelopment = import.meta.env.DEV;
 
-// Конфигурация для development режима
-const DEVELOPMENT_CONFIG = {
-	user: {
-		id: 123456789,
-		first_name: 'Test',
-		last_name: 'User',
-		username: 'testuser',
-	},
-	initData:
-		'query_id=AAHdF6IQAAAAAN0XohDhrOrc&user=%7B%22id%22%3A279058397%2C%22first_name%22%3A%22Владимир%22%2C%22last_name%22%3A%22%22%2C%22username%22%3A%22vdmrv%22%2C%22language_code%22%3A%22ru%22%7D&auth_date=1703179173&hash=example_hash',
-	queryId: 'AAHdF6IQAAAAAN0XohDhrOrc',
-} as const;
-
 export function useTelegram() {
-	// Мемоизируем fallback данные
-	const developmentFallback = useMemo(
-		() => (isDevelopment ? DEVELOPMENT_CONFIG : null),
-		[],
-	);
-
-	// Убираем ready() отсюда - будет вызываться только в App.tsx
-	useEffect(() => {
-		// Здесь можно добавить другую инициализацию если нужно
-		// например, подписки на события Telegram
-	}, []);
-
 	const onClose = () => {
 		if (tg) {
 			tg.close();
@@ -52,27 +27,18 @@ export function useTelegram() {
 		}
 	};
 
-	// Мемоизируем функции получения данных
-	const getUser = useMemo(() => {
-		if (isTelegramWebApp) {
-			return tg?.initDataUnsafe?.user;
-		}
-		return developmentFallback?.user;
-	}, [developmentFallback]);
+	// Получение данных пользователя
+	const getUser = () => {
+		return tg?.initDataUnsafe?.user || null;
+	};
 
-	const getInitData = useMemo(() => {
-		if (isTelegramWebApp) {
-			return tg?.initData;
-		}
-		return developmentFallback?.initData;
-	}, [developmentFallback]);
+	const getInitData = () => {
+		return tg?.initData || null;
+	};
 
-	const getQueryId = useMemo(() => {
-		if (isTelegramWebApp) {
-			return tg?.initDataUnsafe?.query_id;
-		}
-		return developmentFallback?.queryId;
-	}, [developmentFallback]);
+	const getQueryId = () => {
+		return tg?.initDataUnsafe?.query_id || null;
+	};
 
 	// Дополнительные утилиты для работы с Telegram
 	const setMainButtonText = (text: string) => {
@@ -108,9 +74,9 @@ export function useTelegram() {
 	return {
 		// Основные данные
 		tg: tg || null,
-		user: getUser,
-		initData: getInitData,
-		queryId: getQueryId,
+		user: getUser(),
+		initData: getInitData(),
+		queryId: getQueryId(),
 
 		// Флаги состояния
 		isTelegramWebApp,
