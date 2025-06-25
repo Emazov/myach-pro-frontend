@@ -20,9 +20,7 @@ const ManageAdminsPage: React.FC = () => {
 	const [searchLoading, setSearchLoading] = useState(false);
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
 	const [operationLoading, setOperationLoading] = useState(false);
-	const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
-		null,
-	);
+	const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
 	const [notification, setNotification] = useState<{
 		message: string;
 		type: 'success' | 'error';
@@ -96,7 +94,7 @@ const ManageAdminsPage: React.FC = () => {
 		// Устанавливаем новый таймер
 		const newTimeout = setTimeout(() => {
 			handleSearch(query);
-		}, 300); // Задержка 300мс
+		}, 300) as unknown as number; // Задержка 300мс
 
 		setSearchTimeout(newTimeout);
 	};

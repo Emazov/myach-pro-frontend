@@ -23,7 +23,6 @@ const StartPage = () => {
 						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>
 							<div className='flex flex-col gap-1'>
 								<p className='font-bold text-green-600'>Администратор</p>
-								<p>ID: {telegramId}</p>
 							</div>
 						</div>
 					) : (
