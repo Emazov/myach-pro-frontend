@@ -139,10 +139,10 @@ const Results = () => {
 				{/* Основной контент */}
 				<div className='bg-[var(--tg-theme-bg-color)] rounded-t-3xl flex-1 px-4 pt-6 pb-16'>
 					{/* Заголовок тир-листа и логотип */}
-					<div className='flex items-center justify-between mb-6'>
+					<div className='flex items-center justify-center mb-6'>
 						<div>
 							<h2 className='text-lg font-bold uppercase'>
-								ТИР-ЛИСТ ИГРОКОВ КЛУБА
+								ТИР-ЛИСТ 
 							</h2>
 							<div className='flex items-center gap-2 mt-1'>
 								<img
@@ -158,9 +158,6 @@ const Results = () => {
 								/>
 								<span className='text-lg font-semibold'>{club.name}</span>
 							</div>
-						</div>
-						<div className='text-right'>
-							<span className='text-sm'>МЯЧ</span>
 						</div>
 					</div>
 

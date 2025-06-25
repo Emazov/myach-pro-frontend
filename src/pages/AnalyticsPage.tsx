@@ -133,6 +133,14 @@ const AnalyticsPage = () => {
 						<span>←</span>
 						<span>Назад к админ панели</span>
 					</button>
+
+					<button
+						onDoubleClick={() => window.location.reload()}
+						className='flex items-center gap-2 text-blue-500 hover:text-blue-700 transition-colors'
+					>
+						<span>✕</span>
+						<span>Очистить кеш</span>
+					</button>
 				</div>
 
 				{/* Общая статистика */}
