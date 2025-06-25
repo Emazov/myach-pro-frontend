@@ -197,6 +197,7 @@ const Game = () => {
 			<div className='hero flex flex-col items-center gap-4 relative'>
 				{canGoBack && (
 					<svg
+						className='absolute left-0 top-1/2 -translate-y-1/2 w-12 z-10'
 						onClick={handleGoBack}
 						width='30'
 						height='30'
