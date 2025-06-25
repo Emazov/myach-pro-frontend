@@ -7,6 +7,9 @@ import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
 import { Link } from 'react-router-dom';
 
+// генерируем изображение
+import { useToPng } from '@hugocxl/react-to-image';
+
 const Results = () => {
 	const { initData } = useTelegram();
 	const { isAdmin } = useUserStore();
@@ -53,6 +56,16 @@ const Results = () => {
 
 		loadClub();
 	}, [initData, hasGameData]);
+
+	const [_, convert, ref] = useToPng<HTMLUListElement>({
+		quality: 0.8,
+		onSuccess: (data) => {
+			const link = document.createElement('a');
+			link.download = 'my-image-name.jpeg';
+			link.href = data;
+			link.click();
+		},
+	});
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
@@ -141,9 +154,7 @@ const Results = () => {
 					{/* Заголовок тир-листа и логотип */}
 					<div className='flex items-center justify-center mb-6'>
 						<div>
-							<h2 className='text-lg font-bold uppercase'>
-								ТИР-ЛИСТ 
-							</h2>
+							<h2 className='text-lg font-bold uppercase'>ТИР-ЛИСТ</h2>
 							<div className='flex items-center gap-2 mt-1'>
 								<img
 									src={getProxyImageUrl(club.img_url)}
@@ -162,7 +173,7 @@ const Results = () => {
 					</div>
 
 					{/* Список категорий */}
-					<ul className='category_list flex flex-col gap-3 mb-6'>
+					<ul ref={ref} className='category_list flex flex-col gap-3 mb-6'>
 						{categories.map((category) => {
 							const players = categorizedPlayers[category.name] || [];
 							return (
@@ -182,8 +193,7 @@ const Results = () => {
 						<button
 							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
 							onClick={() => {
-								// Здесь можно добавить логику для шеринга
-								// TODO: Реализовать функцию шаринга
+								convert();
 							}}
 						>
 							Поделиться
