@@ -6,7 +6,7 @@ const API_URL = API_BASE_URL;
 
 // Создаем axios instance для использования в других сервисах
 export const api = axios.create({
-	baseURL: `${API_URL}/api`,
+	baseURL: API_URL,
 	headers: {
 		'Content-Type': 'application/json',
 	},
