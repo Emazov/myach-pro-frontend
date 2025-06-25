@@ -63,7 +63,7 @@ function App() {
 			<SpeedInsights />
 			<div className='w-full h-screen'>
 				<Suspense
-					fallback={<LoadingSpinner fullScreen message='Загрузка...' />}
+					fallback={<LoadingSpinner fullScreen message='Загрузка..' />}
 				>
 					<Routes>
 						<Route index element={<StartPage />} />
