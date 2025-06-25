@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTelegram } from '../hooks/useTelegram';
 import { LoadingSpinner } from '../components';
-import { getStats, getDetailedStats } from '../api/analyticsService';
+import {
+	getStats,
+	getDetailedStats,
+	resetAnalytics,
+} from '../api/analyticsService';
 import type { AnalyticsStats, DetailedStats } from '../api/analyticsService';
 
 const AnalyticsPage = () => {
@@ -15,6 +19,11 @@ const AnalyticsPage = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [selectedPeriod, setSelectedPeriod] = useState(7);
+
+	// Состояние для обработки кликов по кнопке очистки
+	const [clearClickCount, setClearClickCount] = useState(0);
+	const [clearTimeout, setClearTimeout] = useState<number | null>(null);
+	const [isResetting, setIsResetting] = useState(false);
 
 	// Функция для безопасного форматирования даты
 	const formatDate = (dateString: string): string => {
@@ -70,8 +79,89 @@ const AnalyticsPage = () => {
 		loadAnalytics();
 	}, [initData, selectedPeriod]);
 
+	// Очистка таймаута при размонтировании
+	useEffect(() => {
+		return () => {
+			if (clearTimeout) {
+				window.clearTimeout(clearTimeout);
+			}
+		};
+	}, [clearTimeout]);
+
 	const handlePeriodChange = (days: number) => {
 		setSelectedPeriod(days);
+	};
+
+	// Обработчик кликов по кнопке очистки
+	const handleClearClick = () => {
+		if (isResetting) return;
+
+		const newClickCount = clearClickCount + 1;
+		setClearClickCount(newClickCount);
+
+		// Сбрасываем счетчик через 2 секунды
+		if (clearTimeout) {
+			window.clearTimeout(clearTimeout);
+		}
+		const timeout = window.setTimeout(() => {
+			setClearClickCount(0);
+		}, 2000);
+		setClearTimeout(timeout);
+
+		// При третьем клике показываем подтверждение
+		if (newClickCount === 3) {
+			setClearClickCount(0);
+			if (clearTimeout) {
+				window.clearTimeout(clearTimeout);
+			}
+
+			const confirmed = confirm(
+				'⚠️ ВНИМАНИЕ! ⚠️\n\n' +
+					'Вы действительно хотите полностью очистить всю статистику?\n\n' +
+					'Это действие:\n' +
+					'• Удалит ВСЕ события пользователей\n' +
+					'• Удалит ВСЕ игровые сессии\n' +
+					'• Удалит ВСЕХ обычных пользователей\n' +
+					'• НЕЛЬЗЯ будет отменить!\n\n' +
+					'Нажмите OK для подтверждения или Отмена для отказа.',
+			);
+
+			if (confirmed) {
+				handleResetAnalytics();
+			}
+		}
+	};
+
+	// Функция сброса аналитики
+	const handleResetAnalytics = async () => {
+		if (!initData) {
+			alert('Ошибка: не найдены данные Telegram');
+			return;
+		}
+
+		setIsResetting(true);
+		setError(null);
+
+		try {
+			const result = await resetAnalytics(initData);
+
+			// Показываем результат
+			alert(
+				'✅ Аналитика успешно сброшена!\n\n' +
+					`Удалено:\n` +
+					`• События пользователей: ${result.deletedUserEvents}\n` +
+					`• Игровые сессии: ${result.deletedGameSessions}\n` +
+					`• Пользователи: ${result.deletedUsers}`,
+			);
+
+			// Перезагружаем данные
+			window.location.reload();
+		} catch (err: any) {
+			console.error('Ошибка при сбросе аналитики:', err);
+			setError(err.message || 'Ошибка при сбросе аналитики');
+		} finally {
+			setIsResetting(false);
+		}
 	};
 
 	if (loading) {
@@ -135,11 +225,28 @@ const AnalyticsPage = () => {
 					</button>
 
 					<button
-						onDoubleClick={() => window.location.reload()}
-						className='flex items-center gap-2 text-red-500'
+						onClick={handleClearClick}
+						disabled={isResetting}
+						className={`flex items-center gap-2 transition-all duration-200 ${
+							isResetting
+								? 'text-gray-400 cursor-not-allowed'
+								: clearClickCount === 0
+								? 'text-red-500 hover:text-red-600'
+								: clearClickCount === 1
+								? 'text-orange-500 hover:text-orange-600 scale-105'
+								: 'text-red-600 hover:text-red-700 scale-110 animate-pulse'
+						}`}
 					>
 						<span>✕</span>
-						<span>Очистить</span>
+						<span>
+							{isResetting
+								? 'Сброс...'
+								: clearClickCount === 0
+								? 'Очистить'
+								: clearClickCount === 1
+								? 'Очистить (2/3)'
+								: 'Очистить (3/3)!'}
+						</span>
 					</button>
 				</div>
 

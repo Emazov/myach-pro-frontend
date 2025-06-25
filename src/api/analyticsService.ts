@@ -159,3 +159,29 @@ export const getDetailedStats = async (
 	const data = await response.json();
 	return data.stats;
 };
+
+/**
+ * Сбрасывает всю аналитику (только для админов)
+ */
+export const resetAnalytics = async (
+	initData: string,
+): Promise<{
+	deletedUserEvents: number;
+	deletedGameSessions: number;
+	deletedUsers: number;
+}> => {
+	const response = await fetch(`${API_BASE_URL}/analytics/reset`, {
+		method: 'DELETE',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `tma ${initData}`,
+		},
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+
+	const data = await response.json();
+	return data.data;
+};
