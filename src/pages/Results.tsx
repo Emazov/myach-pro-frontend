@@ -8,7 +8,6 @@ import { completeGameSession } from '../api/analyticsService';
 import { Link } from 'react-router-dom';
 
 // генерируем изображение
-import { useToPng } from '@hugocxl/react-to-image';
 
 const Results = () => {
 	const { initData } = useTelegram();
@@ -56,16 +55,6 @@ const Results = () => {
 
 		loadClub();
 	}, [initData, hasGameData]);
-
-	const [_, convert, ref] = useToPng<HTMLDivElement>({
-		quality: 0.8,
-		onSuccess: (data) => {
-			const link = document.createElement('a');
-			link.download = 'my-image-name.jpeg';
-			link.href = data;
-			link.click();
-		},
-	});
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
@@ -150,10 +139,7 @@ const Results = () => {
 				</div>
 
 				{/* Основной контент */}
-				<div
-					ref={ref}
-					className='bg-[var(--tg-theme-bg-color)] rounded-lg px-4 pt-6 pb-16 mb-2'
-				>
+				<div className='bg-[var(--tg-theme-bg-color)] rounded-lg px-4 pt-6 pb-16 mb-2'>
 					{/* Заголовок тир-листа и логотип */}
 					<div className='flex items-center justify-center mb-6'>
 						<div>
@@ -196,7 +182,7 @@ const Results = () => {
 					<button
 						className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
 						onClick={() => {
-							convert();
+							console.log('click');
 						}}
 					>
 						Поделиться

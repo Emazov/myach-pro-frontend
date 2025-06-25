@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@hugocxl/react-to-image':
-        specifier: ^0.0.9
-        version: 0.0.9(html-to-image@1.11.13)(react@19.1.0)
       '@tailwindcss/vite':
         specifier: ^4.1.10
         version: 4.1.10(vite@6.3.5(jiti@2.4.2)(lightningcss@1.30.1))
