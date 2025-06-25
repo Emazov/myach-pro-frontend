@@ -116,7 +116,7 @@ export const useGameStore = create<GameState>()(
 						processedPlayersCount: newProcessedCount,
 						progressPercentage: newProgressPercentage,
 						previousPlayerAction: previousAction,
-						canGoBack: newCurrentIndex > 1, // Можно вернуться только если это не первый игрок
+						canGoBack: newCurrentIndex > 0, // Можно вернуться только если это не первый игрок
 					});
 
 					// Проверяем завершение игры
@@ -164,7 +164,7 @@ export const useGameStore = create<GameState>()(
 						playerQueue: updatedQueue,
 						currentPlayerIndex: newCurrentIndex,
 						previousPlayerAction: previousAction,
-						canGoBack: newCurrentIndex > 1, // Можно вернуться только если это не первый игрок
+						canGoBack: newCurrentIndex > 0, // Можно вернуться только если это не первый игрок
 						// processedPlayersCount и progressPercentage не изменяются при замене
 					});
 
