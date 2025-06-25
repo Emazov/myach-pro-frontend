@@ -384,11 +384,12 @@ export const deletePlayer = async (
 export const fetchAdmins = async (initData: string): Promise<any[]> => {
 	try {
 		const response = await fetch(
-			`${API_URL}/admin/admins?initData=${encodeURIComponent(initData)}`,
+			`${API_URL}/admin/admins`,
 			{
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: `tma ${initData}`,
 				},
 			},
 		);
@@ -478,13 +479,12 @@ export const searchUsers = async (
 ): Promise<any[]> => {
 	try {
 		const response = await fetch(
-			`${API_URL}/admin/search-users?query=${encodeURIComponent(
-				query,
-			)}&initData=${encodeURIComponent(initData)}`,
+			`${API_URL}/admin/search-users?query=${encodeURIComponent(query)}`,
 			{
 				method: 'GET',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: `tma ${initData}`,
 				},
 			},
 		);
