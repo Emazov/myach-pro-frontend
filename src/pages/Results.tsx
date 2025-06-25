@@ -151,43 +151,44 @@ const Results = () => {
 
 				{/* Основной контент */}
 				<div className='bg-[var(--tg-theme-bg-color)] rounded-t-3xl flex-1 px-4 pt-6 pb-16'>
-					{/* Заголовок тир-листа и логотип */}
-					<div className='flex items-center justify-center mb-6'>
-						<div>
-							<h2 className='text-lg font-bold uppercase'>ТИР-ЛИСТ</h2>
-							<div className='flex items-center gap-2 mt-1'>
-								<img
-									src={getProxyImageUrl(club.img_url)}
-									alt={club.name}
-									className='w-8 h-8 object-contain rounded'
-									loading='eager'
-									onError={(e) => {
-										// Если логотип не загрузился, скрываем изображение
-										const target = e.target as HTMLImageElement;
-										target.style.display = 'none';
-									}}
-								/>
-								<span className='text-lg font-semibold'>{club.name}</span>
+					<div id='results_content'>
+						{/* Заголовок тир-листа и логотип */}
+						<div className='flex items-center justify-center mb-6'>
+							<div>
+								<h2 className='text-lg font-bold uppercase'>ТИР-ЛИСТ</h2>
+								<div className='flex items-center gap-2 mt-1'>
+									<img
+										src={getProxyImageUrl(club.img_url)}
+										alt={club.name}
+										className='w-8 h-8 object-contain rounded'
+										loading='eager'
+										onError={(e) => {
+											// Если логотип не загрузился, скрываем изображение
+											const target = e.target as HTMLImageElement;
+											target.style.display = 'none';
+										}}
+									/>
+									<span className='text-lg font-semibold'>{club.name}</span>
+								</div>
 							</div>
 						</div>
+
+						{/* Список категорий */}
+						<ul ref={ref} className='category_list flex flex-col gap-3 mb-6'>
+							{categories.map((category) => {
+								const players = categorizedPlayers[category.name] || [];
+								return (
+									<CategoryItem
+										key={`category-${category.name}`}
+										category={category}
+										players={players}
+										showPlayerImages={true}
+										showSkeletons={true}
+									/>
+								);
+							})}
+						</ul>
 					</div>
-
-					{/* Список категорий */}
-					<ul ref={ref} className='category_list flex flex-col gap-3 mb-6'>
-						{categories.map((category) => {
-							const players = categorizedPlayers[category.name] || [];
-							return (
-								<CategoryItem
-									key={`category-${category.name}`}
-									category={category}
-									players={players}
-									showPlayerImages={true}
-									showSkeletons={true}
-								/>
-							);
-						})}
-					</ul>
-
 					{/* Кнопка поделиться */}
 					<div className='flex flex-col items-center justify-center gap-2'>
 						<button
