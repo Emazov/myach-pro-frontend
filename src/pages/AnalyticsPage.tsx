@@ -223,30 +223,8 @@ const AnalyticsPage = () => {
 						<span>←</span>
 						<span>Назад</span>
 					</button>
-
-					<button
-						onClick={handleClearClick}
-						disabled={isResetting}
-						className={`flex items-center gap-2 transition-all duration-200 ${
-							isResetting
-								? 'text-gray-400 cursor-not-allowed'
-								: clearClickCount === 0
-								? 'text-red-500 hover:text-red-600'
-								: clearClickCount === 1
-								? 'text-orange-500 hover:text-orange-600 scale-105'
-								: 'text-red-600 hover:text-red-700 scale-110 animate-pulse'
-						}`}
-					>
-						<span>✕</span>
-						<span>
-							{isResetting
-								? 'Сброс...'
-								: clearClickCount === 0
-								? 'Очистить'
-								: clearClickCount === 1
-								? 'Очистить (2/3)'
-								: 'Очистить (3/3)!'}
-						</span>
+					<button onClick={() => window.location.reload()} className=''>
+						Обновить данные
 					</button>
 				</div>
 
@@ -398,13 +376,31 @@ const AnalyticsPage = () => {
 					</div>
 				)}
 
-				{/* Кнопка обновления */}
+				{/* Кнопка очистки */}
 				<div className='text-center mt-8'>
 					<button
-						onClick={() => window.location.reload()}
-						className='bg-[#EC3381] text-white py-3 px-8 rounded-lg font-medium hover:opacity-80 transition-opacity'
+						onClick={handleClearClick}
+						disabled={isResetting}
+						className={`flex items-center gap-2 bg-red-500 text-white py-3 px-8 rounded-lg font-medium${
+							isResetting
+								? 'text-gray-400 cursor-not-allowed'
+								: clearClickCount === 0
+								? 'text-red-500'
+								: clearClickCount === 1
+								? 'text-orange-500 scale-105'
+								: 'text-red-600 scale-110 animate-pulse'
+						}`}
 					>
-						Обновить данные
+						<span>✕</span>
+						<span>
+							{isResetting
+								? 'Сброс...'
+								: clearClickCount === 0
+								? 'Очистить'
+								: clearClickCount === 1
+								? 'Очистить (2/3)'
+								: 'Очистить (3/3)!'}
+						</span>
 					</button>
 				</div>
 			</div>
