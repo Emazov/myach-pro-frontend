@@ -16,7 +16,7 @@ export const shareResults = async (
 	shareData: ShareData,
 ): Promise<{ success: boolean; message: string; closeWebApp?: boolean }> => {
 	try {
-		const response = await api.post('/api/share/results', {
+		const response = await api.post('/share/results', {
 			initData,
 			shareData,
 		});
@@ -39,7 +39,7 @@ export const previewResultsImage = async (
 	shareData: ShareData,
 ): Promise<Blob> => {
 	try {
-		const response = await api.post('/api/share/preview', shareData, {
+		const response = await api.post('/share/preview', shareData, {
 			responseType: 'blob',
 		});
 
