@@ -180,7 +180,7 @@ const Results = () => {
 							</div>
 						</div>
 						<div className='text-right'>
-							<span className='text-black text-sm'>МЯЧ</span>
+							<span className='text-sm'>МЯЧ</span>
 						</div>
 					</div>
 
@@ -214,7 +214,7 @@ const Results = () => {
 						{isAdmin && (
 							<Link
 								to='/admin'
-								className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto mt-4'
+								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto mt-2]'
 							>
 								Админ
 							</Link>

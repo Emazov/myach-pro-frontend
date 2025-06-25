@@ -172,19 +172,19 @@ const AnalyticsPage = () => {
 					<h2 className='text-xl font-bold mb-4'>За сегодня</h2>
 					<div className='grid grid-cols-3 gap-3'>
 						<div className='bg-white rounded-lg p-3 shadow-sm'>
-							<div className='text-lg font-bold text-blue-500'>
+							<div className='text-lg font-bold text-[#EC3381]'>
 								{stats.recentStats.usersToday}
 							</div>
 							<div className='text-xs text-gray-600'>Новых пользователей</div>
 						</div>
 						<div className='bg-white rounded-lg p-3 shadow-sm'>
-							<div className='text-lg font-bold text-blue-500'>
+							<div className='text-lg font-bold text-[#EC3381]'>
 								{stats.recentStats.appStartsToday}
 							</div>
 							<div className='text-xs text-gray-600'>Запусков</div>
 						</div>
 						<div className='bg-white rounded-lg p-3 shadow-sm'>
-							<div className='text-lg font-bold text-blue-500'>
+							<div className='text-lg font-bold text-[#EC3381]'>
 								{stats.recentStats.gameCompletionsToday}
 							</div>
 							<div className='text-xs text-gray-600'>Завершений</div>
@@ -226,7 +226,9 @@ const AnalyticsPage = () => {
 										<div className='w-6 h-6 bg-[#EC3381] text-white rounded-full flex items-center justify-center text-sm font-bold'>
 											{index + 1}
 										</div>
-										<span className='font-medium'>{club.clubName}</span>
+										<span className='font-medium text-black'>
+											{club.clubName}
+										</span>
 									</div>
 									<div className='text-[#EC3381] font-bold'>
 										{club.gameCount} игр
@@ -266,7 +268,7 @@ const AnalyticsPage = () => {
 											</div>
 											<div>
 												<span className='text-gray-600'>Завершения: </span>
-												<span className='font-medium'>
+												<span className='font-medium text-black'>
 													{Number(day.game_completions) || 0}
 												</span>
 											</div>
