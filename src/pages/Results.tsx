@@ -214,7 +214,7 @@ const Results = () => {
 						{isAdmin && (
 							<Link
 								to='/admin'
-								className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto'
+								className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto mt-4'
 							>
 								Админ
 							</Link>

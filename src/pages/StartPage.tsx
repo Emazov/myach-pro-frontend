@@ -25,11 +25,7 @@ const StartPage = () => {
 								<p className='font-bold text-green-600'>Администратор</p>
 							</div>
 						</div>
-					) : (
-						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>
-							<p>Telegram ID не найден</p>
-						</div>
-					)}
+					) : null}
 				</div>
 
 				{/* Разные кнопки для админов и обычных пользователей */}
