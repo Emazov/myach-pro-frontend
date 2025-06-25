@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useUserStore } from '../store';
 
 const StartPage = () => {
-	const { isAdmin, isLoading, user, telegramId } = useUserStore();
+	const { isAdmin, isLoading, telegramId } = useUserStore();
 
 	return (
 		<div className='welcome bg-[url("/main_bg.jpg")] bg-cover bg-center h-full'>
@@ -19,20 +19,12 @@ const StartPage = () => {
 						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>
 							<p className='font-medium'>Проверка пользователя...</p>
 						</div>
-					) : telegramId ? (
+					) : telegramId && isAdmin ? (
 						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>
-							{isAdmin ? (
-								<div className='flex flex-col gap-1'>
-									<p className='font-bold text-green-600'>Администратор</p>
-									<p>ID: {telegramId}</p>
-									{user && <p>Роль: {user.role}</p>}
-								</div>
-							) : (
-								<div className='flex flex-col gap-1'>
-									<p>Обычный пользователь</p>
-									<p>ID: {telegramId}</p>
-								</div>
-							)}
+							<div className='flex flex-col gap-1'>
+								<p className='font-bold text-green-600'>Администратор</p>
+								<p>ID: {telegramId}</p>
+							</div>
 						</div>
 					) : (
 						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>

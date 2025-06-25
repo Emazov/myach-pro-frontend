@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useGameStore } from '../store';
+import { useGameStore, useUserStore } from '../store';
 import { CategoryItem, LoadingSpinner } from '../components';
 import { fetchClubs } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
+import { Link } from 'react-router-dom';
 
 const Results = () => {
 	const { initData } = useTelegram();
+	const { isAdmin } = useUserStore();
 	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -209,6 +211,14 @@ const Results = () => {
 						>
 							Поделиться
 						</button>
+						{isAdmin && (
+							<Link
+								to='/admin'
+								className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-full max-w-xs mx-auto'
+							>
+								Админ
+							</Link>
+						)}
 					</div>
 				</div>
 			</div>
