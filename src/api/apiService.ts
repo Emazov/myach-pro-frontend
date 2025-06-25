@@ -1,5 +1,6 @@
 import type { Club, Player, User } from '../types';
 import { API_BASE_URL } from '../config/api';
+import { imageService } from './imageService';
 
 const API_URL = API_BASE_URL;
 
@@ -21,13 +22,37 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
 
 		const result = await response.json();
 
-		// Преобразуем данные в нужный формат без оптимизации изображений
-		// Используем оригинальные URL для стабильности
+		// Собираем все ключи файлов для батчинга
+		const logoKeys = result.clubs
+			.map((club: any) => club.logoUrl?.split('/').pop())
+			.filter(Boolean);
+
+		// Получаем оптимизированные URL батчем
+		let optimizedUrls: Record<string, string> = {};
+		if (logoKeys.length > 0) {
+			try {
+				optimizedUrls = await imageService.getOptimizedUrls(
+					initData,
+					logoKeys,
+					{ width: 48, height: 48, format: 'webp', quality: 80 },
+				);
+			} catch (error) {
+				console.warn(
+					'Не удалось получить оптимизированные URL для логотипов:',
+					error,
+				);
+			}
+		}
+
+		// Преобразуем данные в нужный формат с fallback на оригинальные URL
 		return result.clubs.map((club: any) => {
+			const logoKey = club.logoUrl?.split('/').pop();
+			const optimizedUrl = logoKey ? optimizedUrls[logoKey] : '';
+
 			return {
 				id: club.id.toString(),
 				name: club.name,
-				img_url: club.logoUrl || '',
+				img_url: optimizedUrl || club.logoUrl || '',
 			};
 		});
 	} catch (error) {
@@ -54,13 +79,37 @@ export const fetchPlayers = async (initData: string): Promise<Player[]> => {
 
 		const result = await response.json();
 
-		// Преобразуем данные в нужный формат без оптимизации изображений
-		// Используем оригинальные URL для стабильности
+		// Собираем все ключи файлов для батчинга
+		const avatarKeys = result.players
+			.map((player: any) => player.avatarUrl?.split('/').pop())
+			.filter(Boolean);
+
+		// Получаем оптимизированные URL батчем
+		let optimizedUrls: Record<string, string> = {};
+		if (avatarKeys.length > 0) {
+			try {
+				optimizedUrls = await imageService.getOptimizedUrls(
+					initData,
+					avatarKeys,
+					{ width: 64, height: 84, format: 'webp', quality: 80 },
+				);
+			} catch (error) {
+				console.warn(
+					'Не удалось получить оптимизированные URL для аватаров:',
+					error,
+				);
+			}
+		}
+
+		// Преобразуем данные в нужный формат с fallback на оригинальные URL
 		return result.players.map((player: any, index: number) => {
+			const avatarKey = player.avatarUrl?.split('/').pop();
+			const optimizedUrl = avatarKey ? optimizedUrls[avatarKey] : '';
+
 			return {
 				id: (index + 1).toString(),
 				name: player.name,
-				img_url: player.avatarUrl || '',
+				img_url: optimizedUrl || player.avatarUrl || '',
 				club_id: '1',
 			};
 		});
@@ -80,13 +129,37 @@ export const fetchPlayersByClub = async (
 	try {
 		const club = await fetchClubById(initData, clubId);
 
-		// Преобразуем игроков команды в нужный формат без оптимизации изображений
-		// Используем оригинальные URL для стабильности
+		// Собираем все ключи файлов для батчинга
+		const avatarKeys = club.players
+			.map((player: any) => player.avatarUrl?.split('/').pop())
+			.filter(Boolean);
+
+		// Получаем оптимизированные URL батчем
+		let optimizedUrls: Record<string, string> = {};
+		if (avatarKeys.length > 0) {
+			try {
+				optimizedUrls = await imageService.getOptimizedUrls(
+					initData,
+					avatarKeys,
+					{ width: 64, height: 84, format: 'webp', quality: 80 },
+				);
+			} catch (error) {
+				console.warn(
+					'Не удалось получить оптимизированные URL для аватаров:',
+					error,
+				);
+			}
+		}
+
+		// Преобразуем игроков команды в нужный формат с fallback на оригинальные URL
 		return club.players.map((player: any) => {
+			const avatarKey = player.avatarUrl?.split('/').pop();
+			const optimizedUrl = avatarKey ? optimizedUrls[avatarKey] : '';
+
 			return {
 				id: player.id.toString(),
 				name: player.name,
-				img_url: player.avatarUrl || '',
+				img_url: optimizedUrl || player.avatarUrl || '',
 				club_id: clubId,
 			};
 		});
