@@ -51,6 +51,8 @@ function App() {
 			});
 		}
 
+		console.log('stable')
+
 		// Логируем initData только в development
 		if (isDevelopment && initData) {
 			console.log('initData:', initData);
