@@ -11,6 +11,14 @@ type AddPlayerResult =
 	| 'player_not_found'
 	| 'game_finished';
 
+// Новый тип для истории действий
+interface PreviousPlayerAction {
+	player: Player;
+	categoryName: string;
+	wasReplacement: boolean; // true если это была замена, false если добавление
+	replacedPlayer?: Player; // игрок который был заменен (если была замена)
+}
+
 interface GameState {
 	// Основное состояние
 	currentPlayerIndex: number;
@@ -21,6 +29,10 @@ interface GameState {
 	isLoading: boolean;
 	error: string | null;
 	maxPlayersToProcess: number; // Новое поле, определяющее максимальное количество игроков для обработки
+
+	// Новые поля для возврата назад
+	previousPlayerAction: PreviousPlayerAction | null;
+	canGoBack: boolean;
 
 	// Computed values
 	progressPercentage: number;
@@ -35,6 +47,7 @@ interface GameState {
 	getCurrentPlayer: () => Player | undefined;
 	resetGame: () => void;
 	initializeGame: (initData: string, clubId: string) => Promise<void>;
+	goBackToPreviousPlayer: () => boolean; // Новая функция возврата назад
 }
 
 const initialState = {
@@ -47,6 +60,8 @@ const initialState = {
 	isLoading: false,
 	error: null,
 	maxPlayersToProcess: 0,
+	previousPlayerAction: null,
+	canGoBack: false,
 };
 
 export const useGameStore = create<GameState>()(
@@ -88,11 +103,20 @@ export const useGameStore = create<GameState>()(
 					const newProgressPercentage =
 						(newProcessedCount / state.maxPlayersToProcess) * 100;
 
+					// Сохраняем действие для возможности возврата
+					const previousAction: PreviousPlayerAction = {
+						player: playerToAdd,
+						categoryName,
+						wasReplacement: false,
+					};
+
 					set({
 						categorizedPlayers: updatedCategorizedPlayers,
 						currentPlayerIndex: newCurrentIndex,
 						processedPlayersCount: newProcessedCount,
 						progressPercentage: newProgressPercentage,
+						previousPlayerAction: previousAction,
+						canGoBack: newCurrentIndex > 1, // Можно вернуться только если это не первый игрок
 					});
 
 					// Проверяем завершение игры
@@ -124,6 +148,14 @@ export const useGameStore = create<GameState>()(
 					// При замене игрока processedPlayersCount НЕ увеличивается
 					const newCurrentIndex = state.currentPlayerIndex + 1;
 
+					// Сохраняем действие для возможности возврата
+					const previousAction: PreviousPlayerAction = {
+						player: currentPlayer,
+						categoryName,
+						wasReplacement: true,
+						replacedPlayer: playerToReplace,
+					};
+
 					set({
 						categorizedPlayers: {
 							...state.categorizedPlayers,
@@ -131,6 +163,8 @@ export const useGameStore = create<GameState>()(
 						},
 						playerQueue: updatedQueue,
 						currentPlayerIndex: newCurrentIndex,
+						previousPlayerAction: previousAction,
+						canGoBack: newCurrentIndex > 1, // Можно вернуться только если это не первый игрок
 						// processedPlayersCount и progressPercentage не изменяются при замене
 					});
 
@@ -165,6 +199,8 @@ export const useGameStore = create<GameState>()(
 						categorizedPlayers: Object.fromEntries(
 							LOCAL_CATEGORIES.map((cat) => [cat.name, []]),
 						),
+						previousPlayerAction: null,
+						canGoBack: false,
 					});
 				},
 
@@ -189,6 +225,8 @@ export const useGameStore = create<GameState>()(
 							progressPercentage: 0,
 							maxPlayersToProcess: players.length,
 							isLoading: false,
+							previousPlayerAction: null,
+							canGoBack: false,
 						});
 					} catch (error) {
 						console.error('Ошибка при инициализации игры:', error);
@@ -198,6 +236,56 @@ export const useGameStore = create<GameState>()(
 							isLoading: false,
 						});
 					}
+				},
+
+				goBackToPreviousPlayer: () => {
+					const state = get();
+					if (!state.previousPlayerAction || !state.canGoBack) {
+						return false;
+					}
+
+					const { player, categoryName, wasReplacement, replacedPlayer } =
+						state.previousPlayerAction;
+					const categoryPlayers = state.categorizedPlayers[categoryName] || [];
+
+					let updatedCategoryPlayers: Player[];
+					let updatedPlayerQueue = state.playerQueue;
+					let updatedProcessedCount = state.processedPlayersCount;
+
+					if (wasReplacement) {
+						// Возвращаем замененного игрока на место, убираем текущего
+						updatedCategoryPlayers = categoryPlayers.map((p) =>
+							p.id === player.id ? replacedPlayer! : p,
+						);
+						// Убираем замененного игрока из конца очереди
+						updatedPlayerQueue = state.playerQueue.slice(0, -1);
+					} else {
+						// Убираем добавленного игрока из категории
+						updatedCategoryPlayers = categoryPlayers.filter(
+							(p) => p.id !== player.id,
+						);
+						// Уменьшаем счетчик обработанных игроков
+						updatedProcessedCount = state.processedPlayersCount - 1;
+					}
+
+					const newCurrentIndex = state.currentPlayerIndex - 1;
+					const newProgressPercentage =
+						(updatedProcessedCount / state.maxPlayersToProcess) * 100;
+
+					set({
+						categorizedPlayers: {
+							...state.categorizedPlayers,
+							[categoryName]: updatedCategoryPlayers,
+						},
+						playerQueue: updatedPlayerQueue,
+						currentPlayerIndex: newCurrentIndex,
+						processedPlayersCount: updatedProcessedCount,
+						progressPercentage: newProgressPercentage,
+						previousPlayerAction: null,
+						canGoBack: false,
+					});
+
+					return true;
 				},
 			}),
 			{
@@ -210,6 +298,8 @@ export const useGameStore = create<GameState>()(
 					categories: state.categories,
 					maxPlayersToProcess: state.maxPlayersToProcess,
 					playerQueue: state.playerQueue, // Добавляем playerQueue для сохранения полной информации об игроках
+					previousPlayerAction: state.previousPlayerAction,
+					canGoBack: state.canGoBack,
 				}),
 			},
 		),
