@@ -358,7 +358,7 @@ const AnalyticsPage = () => {
 										<div className='grid grid-cols-2 gap-4 text-sm'>
 											<div>
 												<span className='text-gray-600'>Запуски: </span>
-												<span className='font-medium'>
+												<span className='font-medium text-black'>
 													{Number(day.app_starts) || 0}
 												</span>
 											</div>
