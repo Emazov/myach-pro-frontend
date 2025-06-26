@@ -1,11 +1,11 @@
 import { api } from './apiService';
-import type { CategorizedPlayers, Category } from '../types';
+import type { Category } from '../types';
 
+// Новая структура - передаем только IDs игроков по категориям
 export interface ShareData {
-	categorizedPlayers: CategorizedPlayers;
+	categorizedPlayerIds: { [categoryName: string]: string[] };
 	categories: Category[];
-	clubName: string;
-	clubLogoUrl?: string;
+	clubId: string; // Передаем ID клуба вместо названия и URL
 }
 
 /**

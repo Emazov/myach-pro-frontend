@@ -67,11 +67,17 @@ const Results = () => {
 		setIsSharing(true);
 
 		try {
+			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+
+			Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+				categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+			});
+
 			const shareData: ShareData = {
-				categorizedPlayers,
+				categorizedPlayerIds,
 				categories,
-				clubName: club.name,
-				clubLogoUrl: club.img_url,
+				clubId: club.id, // Передаем только ID клуба
 			};
 
 			const result = await shareResults(initData, shareData);
