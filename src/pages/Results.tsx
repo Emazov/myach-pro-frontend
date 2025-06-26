@@ -174,26 +174,9 @@ const Results = () => {
 
 	// Функция для генерации текстового описания для шаринга
 	const generateShareText = (): string => {
-		let text = `🏆 ТИР-ЛИСТ "${club.name.toUpperCase()}"\n\n`;
-
-		categories.forEach((category) => {
-			const players = categorizedPlayers[category.name] || [];
-			text += `${category.name.toUpperCase()} (${players.length}/${
-				category.slots
-			}):\n`;
-
-			if (players.length > 0) {
-				players.forEach((player, index) => {
-					text += `${index + 1}. ${player.name}\n`;
-				});
-			} else {
-				text += '— Пусто\n';
-			}
-			text += '\n';
-		});
-
-		text += '⚽ Создано в @myach_pro_bot';
-		return text;
+		return `Собери свой тир лист - @${
+			import.meta.env.VITE_TELEGRAM_BOT_USERNAME
+		}`;
 	};
 
 	// Функции для обработки выбора способа шаринга
