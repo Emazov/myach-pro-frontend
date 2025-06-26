@@ -25,7 +25,7 @@ const CategoryItem = React.memo<CategoryItemProps>(
 		if (showPlayerImages) {
 			return (
 				<li
-					className='category_item rounded-md py-[clamp(0.2rem,0.5vh,1rem)] flex px-[clamp(0.2rem,0.5vh,1rem)] justify-between items-center'
+					className='category_item rounded-[15px] py-[5px] flex pl-[10px] pr-[5px] justify-between items-center'
 					style={{ backgroundColor: category.color }}
 				>
 					<p className='ml-1 category_name text-[clamp(1rem,4vw,4rem)] font-bold text-white text-left uppercase '>
@@ -35,13 +35,13 @@ const CategoryItem = React.memo<CategoryItemProps>(
 						{/* Отображаем игроков */}
 						{players.map((player) => (
 							<li
-								className='player_item flex items-center justify-center rounded-lg w-[clamp(2rem,3.5vw,3rem)] h-[clamp(2.6rem,4.6vw,4rem)] overflow-hidden'
+								className='player_item flex items-center justify-center rounded-lg w-[clamp(3rem,3.5vw,4rem)] overflow-hidden'
 								key={`slot-${player.id}`}
 							>
 								<img
 									src={getProxyImageUrl(player.img_url)}
 									alt={player.name}
-									className='w-full h-full object-cover rounded-md'
+									className='w-full h-full object-cover rounded-[10px]'
 									loading='eager'
 									onError={(e) => {
 										// Если изображение не загрузилось, показываем плейсхолдер с именем игрока
