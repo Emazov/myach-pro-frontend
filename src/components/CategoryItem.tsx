@@ -35,7 +35,7 @@ const CategoryItem = React.memo<CategoryItemProps>(
 						{/* Отображаем игроков */}
 						{players.map((player) => (
 							<li
-								className='player_item flex items-center justify-center w-[clamp(2rem,3.5vw,3rem)] overflow-hidden'
+								className='player_item flex items-center justify-center w-[clamp(2.5rem,4vw,3.5rem)] overflow-hidden'
 								key={`slot-${player.id}`}
 							>
 								<img

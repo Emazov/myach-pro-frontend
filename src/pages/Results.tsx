@@ -170,7 +170,7 @@ const Results = () => {
 					<img
 						src='./main_logo.png'
 						alt='main_logo'
-						className='w-20 object-contain'
+						className='w-40 object-contain'
 						loading='eager'
 					/>
 				</div>
@@ -183,7 +183,7 @@ const Results = () => {
 							<img
 								src={getProxyImageUrl(club.img_url)}
 								alt={club.name}
-								className='w-10 object-contain rounded'
+								className='w-12 object-contain rounded'
 								loading='eager'
 								onError={(e) => {
 									// Если логотип не загрузился, скрываем изображение
@@ -191,7 +191,7 @@ const Results = () => {
 									target.style.display = 'none';
 								}}
 							/>
-							<span className='text-[clamp(1rem,4vw,4rem)] font-bold'>
+							<span className='text-[clamp(2rem,4vw,4rem)] font-bold'>
 								{club.name}
 							</span>
 						</div>
