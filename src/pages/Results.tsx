@@ -98,8 +98,11 @@ const Results = () => {
 				type: 'image/jpeg',
 			});
 
-			// Используем Web Share API только с изображением
+			// Используем Web Share API с изображением и текстом
 			await navigator.share({
+				text: `Собери свой тир лист - @${
+					import.meta.env.VITE_TELEGRAM_BOT_USERNAME
+				}`,
 				files: [imageFile],
 			});
 
