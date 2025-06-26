@@ -163,41 +163,37 @@ const Results = () => {
 	}
 
 	return (
-		<div className='min-h-screen bg-gradient-to-b from-[#EC3381] to-[#FF6B9D] flex flex-col'>
+		<div className='min-h-screen bg-[url("/main_bg.jpg")] flex flex-col'>
 			<div className='flex-1 flex flex-col'>
 				{/* Заголовок с мячом */}
-				<div className='text-center py-6'>
-					<div className='flex items-center justify-center gap-3 mb-2'>
-						<img
-							src='./main_logo.png'
-							alt='main_logo'
-							className='w-16 h-16 object-contain'
-							loading='eager'
-						/>
-					</div>
-					<h1 className='text-white text-3xl font-bold'>РЕЗУЛЬТАТ</h1>
+				<div className='flex items-center justify-center gap-3'>
+					<img
+						src='./main_logo.png'
+						alt='main_logo'
+						className='w-20 object-contain'
+						loading='eager'
+					/>
 				</div>
 
 				{/* Основной контент */}
-				<div className='bg-[var(--tg-theme-bg-color)] rounded-lg px-4 pt-6 pb-16 mb-2'>
+				<div className='bg-[var(--tg-theme-bg-color)] flex-1 rounded-t-3xl px-4 pt-6 '>
 					{/* Заголовок тир-листа и логотип */}
-					<div className='flex items-center justify-center mb-6'>
-						<div>
-							<h2 className='text-lg font-bold uppercase'>ТИР-ЛИСТ</h2>
-							<div className='flex items-center gap-2 mt-1'>
-								<img
-									src={getProxyImageUrl(club.img_url)}
-									alt={club.name}
-									className='w-8 h-8 object-contain rounded'
-									loading='eager'
-									onError={(e) => {
-										// Если логотип не загрузился, скрываем изображение
-										const target = e.target as HTMLImageElement;
-										target.style.display = 'none';
-									}}
-								/>
-								<span className='text-lg font-semibold'>{club.name}</span>
-							</div>
+					<div className='flex items-center justify-center gap-2 mb-6'>
+						<div className='flex items-center gap-2'>
+							<img
+								src={getProxyImageUrl(club.img_url)}
+								alt={club.name}
+								className='w-10 object-contain rounded'
+								loading='eager'
+								onError={(e) => {
+									// Если логотип не загрузился, скрываем изображение
+									const target = e.target as HTMLImageElement;
+									target.style.display = 'none';
+								}}
+							/>
+							<span className='text-[clamp(1rem,4vw,4rem)] font-bold'>
+								{club.name}
+							</span>
 						</div>
 					</div>
 
@@ -216,24 +212,24 @@ const Results = () => {
 							);
 						})}
 					</ul>
-				</div>
-				{/* Кнопка поделиться */}
-				<div className='flex flex-col items-center justify-center gap-2'>
-					<button
-						className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed'
-						onClick={handleShare}
-						disabled={isSharing}
-					>
-						{isSharing ? 'Отправляем...' : 'Поделиться'}
-					</button>
-					{isAdmin && (
-						<Link
-							to='/admin'
-							className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
+					{/* Кнопка поделиться */}
+					<div className='flex flex-col items-center justify-center gap-2'>
+						<button
+							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed'
+							onClick={handleShare}
+							disabled={isSharing}
 						>
-							Админ
-						</Link>
-					)}
+							{isSharing ? 'Отправляем...' : 'Поделиться'}
+						</button>
+						{isAdmin && (
+							<Link
+								to='/admin'
+								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
+							>
+								Админ
+							</Link>
+						)}
+					</div>
 				</div>
 			</div>
 		</div>
