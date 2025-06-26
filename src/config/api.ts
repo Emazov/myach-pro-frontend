@@ -32,13 +32,10 @@ if (import.meta.env.DEV) {
 }
 
 // Определяем базовый URL для API с fallback значением
-export const API_BASE_URL =
-	import.meta.env.VITE_API_URL ||
-	(import.meta.env.DEV ? 'http://localhost:3000/api' : '/api');
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Telegram Bot Username с fallback
-export const TELEGRAM_BOT_USERNAME =
-	import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'myach_pro_bot';
+export const TELEGRAM_BOT_USERNAME = import.meta.env.VITE_TELEGRAM_BOT_USERNAME;
 
 // Экспортируем для использования в других файлах
 export const API_CONFIG = {
