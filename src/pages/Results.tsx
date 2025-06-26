@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useGameStore, useUserStore } from '../store';
 import { CategoryItem, LoadingSpinner } from '../components';
-import { fetchClubs, shareResults, type ShareData } from '../api';
+import {
+	fetchClubs,
+	shareResults,
+	previewResultsImage,
+	type ShareData,
+} from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
@@ -17,6 +22,7 @@ const Results = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isSharing, setIsSharing] = useState(false);
+	const [showShareModal, setShowShareModal] = useState(false);
 
 	// Проверяем, есть ли данные игры
 	const hasGameData =
@@ -64,6 +70,76 @@ const Results = () => {
 			return;
 		}
 
+		// Проверяем поддержку Web Share API
+		if ('share' in navigator) {
+			// Показываем модальное окно выбора способа шаринга
+			setShowShareModal(true);
+		} else {
+			// Если Web Share API не поддерживается, сразу отправляем в Telegram
+			await handleTelegramShare();
+		}
+	};
+
+	// Новая функция для системного шаринга через Web Share API
+	const handleWebShare = async () => {
+		setIsSharing(true);
+
+		try {
+			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+
+			Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+				categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+			});
+
+			const shareData: ShareData = {
+				categorizedPlayerIds,
+				categories,
+				clubId: club.id,
+			};
+
+			// Получаем изображение как Blob для шаринга
+			const imageBlob = await previewResultsImage(shareData);
+
+			// Создаем файл из Blob
+			const imageFile = new File([imageBlob], `tier-list-${club.name}.jpg`, {
+				type: 'image/jpeg',
+			});
+
+			// Генерируем текстовое описание
+			const shareText = generateShareText();
+
+			// Используем Web Share API
+			await navigator.share({
+				title: `🏆 Тир-лист "${club.name}"`,
+				text: shareText,
+				files: [imageFile],
+			});
+
+			console.log('Успешно поделились через Web Share API');
+		} catch (error: any) {
+			console.error('Ошибка при шаринге через Web Share API:', error);
+
+			// Если Web Share API не сработал, fallback на Telegram
+			if (error.name === 'AbortError') {
+				console.log('Пользователь отменил шаринг');
+				return;
+			}
+
+			// В случае ошибки предлагаем отправить в Telegram
+			const fallbackChoice = confirm(
+				'Не удалось поделиться через системное окно. Отправить в Telegram?',
+			);
+			if (fallbackChoice) {
+				await handleTelegramShare();
+			}
+		} finally {
+			setIsSharing(false);
+		}
+	};
+
+	// Существующая логика отправки в Telegram
+	const handleTelegramShare = async () => {
 		setIsSharing(true);
 
 		try {
@@ -94,6 +170,41 @@ const Results = () => {
 		} finally {
 			setIsSharing(false);
 		}
+	};
+
+	// Функция для генерации текстового описания для шаринга
+	const generateShareText = (): string => {
+		let text = `🏆 ТИР-ЛИСТ "${club.name.toUpperCase()}"\n\n`;
+
+		categories.forEach((category) => {
+			const players = categorizedPlayers[category.name] || [];
+			text += `${category.name.toUpperCase()} (${players.length}/${
+				category.slots
+			}):\n`;
+
+			if (players.length > 0) {
+				players.forEach((player, index) => {
+					text += `${index + 1}. ${player.name}\n`;
+				});
+			} else {
+				text += '— Пусто\n';
+			}
+			text += '\n';
+		});
+
+		text += '⚽ Создано в @myach_pro_bot';
+		return text;
+	};
+
+	// Функции для обработки выбора способа шаринга
+	const handleWebShareChoice = async () => {
+		setShowShareModal(false);
+		await handleWebShare();
+	};
+
+	const handleTelegramShareChoice = async () => {
+		setShowShareModal(false);
+		await handleTelegramShare();
 	};
 
 	// Показываем загрузку, если данные еще не получены
@@ -232,6 +343,44 @@ const Results = () => {
 					</div>
 				</div>
 			</div>
+
+			{/* Модальное окно выбора способа шаринга */}
+			{showShareModal && (
+				<div className='fixed inset-0 flex items-center justify-center z-50 bg-black/50'>
+					<div className='bg-white rounded-lg p-6 w-full max-w-sm mx-4'>
+						<h3 className='text-lg font-bold text-center mb-4 text-black'>
+							Выберите способ поделиться
+						</h3>
+						<p className='text-sm text-gray-600 text-center mb-6'>
+							Поделитесь результатами с друзьями
+						</p>
+
+						<div className='flex flex-col gap-3'>
+							<button
+								onClick={handleWebShareChoice}
+								disabled={isSharing}
+								className='flex items-center justify-center gap-2 bg-[#0088cc] text-white font-bold py-3 px-4 rounded-lg text-lg transition-opacity hover:opacity-90 disabled:opacity-50'
+							>
+								📱 Системное окно шаринга
+							</button>
+							<button
+								onClick={handleTelegramShareChoice}
+								disabled={isSharing}
+								className='flex items-center justify-center gap-2 bg-[#EC3381] text-white font-bold py-3 px-4 rounded-lg text-lg transition-opacity hover:opacity-90 disabled:opacity-50'
+							>
+								✈️ Отправить в Telegram
+							</button>
+							<button
+								onClick={() => setShowShareModal(false)}
+								disabled={isSharing}
+								className='text-gray-500 py-2 text-sm transition-opacity hover:opacity-70 disabled:opacity-50'
+							>
+								Отмена
+							</button>
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
