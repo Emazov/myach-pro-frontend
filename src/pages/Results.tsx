@@ -5,6 +5,7 @@ import { fetchClubs, previewResultsImage, type ShareData } from '../api';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
+import { TELEGRAM_BOT_USERNAME } from '../config/api';
 import { Link } from 'react-router-dom';
 
 // генерируем изображение
@@ -100,9 +101,7 @@ const Results = () => {
 
 			// Используем Web Share API с изображением и текстом
 			await navigator.share({
-				text: `Собери свой тир лист - @${
-					import.meta.env.VITE_TELEGRAM_BOT_USERNAME
-				}`,
+				text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
 				files: [imageFile],
 			});
 
