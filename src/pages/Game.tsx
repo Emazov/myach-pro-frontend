@@ -183,7 +183,7 @@ const Game = () => {
 						style={{ width: `${progressPercentage}%` }}
 					/>
 					<img
-						src='./assets/progress.png'
+						src='./progress.png'
 						alt='progress logo'
 						className='absolute top-1/2 -translate-y-1/2 w-8 z-10 rounded-full'
 						style={{ left: `calc(${progressPercentage}% - 16px)` }}
