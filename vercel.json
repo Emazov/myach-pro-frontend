@@ -1,4 +1,6 @@
 {
+	"buildCommand": "pnpm build",
+	"outputDirectory": "dist",
 	"rewrites": [
 		{
 			"source": "/(.*)",
@@ -33,10 +35,5 @@
 				}
 			]
 		}
-	],
-	"functions": {
-		"app/api/**": {
-			"maxDuration": 10
-		}
-	}
+	]
 }
