@@ -15,10 +15,17 @@ export const shareResults = async (
 	shareData: ShareData,
 ): Promise<{ success: boolean; message: string; closeWebApp?: boolean }> => {
 	try {
-		const response = await api.post('/share/results', {
-			initData,
-			shareData,
-		});
+		const response = await api.post(
+			'/share/results',
+			{
+				shareData,
+			},
+			{
+				headers: {
+					Authorization: `tma ${initData}`,
+				},
+			},
+		);
 
 		return response.data;
 	} catch (error: any) {

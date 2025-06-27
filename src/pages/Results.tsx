@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react';
 import { useGameStore, useUserStore } from '../store';
 import { CategoryItem, LoadingSpinner, ShareTestPanel } from '../components';
 import { fetchClubs } from '../api';
-import { downloadResultsImage, type ShareData } from '../api/shareService';
+import {
+	downloadResultsImage,
+	shareResults,
+	type ShareData,
+} from '../api/shareService';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
@@ -32,7 +36,7 @@ const getDisplayClubName = (clubName: string): string => {
 };
 
 const Results = () => {
-	const { initData } = useTelegram();
+	const { initData, tg } = useTelegram();
 	const { isAdmin } = useUserStore();
 	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
@@ -107,42 +111,74 @@ const Results = () => {
 				clubId: club.id,
 			};
 
-			setShareStatus('Получаем изображение...');
+			// Проверяем платформу для выбора метода шэринга
+			if (platform === 'ios') {
+				// Для iOS оставляем поведение с webview
+				setShareStatus('Получаем изображение...');
 
-			// Получаем изображение в высоком качестве
-			const { blob } = await downloadResultsImage(initData, shareData);
+				// Получаем изображение в высоком качестве
+				const { blob } = await downloadResultsImage(initData, shareData);
 
-			setShareStatus('Подготавливаем к шэрингу...');
+				setShareStatus('Подготавливаем к шэрингу...');
 
-			// Подготавливаем данные для универсального шэринга
-			const shareOptions: ShareOptions = {
-				imageBlob: blob,
-				text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
-				clubName: club.name,
-			};
-
-			setShareStatus('Открываем шэринг...');
-
-			// Используем универсальную функцию шэринга
-			const result = await universalShare(shareOptions);
-
-			if (result.success) {
-				const methodNames: { [key: string]: string } = {
-					webShare: 'системный шэринг',
-					telegram: 'Telegram',
-					clipboard: 'буфер обмена',
-					download: 'скачивание',
+				// Подготавливаем данные для универсального шэринга
+				const shareOptions: ShareOptions = {
+					imageBlob: blob,
+					text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
+					clubName: club.name,
 				};
 
-				setShareStatus(
-					`✅ Успешно: ${methodNames[result.method] || result.method}`,
-				);
+				setShareStatus('Открываем шэринг...');
+
+				// Используем универсальную функцию шэринга для iOS
+				const result = await universalShare(shareOptions);
+
+				if (result.success) {
+					const methodNames: { [key: string]: string } = {
+						webShare: 'системный шэринг',
+						telegram: 'Telegram',
+						clipboard: 'буфер обмена',
+						download: 'скачивание',
+					};
+
+					setShareStatus(
+						`✅ Успешно: ${methodNames[result.method] || result.method}`,
+					);
+				} else {
+					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+				}
 			} else {
-				setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+				// Для других ОС отправляем картинку в чат бота
+				setShareStatus('Отправляем в чат...');
+
+				const result = await shareResults(initData, shareData);
+
+				if (result.success) {
+					setShareStatus('✅ Изображение отправлено в чат!');
+
+					// Для других ОС закрываем веб-приложение через 2 секунды
+					if (result.closeWebApp) {
+						setTimeout(() => {
+							if (tg && tg.close) {
+								tg.close();
+							}
+						}, 2000);
+					}
+				} else {
+					setShareStatus(
+						`❌ ${result.message || 'Не удалось отправить в чат'}`,
+					);
+				}
 			}
 		} catch (error: any) {
 			console.error('Ошибка при шэринге:', error);
-			setShareStatus(`❌ ${error.message || 'Не удалось создать изображение'}`);
+			if (platform === 'ios') {
+				setShareStatus(
+					`❌ ${error.message || 'Не удалось создать изображение'}`,
+				);
+			} else {
+				setShareStatus(`❌ ${error.message || 'Не удалось отправить в чат'}`);
+			}
 		} finally {
 			setIsSharing(false);
 
@@ -322,8 +358,23 @@ const Results = () => {
 							onClick={handleShare}
 							disabled={isSharing}
 						>
-							{isSharing ? 'Подготавливаем...' : 'Поделиться'}
+							{isSharing
+								? platform === 'ios'
+									? 'Подготавливаем...'
+									: 'Отправляем...'
+								: platform === 'ios'
+								? 'Поделиться'
+								: 'Отправить в чат'}
 						</button>
+
+						{/* Подсказка в зависимости от платформы */}
+						{!isSharing && (
+							<div className='text-xs text-gray-500 text-center max-w-xs'>
+								{platform === 'ios'
+									? 'Откроется системное меню для шэринга'
+									: 'Изображение будет отправлено в чат с ботом'}
+							</div>
+						)}
 
 						{/* Статус шэринга */}
 						{shareStatus && (
