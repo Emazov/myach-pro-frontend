@@ -33,7 +33,7 @@ const Modal = React.memo<ModalProps>(
 							В категории "{categoryName?.toUpperCase()}" больше нет мест!
 						</h3>
 						<p className='text-center my-4 text-[clamp(0.9rem,3vw,1.2rem)]'>
-							Выберите игрока для замены:
+							Выберите на кого заменить:
 						</p>
 
 						{/* Сетка игроков */}

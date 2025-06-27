@@ -11,12 +11,21 @@ type AddPlayerResult =
 	| 'player_not_found'
 	| 'game_finished';
 
-// Новый тип для истории действий
-interface PreviousPlayerAction {
+// Расширенный тип для истории действий
+interface GameHistoryAction {
+	actionId: string; // Уникальный ID действия
 	player: Player;
 	categoryName: string;
-	wasReplacement: boolean; // true если это была замена, false если добавление
-	replacedPlayer?: Player; // игрок который был заменен (если была замена)
+	wasReplacement: boolean;
+	replacedPlayer?: Player;
+	timestamp: number;
+	// Состояние игры на момент действия для быстрого восстановления
+	gameStateSnapshot: {
+		currentPlayerIndex: number;
+		processedPlayersCount: number;
+		progressPercentage: number;
+		categorizedPlayers: CategorizedPlayers;
+	};
 }
 
 interface GameState {
@@ -28,10 +37,10 @@ interface GameState {
 	categories: Category[];
 	isLoading: boolean;
 	error: string | null;
-	maxPlayersToProcess: number; // Новое поле, определяющее максимальное количество игроков для обработки
+	maxPlayersToProcess: number;
 
-	// Новые поля для возврата назад
-	previousPlayerAction: PreviousPlayerAction | null;
+	// Расширенная история для возврата к любому состоянию
+	gameHistory: GameHistoryAction[];
 	canGoBack: boolean;
 
 	// Computed values
@@ -47,7 +56,9 @@ interface GameState {
 	getCurrentPlayer: () => Player | undefined;
 	resetGame: () => void;
 	initializeGame: (initData: string, clubId: string) => Promise<void>;
-	goBackToPreviousPlayer: () => boolean; // Новая функция возврата назад
+	goBackToPreviousPlayer: () => boolean; // Возврат на один шаг
+	goBackToAction: (actionId: string) => boolean; // Возврат к конкретному действию
+	getGameHistory: () => GameHistoryAction[]; // Получить историю для UI
 }
 
 const initialState = {
@@ -60,7 +71,7 @@ const initialState = {
 	isLoading: false,
 	error: null,
 	maxPlayersToProcess: 0,
-	previousPlayerAction: null,
+	gameHistory: [],
 	canGoBack: false,
 };
 
@@ -104,10 +115,18 @@ export const useGameStore = create<GameState>()(
 						(newProcessedCount / state.maxPlayersToProcess) * 100;
 
 					// Сохраняем действие для возможности возврата
-					const previousAction: PreviousPlayerAction = {
+					const previousAction: GameHistoryAction = {
+						actionId: Date.now().toString(),
 						player: playerToAdd,
 						categoryName,
 						wasReplacement: false,
+						timestamp: Date.now(),
+						gameStateSnapshot: {
+							currentPlayerIndex: newCurrentIndex,
+							processedPlayersCount: newProcessedCount,
+							progressPercentage: newProgressPercentage,
+							categorizedPlayers: updatedCategorizedPlayers,
+						},
 					};
 
 					set({
@@ -115,7 +134,7 @@ export const useGameStore = create<GameState>()(
 						currentPlayerIndex: newCurrentIndex,
 						processedPlayersCount: newProcessedCount,
 						progressPercentage: newProgressPercentage,
-						previousPlayerAction: previousAction,
+						gameHistory: [...state.gameHistory, previousAction],
 						canGoBack: newCurrentIndex > 0, // Можно вернуться только если это не первый игрок
 					});
 
@@ -149,11 +168,22 @@ export const useGameStore = create<GameState>()(
 					const newCurrentIndex = state.currentPlayerIndex + 1;
 
 					// Сохраняем действие для возможности возврата
-					const previousAction: PreviousPlayerAction = {
+					const previousAction: GameHistoryAction = {
+						actionId: Date.now().toString(),
 						player: currentPlayer,
 						categoryName,
 						wasReplacement: true,
 						replacedPlayer: playerToReplace,
+						timestamp: Date.now(),
+						gameStateSnapshot: {
+							currentPlayerIndex: newCurrentIndex,
+							processedPlayersCount: state.processedPlayersCount,
+							progressPercentage: state.progressPercentage,
+							categorizedPlayers: {
+								...state.categorizedPlayers,
+								[categoryName]: updatedCategoryPlayers,
+							},
+						},
 					};
 
 					set({
@@ -163,7 +193,7 @@ export const useGameStore = create<GameState>()(
 						},
 						playerQueue: updatedQueue,
 						currentPlayerIndex: newCurrentIndex,
-						previousPlayerAction: previousAction,
+						gameHistory: [...state.gameHistory, previousAction],
 						canGoBack: newCurrentIndex > 0, // Можно вернуться только если это не первый игрок
 						// processedPlayersCount и progressPercentage не изменяются при замене
 					});
@@ -199,7 +229,7 @@ export const useGameStore = create<GameState>()(
 						categorizedPlayers: Object.fromEntries(
 							LOCAL_CATEGORIES.map((cat) => [cat.name, []]),
 						),
-						previousPlayerAction: null,
+						gameHistory: [],
 						canGoBack: false,
 					});
 				},
@@ -225,7 +255,7 @@ export const useGameStore = create<GameState>()(
 							progressPercentage: 0,
 							maxPlayersToProcess: players.length,
 							isLoading: false,
-							previousPlayerAction: null,
+							gameHistory: [],
 							canGoBack: false,
 						});
 					} catch (error) {
@@ -240,12 +270,17 @@ export const useGameStore = create<GameState>()(
 
 				goBackToPreviousPlayer: () => {
 					const state = get();
-					if (!state.previousPlayerAction || !state.canGoBack) {
+					if (!state.gameHistory.length || !state.canGoBack) {
+						return false;
+					}
+
+					const lastAction = state.gameHistory[state.gameHistory.length - 1];
+					if (!lastAction) {
 						return false;
 					}
 
 					const { player, categoryName, wasReplacement, replacedPlayer } =
-						state.previousPlayerAction;
+						lastAction;
 					const categoryPlayers = state.categorizedPlayers[categoryName] || [];
 
 					let updatedCategoryPlayers: Player[];
@@ -281,11 +316,62 @@ export const useGameStore = create<GameState>()(
 						currentPlayerIndex: newCurrentIndex,
 						processedPlayersCount: updatedProcessedCount,
 						progressPercentage: newProgressPercentage,
-						previousPlayerAction: null,
-						canGoBack: false,
+						gameHistory: state.gameHistory.slice(0, -1),
+						canGoBack: newCurrentIndex > 0,
 					});
 
 					return true;
+				},
+
+				goBackToAction: (actionId: string) => {
+					const state = get();
+					const actionIndex = state.gameHistory.findIndex(
+						(action) => action.actionId === actionId,
+					);
+					if (actionIndex === -1) return false;
+
+					// Берем снапшот состояния ПЕРЕД выполнением этого действия
+					// Если actionIndex === 0, то возвращаемся к самому началу
+					if (actionIndex === 0) {
+						// Возврат к началу игры
+						const emptyCategorizedPlayers = Object.fromEntries(
+							state.categories.map((cat) => [cat.name, []]),
+						);
+
+						set({
+							categorizedPlayers: emptyCategorizedPlayers,
+							currentPlayerIndex: 0,
+							processedPlayersCount: 0,
+							progressPercentage: 0,
+							gameHistory: [],
+							canGoBack: false,
+						});
+						return true;
+					}
+
+					// Восстанавливаем состояние на момент ПЕРЕД выбранным действием
+					const previousAction = state.gameHistory[actionIndex - 1];
+					if (!previousAction) {
+						return false;
+					}
+
+					const { gameStateSnapshot } = previousAction;
+
+					set({
+						currentPlayerIndex: gameStateSnapshot.currentPlayerIndex,
+						processedPlayersCount: gameStateSnapshot.processedPlayersCount,
+						progressPercentage: gameStateSnapshot.progressPercentage,
+						categorizedPlayers: gameStateSnapshot.categorizedPlayers,
+						gameHistory: state.gameHistory.slice(0, actionIndex),
+						canGoBack: actionIndex > 0,
+					});
+
+					return true;
+				},
+
+				getGameHistory: () => {
+					const state = get();
+					return state.gameHistory;
 				},
 			}),
 			{
@@ -298,7 +384,7 @@ export const useGameStore = create<GameState>()(
 					categories: state.categories,
 					maxPlayersToProcess: state.maxPlayersToProcess,
 					playerQueue: state.playerQueue, // Добавляем playerQueue для сохранения полной информации об игроках
-					previousPlayerAction: state.previousPlayerAction,
+					gameHistory: state.gameHistory,
 					canGoBack: state.canGoBack,
 				}),
 			},
