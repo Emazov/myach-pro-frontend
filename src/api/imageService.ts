@@ -155,41 +155,58 @@ export class ImageService {
 		}
 
 		try {
-			const response = await fetch(`${API_BASE_URL}/upload/batch-urls`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `tma ${initData}`,
-				},
-				body: JSON.stringify({ fileKeys: uncachedFileKeys, ...options }),
+			// Разбиваем на батчи по 10 файлов для оптимизации
+			const batchSize = 10;
+			const batches: string[][] = [];
+
+			for (let i = 0; i < uncachedFileKeys.length; i += batchSize) {
+				batches.push(uncachedFileKeys.slice(i, i + batchSize));
+			}
+
+			// Обрабатываем все батчи параллельно
+			const batchPromises = batches.map(async (batch) => {
+				const response = await fetch(`${API_BASE_URL}/upload/batch-urls`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `tma ${initData}`,
+					},
+					body: JSON.stringify({ fileKeys: batch, ...options }),
+				});
+
+				if (!response.ok) {
+					// Fallback на пустые URL для некэшированных файлов
+					const result: Record<string, string> = {};
+					batch.forEach((key) => {
+						result[key] = '';
+					});
+					return result;
+				}
+
+				const result: BatchUrlsResponse = await response.json();
+				return result.urls || {};
 			});
 
-			if (!response.ok) {
-				// Fallback на пустые URL для некэшированных файлов
-				const result: Record<string, string> = { ...cachedResults };
-				uncachedFileKeys.forEach((key) => {
-					result[key] = '';
-				});
-				return result;
-			}
+			const batchResults = await Promise.all(batchPromises);
 
-			const result: BatchUrlsResponse = await response.json();
+			// Объединяем результаты всех батчей
+			const allUrls = batchResults.reduce((acc, batchResult) => {
+				return { ...acc, ...batchResult };
+			}, {});
 
 			// Кэшируем каждый URL отдельно
-			if (result.urls) {
-				Object.entries(result.urls).forEach(([key, url]) => {
-					if (url) {
-						const cacheKey = `${key}_${JSON.stringify(options)}`;
-						this.urlCache.set(cacheKey, {
-							url: url,
-							expires: Date.now() + 22 * 60 * 60 * 1000,
-						});
-					}
-				});
-			}
+			Object.entries(allUrls).forEach(([key, url]) => {
+				if (url) {
+					const cacheKey = `${key}_${JSON.stringify(options)}`;
+					this.urlCache.set(cacheKey, {
+						url: url,
+						expires: Date.now() + 22 * 60 * 60 * 1000,
+					});
+				}
+			});
 
 			// Объединяем кэшированные и новые результаты
-			return { ...cachedResults, ...result.urls };
+			return { ...cachedResults, ...allUrls };
 		} catch (error) {
 			console.error('Ошибка получения URL изображений:', error);
 			// Возвращаем кэшированные URL и пустые для некэшированных как fallback

@@ -1,8 +1,27 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUserStore } from '../store';
 
+// Preload критически важные изображения
+const preloadCriticalImages = () => {
+	const images = ['/main_bg.jpg', '/main_logo.png'];
+
+	images.forEach((src) => {
+		const link = document.createElement('link');
+		link.rel = 'preload';
+		link.as = 'image';
+		link.href = src;
+		document.head.appendChild(link);
+	});
+};
+
 const StartPage = () => {
 	const { isAdmin, isLoading, telegramId } = useUserStore();
+
+	// Preload критических изображений при монтировании компонента
+	useEffect(() => {
+		preloadCriticalImages();
+	}, []);
 
 	return (
 		<div className='welcome bg-[url("/main_bg.jpg")] bg-cover bg-center h-full'>

@@ -4,22 +4,74 @@ import { useUserStore } from './store';
 import { Routes, Route } from 'react-router-dom';
 import { ErrorBoundary, LoadingSpinner } from './components';
 
-// Lazy loading для страниц
-const StartPage = lazy(() => import('./pages/StartPage'));
-const Guide = lazy(() => import('./pages/Guide'));
-const SelectTeamPage = lazy(() => import('./pages/SelectTeamPage'));
-const Game = lazy(() => import('./pages/Game'));
-const Results = lazy(() => import('./pages/Results'));
+// Lazy loading для страниц с улучшенной обработкой ошибок
+const StartPage = lazy(() =>
+	import('./pages/StartPage').catch(() => ({
+		default: () => <div>Ошибка загрузки стартовой страницы</div>,
+	})),
+);
+const Guide = lazy(() =>
+	import('./pages/Guide').catch(() => ({
+		default: () => <div>Ошибка загрузки руководства</div>,
+	})),
+);
+const SelectTeamPage = lazy(() =>
+	import('./pages/SelectTeamPage').catch(() => ({
+		default: () => <div>Ошибка загрузки страницы выбора команды</div>,
+	})),
+);
+const Game = lazy(() =>
+	import('./pages/Game').catch(() => ({
+		default: () => <div>Ошибка загрузки игры</div>,
+	})),
+);
+const Results = lazy(() =>
+	import('./pages/Results').catch(() => ({
+		default: () => <div>Ошибка загрузки результатов</div>,
+	})),
+);
 
-// Админские страницы тоже делаем lazy
-const AdminPage = lazy(() => import('./pages/AdminPage'));
-const AddClubPage = lazy(() => import('./pages/AddClubPage'));
-const AddPlayersPage = lazy(() => import('./pages/AddPlayersPage'));
-const ManageClubPage = lazy(() => import('./pages/ManageClubPage'));
-const EditClubPage = lazy(() => import('./pages/EditClubPage'));
-const EditPlayersPage = lazy(() => import('./pages/EditPlayersPage'));
-const ManageAdminsPage = lazy(() => import('./pages/ManageAdminsPage'));
-const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+// Админские страницы тоже делаем lazy с обработкой ошибок
+const AdminPage = lazy(() =>
+	import('./pages/AdminPage').catch(() => ({
+		default: () => <div>Ошибка загрузки админки</div>,
+	})),
+);
+const AddClubPage = lazy(() =>
+	import('./pages/AddClubPage').catch(() => ({
+		default: () => <div>Ошибка загрузки страницы добавления клуба</div>,
+	})),
+);
+const AddPlayersPage = lazy(() =>
+	import('./pages/AddPlayersPage').catch(() => ({
+		default: () => <div>Ошибка загрузки страницы добавления игроков</div>,
+	})),
+);
+const ManageClubPage = lazy(() =>
+	import('./pages/ManageClubPage').catch(() => ({
+		default: () => <div>Ошибка загрузки управления клубом</div>,
+	})),
+);
+const EditClubPage = lazy(() =>
+	import('./pages/EditClubPage').catch(() => ({
+		default: () => <div>Ошибка загрузки редактирования клуба</div>,
+	})),
+);
+const EditPlayersPage = lazy(() =>
+	import('./pages/EditPlayersPage').catch(() => ({
+		default: () => <div>Ошибка загрузки редактирования игроков</div>,
+	})),
+);
+const ManageAdminsPage = lazy(() =>
+	import('./pages/ManageAdminsPage').catch(() => ({
+		default: () => <div>Ошибка загрузки управления админами</div>,
+	})),
+);
+const AnalyticsPage = lazy(() =>
+	import('./pages/AnalyticsPage').catch(() => ({
+		default: () => <div>Ошибка загрузки аналитики</div>,
+	})),
+);
 import { SpeedInsights } from '@vercel/speed-insights/react';
 
 function App() {
@@ -62,9 +114,7 @@ function App() {
 		<ErrorBoundary>
 			<SpeedInsights />
 			<div className='w-full h-screen'>
-				<Suspense
-					fallback={<LoadingSpinner fullScreen message='Загрузка..' />}
-				>
+				<Suspense fallback={<LoadingSpinner fullScreen message='Загрузка..' />}>
 					<Routes>
 						<Route index element={<StartPage />} />
 						<Route path='/guide' element={<Guide />} />
