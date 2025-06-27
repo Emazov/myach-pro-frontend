@@ -25,7 +25,7 @@ const getDisplayClubName = (clubName: string): string => {
 
 	if (hasClub && seasonMatch) {
 		const season = seasonMatch[1];
-		return `Твой тир-лист клубов сезона ${season}`;
+		return `Твой тир-лист клубов ${season}`;
 	}
 
 	return clubName;
