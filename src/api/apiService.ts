@@ -29,25 +29,11 @@ const getNoCacheHeaders = (initData: string) => ({
  */
 export const fetchClubs = async (initData: string): Promise<Club[]> => {
 	try {
-		console.log('🔍 fetchClubs: Начало запроса', {
-			timestamp: new Date().toISOString(),
-			API_URL,
-			initDataLength: initData?.length || 0,
-		});
-
 		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
 		const url = `${API_URL}/clubs?t=${Date.now()}`;
 		const headers = getNoCacheHeaders(initData);
 
-		console.log('📡 Отправляем запрос:', { url, headers });
-
 		const response = await fetch(url, { headers });
-
-		console.log('📨 Получен ответ:', {
-			status: response.status,
-			statusText: response.statusText,
-			headers: Object.fromEntries(response.headers.entries()),
-		});
 
 		if (!response.ok) {
 			const errorText = await response.text();
@@ -58,7 +44,6 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
 		}
 
 		const result = await response.json();
-		console.log('📊 Данные от сервера:', result);
 
 		// Преобразуем данные в нужный формат
 		const clubs = result.clubs.map((club: any) => {
@@ -69,7 +54,6 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
 			};
 		});
 
-		console.log('✅ Преобразованные клубы:', clubs);
 		return clubs;
 	} catch (error) {
 		console.error('❌ Ошибка при запросе клубов:', {
