@@ -13,15 +13,25 @@ export const api = axios.create({
 });
 
 /**
+ * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Генерируем уникальные заголовки для обхода кэша
+ */
+const getNoCacheHeaders = (initData: string) => ({
+	Authorization: `tma ${initData}`,
+	'Content-Type': 'application/json',
+	'Cache-Control': 'no-cache, no-store, must-revalidate',
+	Pragma: 'no-cache',
+	Expires: '0',
+	'X-Requested-At': Date.now().toString(), // Уникальный заголовок для каждого запроса
+});
+
+/**
  * Получить список клубов с сервера
  */
 export const fetchClubs = async (initData: string): Promise<Club[]> => {
 	try {
-		const response = await fetch(`${API_URL}/clubs`, {
-			headers: {
-				Authorization: `tma ${initData}`,
-				'Content-Type': 'application/json',
-			},
+		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
+		const response = await fetch(`${API_URL}/clubs?t=${Date.now()}`, {
+			headers: getNoCacheHeaders(initData),
 		});
 
 		if (!response.ok) {
@@ -49,11 +59,9 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
  */
 export const fetchPlayers = async (initData: string): Promise<Player[]> => {
 	try {
-		const response = await fetch(`${API_URL}/players`, {
-			headers: {
-				Authorization: `tma ${initData}`,
-				'Content-Type': 'application/json',
-			},
+		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
+		const response = await fetch(`${API_URL}/players?t=${Date.now()}`, {
+			headers: getNoCacheHeaders(initData),
 		});
 
 		if (!response.ok) {
@@ -207,11 +215,9 @@ export const fetchClubById = async (
 	clubId: string,
 ): Promise<any> => {
 	try {
-		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
-			headers: {
-				Authorization: `tma ${initData}`,
-				'Content-Type': 'application/json',
-			},
+		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
+		const response = await fetch(`${API_URL}/clubs/${clubId}?t=${Date.now()}`, {
+			headers: getNoCacheHeaders(initData),
 		});
 
 		if (!response.ok) {
@@ -266,8 +272,8 @@ export const deleteClub = async (
 		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
 			method: 'DELETE',
 			headers: {
-				Authorization: `tma ${initData}`,
 				'Content-Type': 'application/json',
+				Authorization: `tma ${initData}`,
 			},
 		});
 
@@ -294,8 +300,8 @@ export const deletePlayer = async (
 		const response = await fetch(`${API_URL}/players/${playerId}`, {
 			method: 'DELETE',
 			headers: {
-				Authorization: `tma ${initData}`,
 				'Content-Type': 'application/json',
+				Authorization: `tma ${initData}`,
 			},
 		});
 
