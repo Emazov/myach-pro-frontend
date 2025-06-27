@@ -95,7 +95,6 @@ const Results = () => {
 		}
 
 		setIsSharing(true);
-		setShareStatus('Генерируем изображение...');
 
 		try {
 			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
@@ -114,12 +113,8 @@ const Results = () => {
 			// Проверяем платформу для выбора метода шэринга
 			if (platform === 'ios') {
 				// Для iOS оставляем поведение с webview
-				setShareStatus('Получаем изображение...');
-
 				// Получаем изображение в высоком качестве
 				const { blob } = await downloadResultsImage(initData, shareData);
-
-				setShareStatus('Подготавливаем к шэрингу...');
 
 				// Подготавливаем данные для универсального шэринга
 				const shareOptions: ShareOptions = {
@@ -128,41 +123,24 @@ const Results = () => {
 					clubName: club.name,
 				};
 
-				setShareStatus('Открываем шэринг...');
-
 				// Используем универсальную функцию шэринга для iOS
 				const result = await universalShare(shareOptions);
 
-				if (result.success) {
-					const methodNames: { [key: string]: string } = {
-						webShare: 'системный шэринг',
-						telegram: 'Telegram',
-						clipboard: 'буфер обмена',
-						download: 'скачивание',
-					};
-
-					setShareStatus(
-						`✅ Успешно: ${methodNames[result.method] || result.method}`,
-					);
-				} else {
+				if (!result.success) {
 					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
 				}
 			} else {
 				// Для других ОС отправляем картинку в чат бота
-				setShareStatus('Отправляем в чат...');
-
 				const result = await shareResults(initData, shareData);
 
 				if (result.success) {
-					setShareStatus('✅ Изображение отправлено в чат!');
-
-					// Для других ОС закрываем веб-приложение через 2 секунды
+					// Для других ОС закрываем веб-приложение через 1 секунду
 					if (result.closeWebApp) {
 						setTimeout(() => {
 							if (tg && tg.close) {
 								tg.close();
 							}
-						}, 2000);
+						}, 1000);
 					}
 				} else {
 					setShareStatus(
@@ -182,8 +160,8 @@ const Results = () => {
 		} finally {
 			setIsSharing(false);
 
-			// Очищаем статус через 5 секунд
-			setTimeout(() => setShareStatus(''), 5000);
+			// Очищаем статус через 3 секунды
+			setTimeout(() => setShareStatus(''), 3000);
 		}
 	};
 
@@ -366,15 +344,6 @@ const Results = () => {
 								? 'Поделиться'
 								: 'Отправить в чат'}
 						</button>
-
-						{/* Подсказка в зависимости от платформы */}
-						{!isSharing && (
-							<div className='text-xs text-gray-500 text-center max-w-xs'>
-								{platform === 'ios'
-									? 'Откроется системное меню для шэринга'
-									: 'Изображение будет отправлено в чат с ботом'}
-							</div>
-						)}
 
 						{/* Статус шэринга */}
 						{shareStatus && (
