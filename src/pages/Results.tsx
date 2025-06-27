@@ -131,6 +131,11 @@ const Results = () => {
 				}
 			} else {
 				// Для других ОС отправляем картинку в чат бота
+				console.log('🔍 Отправка в чат для Android/др. ОС:');
+				console.log('📋 initData присутствует:', !!initData);
+				console.log('📋 initData length:', initData?.length);
+				console.log('📦 shareData:', shareData);
+
 				const result = await shareResults(initData, shareData);
 
 				if (result.success) {
