@@ -134,7 +134,20 @@ const Results = () => {
 				// Используем универсальную функцию шэринга для iOS
 				const result = await universalShare(shareOptions);
 
-				if (!result.success) {
+				if (result.success) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
+
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение поделено!');
+
+					// Закрываем мини-приложение для всех платформ после успешного шэринга
+					if (tg && tg.close) {
+						setTimeout(() => {
+							tg.close();
+						}, 500);
+					}
+				} else {
 					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
 				}
 			} else {
@@ -153,8 +166,8 @@ const Results = () => {
 					// Показываем сообщение об успешной отправке
 					setShareStatus('✅ Изображение отправлено в чат!');
 
-					// Закрываем мини-приложение сразу для предотвращения повторной генерации
-					if (result.closeWebApp && tg && tg.close) {
+					// Закрываем мини-приложение для всех платформ после успешной отправки
+					if (tg && tg.close) {
 						// Небольшая задержка для показа сообщения пользователю
 						setTimeout(() => {
 							tg.close();
