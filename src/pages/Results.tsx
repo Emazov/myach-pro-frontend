@@ -44,6 +44,7 @@ const Results = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [isSharing, setIsSharing] = useState(false);
 	const [shareStatus, setShareStatus] = useState<string>('');
+	const [hasSharedInSession, setHasSharedInSession] = useState(false); // Флаг отправки в сессии
 	const [platform] = useState(() => detectPlatform());
 	const [availableMethods] = useState(() => getAvailableShareMethods());
 
@@ -88,6 +89,13 @@ const Results = () => {
 
 	// Универсальная функция для обработки клика по кнопке "Поделиться"
 	const handleShare = async () => {
+		// Проверяем, не была ли уже отправлена картинка в этой сессии
+		if (hasSharedInSession) {
+			setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
+			setTimeout(() => setShareStatus(''), 3000);
+			return;
+		}
+
 		if (!initData || !club || !hasGameData) {
 			setShareStatus('Недостаточно данных для создания изображения');
 			setTimeout(() => setShareStatus(''), 3000);
@@ -139,13 +147,18 @@ const Results = () => {
 				const result = await shareResults(initData, shareData);
 
 				if (result.success) {
-					// Для других ОС закрываем веб-приложение через 1 секунду
-					if (result.closeWebApp) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
+
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение отправлено в чат!');
+
+					// Закрываем мини-приложение сразу для предотвращения повторной генерации
+					if (result.closeWebApp && tg && tg.close) {
+						// Небольшая задержка для показа сообщения пользователю
 						setTimeout(() => {
-							if (tg && tg.close) {
-								tg.close();
-							}
-						}, 1000);
+							tg.close();
+						}, 500);
 					}
 				} else {
 					setShareStatus(
@@ -337,11 +350,17 @@ const Results = () => {
 					{/* Кнопка поделиться и статус */}
 					<div className='flex flex-col items-center justify-center gap-2'>
 						<button
-							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
+							className={`font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+								hasSharedInSession
+									? 'bg-gray-300 text-gray-600'
+									: 'bg-[#FFEC13] text-black'
+							}`}
 							onClick={handleShare}
-							disabled={isSharing}
+							disabled={isSharing || hasSharedInSession}
 						>
-							{isSharing
+							{hasSharedInSession
+								? '✅ Отправлено'
+								: isSharing
 								? platform === 'ios'
 									? 'Подготавливаем...'
 									: 'Отправляем...'
@@ -358,6 +377,8 @@ const Results = () => {
 										? 'bg-green-100 text-green-800'
 										: shareStatus.startsWith('❌')
 										? 'bg-red-100 text-red-800'
+										: shareStatus.startsWith('🚫')
+										? 'bg-orange-100 text-orange-800'
 										: 'bg-blue-100 text-blue-800'
 								}`}
 							>
