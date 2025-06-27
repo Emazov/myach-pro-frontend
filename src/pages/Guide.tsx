@@ -15,7 +15,6 @@ const categories = [
 ];
 
 const Guide = () => {
-	const [nextStep, setNextStep] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [showNoClubsMessage, setShowNoClubsMessage] = useState(false);
 	const navigate = useNavigate();
@@ -60,149 +59,71 @@ const Guide = () => {
 
 	return (
 		<div className='container flex flex-col justify-around h-full'>
-			{!nextStep && (
-				<>
-					<div className='guide_item'>
-						<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
-							Покажем 20 аватарок
-						</h2>
-						<div className='player_list grid grid-cols-10 gap-1'>
-							{players.map((num) => (
-								<div
-									className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg'
-									style={{
-										background: '#FFEC13',
-										color: '#EC3381',
-									}}
-									key={`player-${num}`}
-								>
-									<p>{num}</p>
-								</div>
-							))}
-						</div>
-					</div>
-					<div className='guide_item'>
-						<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
-							Распредели их по 4 категориям:
-						</h2>
-						<ul className='category_list text-center flex flex-col gap-2'>
-							{categories.map((category) => (
-								<li
-									key={`category-${category.name}`}
-									className='category_item text-[clamp(1.5rem,4vw,2rem)] font-bold rounded-lg text-white uppercase py-[clamp(0.5rem,1.5vh,1.5rem)]'
-									style={{
-										backgroundColor: category.color,
-									}}
-								>
-									<p>{category.name}</p>
-								</li>
-							))}
-						</ul>
-					</div>
-				</>
-			)}
-			{nextStep && (
-				<>
-					<div className='guide_item'>
-						<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
-							Ограниченное количество мест
-						</h2>
-						<ul className='category_list flex flex-col gap-2'>
-							{categories.map((category) => (
-								<li
-									key={`category-${category.name}`}
-									className='category_item rounded-lg py-[clamp(0.5rem,1vh,1rem)] flex px-[clamp(0.5rem,2vw,2rem)] justify-between items-center'
-									style={{
-										backgroundColor: category.color,
-									}}
-								>
-									<p className='category_name text-[clamp(1rem,5vw,3rem)] font-bold text-white text-left uppercase '>
-										{category.name}
-									</p>
-									<ul className='player_list grid grid-cols-6 gap-2 items-center'>
-										{Array.from(
-											{ length: category.slots },
-											(_, i) => i + 1,
-										).map((num) => (
-											<li
-												className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg w-[clamp(2rem,4vw,3rem)] h-[clamp(2rem,4vh,4rem)]'
-												style={{
-													background: '#FFEC13',
-													color: '#EC3381',
-												}}
-												key={`slot-${num}`}
-											>
-												{num}
-											</li>
-										))}
-									</ul>
-								</li>
-							))}
-						</ul>
-					</div>
-					<div className='guide_item'>
-						<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold'>
-							Если в категории нет места — замени игрока или выбери другую
-							категорию
-						</h2>
-					</div>
-				</>
-			)}
-			{!nextStep && (
-				<div className='guide_btns flex gap-3 items-center'>
-					{isAdmin && (
-						<button
-							onClick={handleGoToAdmin}
-							className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 transition-opacity hover:opacity-80'
+			<div className='guide_item'>
+				<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
+					В игре 20 клубов
+				</h2>
+				<div className='player_list grid grid-cols-10 gap-1'>
+					{players.map((num) => (
+						<div
+							className='player_item flex items-center justify-center text-[clamp(1.5rem,4vw,2.5rem)] font-bold rounded-lg'
 							style={{
+								background: '#FFEC13',
 								color: '#EC3381',
-								borderColor: '#EC3381',
-								background: 'transparent',
+							}}
+							key={`player-${num}`}
+						>
+							<p>{num}</p>
+						</div>
+					))}
+				</div>
+			</div>
+			<div className='guide_item'>
+				<h2 className='text-[clamp(2rem,7vw,3rem)] text-center font-bold mb-4'>
+					Распределить их по категориям
+				</h2>
+				<ul className='category_list text-center flex flex-col gap-2'>
+					{categories.map((category) => (
+						<li
+							key={`category-${category.name}`}
+							className='category_item text-[clamp(1.5rem,4vw,2rem)] font-bold rounded-lg text-white uppercase py-[clamp(0.5rem,1.5vh,1.5rem)]'
+							style={{
+								backgroundColor: category.color,
 							}}
 						>
-							Админ
-						</button>
-					)}
+							<p>{category.name}</p>
+						</li>
+					))}
+				</ul>
+			</div>
+
+			<div className='guide_btns flex gap-3 items-center'>
+				{isAdmin && (
 					<button
-						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
-						style={{
-							background: '#EC3381',
-							color: '#fff',
-							borderColor: '#EC3381',
-						}}
-						onClick={() => setNextStep(true)}
-					>
-						Дальше
-					</button>
-				</div>
-			)}
-			{nextStep && (
-				<div className='guide_btns flex gap-3 items-center'>
-					<button
+						onClick={handleGoToAdmin}
 						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 transition-opacity hover:opacity-80'
 						style={{
 							color: '#EC3381',
 							borderColor: '#EC3381',
 							background: 'transparent',
 						}}
-						onClick={() => setNextStep(false)}
 					>
-						Назад
+						Админ
 					</button>
-					<button
-						onClick={handleStartGame}
-						disabled={isLoading}
-						className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
-						style={{
-							background: '#EC3381',
-							color: '#fff',
-							borderColor: '#EC3381',
-						}}
-					>
-						{isLoading ? 'Загрузка...' : 'Начать игру'}
-					</button>
-				</div>
-			)}
+				)}
+				<button
+					onClick={handleStartGame}
+					disabled={isLoading}
+					className='link_btn text-[clamp(1rem,2vh,1.5rem)] py-[clamp(0.5rem,2vh,1rem)] border-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-80'
+					style={{
+						background: '#EC3381',
+						color: '#fff',
+						borderColor: '#EC3381',
+					}}
+				>
+					{isLoading ? 'Загрузка...' : 'Начать игру'}
+				</button>
+			</div>
 
 			{/* Модальное окно при отсутствии команд */}
 			{showNoClubsMessage && (

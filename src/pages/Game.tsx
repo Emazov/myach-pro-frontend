@@ -185,7 +185,7 @@ const Game = () => {
 					<img
 						src={club.img_url}
 						alt='progress logo'
-						className='absolute top-1/2 -translate-y-1/2 w-8 z-10'
+						className='absolute top-1/2 -translate-y-1/2 w-8 z-10 rounded-full'
 						style={{ left: `calc(${progressPercentage}% - 16px)` }}
 					/>
 				</div>

@@ -10,6 +10,22 @@ import { Link } from 'react-router-dom';
 
 // генерируем изображение
 
+// Функция для обработки названия клуба
+const getDisplayClubName = (clubName: string): string => {
+	// Проверяем, содержит ли название "клуб" (регистронезависимо)
+	const hasClub = clubName.toLowerCase().includes('клуб');
+
+	// Ищем сезон в формате YYYY/YY
+	const seasonMatch = clubName.match(/(\d{4}\/\d{2})/);
+
+	if (hasClub && seasonMatch) {
+		const season = seasonMatch[1];
+		return `Твой тир-лист клубов сезона ${season}`;
+	}
+
+	return clubName;
+};
+
 const Results = () => {
 	const { initData } = useTelegram();
 	const { isAdmin } = useUserStore();
@@ -204,19 +220,21 @@ const Results = () => {
 					{/* Заголовок тир-листа и логотип */}
 					<div className='flex items-center justify-center gap-2 mb-6'>
 						<div className='flex items-center gap-2'>
-							<img
-								src={getProxyImageUrl(club.img_url)}
-								alt={club.name}
-								className='w-12 object-contain rounded'
-								loading='eager'
-								onError={(e) => {
-									// Если логотип не загрузился, скрываем изображение
-									const target = e.target as HTMLImageElement;
-									target.style.display = 'none';
-								}}
-							/>
-							<span className='text-[clamp(2rem,4vw,4rem)] font-bold'>
-								{club.name}
+							{getDisplayClubName(club.name) === club.name && (
+								<img
+									src={getProxyImageUrl(club.img_url)}
+									alt={club.name}
+									className='w-10 object-contain rounded-full'
+									loading='eager'
+									onError={(e) => {
+										// Если логотип не загрузился, скрываем изображение
+										const target = e.target as HTMLImageElement;
+										target.style.display = 'none';
+									}}
+								/>
+							)}
+							<span className='text-[clamp(2rem,3vw,3.5rem)] font-bold'>
+								{getDisplayClubName(club.name)}
 							</span>
 						</div>
 					</div>
