@@ -18,16 +18,7 @@
 			]
 		},
 		{
-			"source": "/fonts/fonts.css",
-			"headers": [
-				{
-					"key": "Cache-Control",
-					"value": "public, max-age=86400"
-				}
-			]
-		},
-		{
-			"source": "/fonts/:font*",
+			"source": "/fonts/**",
 			"headers": [
 				{
 					"key": "Cache-Control",
@@ -36,7 +27,7 @@
 			]
 		},
 		{
-			"source": "/(.*\\.(js|css|woff2|woff|ttf|eot))",
+			"source": "/(.*\\.(js|css|woff2|woff|eot))",
 			"headers": [
 				{
 					"key": "Cache-Control",
