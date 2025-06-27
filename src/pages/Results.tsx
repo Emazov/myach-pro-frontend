@@ -233,7 +233,7 @@ const Results = () => {
 									}}
 								/>
 							)}
-							<span className='text-[clamp(2rem,3vw,3.5rem)] font-bold'>
+							<span className='text-[clamp(2rem,3vw,3.5rem)] font-bold text-center'>
 								{getDisplayClubName(club.name)}
 							</span>
 						</div>
