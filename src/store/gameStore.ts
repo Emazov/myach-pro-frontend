@@ -57,8 +57,6 @@ interface GameState {
 	resetGame: () => void;
 	initializeGame: (initData: string, clubId: string) => Promise<void>;
 	goBackToPreviousPlayer: () => boolean; // Возврат на один шаг
-	goBackToAction: (actionId: string) => boolean; // Возврат к конкретному действию
-	getGameHistory: () => GameHistoryAction[]; // Получить историю для UI
 }
 
 const initialState = {
@@ -321,57 +319,6 @@ export const useGameStore = create<GameState>()(
 					});
 
 					return true;
-				},
-
-				goBackToAction: (actionId: string) => {
-					const state = get();
-					const actionIndex = state.gameHistory.findIndex(
-						(action) => action.actionId === actionId,
-					);
-					if (actionIndex === -1) return false;
-
-					// Берем снапшот состояния ПЕРЕД выполнением этого действия
-					// Если actionIndex === 0, то возвращаемся к самому началу
-					if (actionIndex === 0) {
-						// Возврат к началу игры
-						const emptyCategorizedPlayers = Object.fromEntries(
-							state.categories.map((cat) => [cat.name, []]),
-						);
-
-						set({
-							categorizedPlayers: emptyCategorizedPlayers,
-							currentPlayerIndex: 0,
-							processedPlayersCount: 0,
-							progressPercentage: 0,
-							gameHistory: [],
-							canGoBack: false,
-						});
-						return true;
-					}
-
-					// Восстанавливаем состояние на момент ПЕРЕД выбранным действием
-					const previousAction = state.gameHistory[actionIndex - 1];
-					if (!previousAction) {
-						return false;
-					}
-
-					const { gameStateSnapshot } = previousAction;
-
-					set({
-						currentPlayerIndex: gameStateSnapshot.currentPlayerIndex,
-						processedPlayersCount: gameStateSnapshot.processedPlayersCount,
-						progressPercentage: gameStateSnapshot.progressPercentage,
-						categorizedPlayers: gameStateSnapshot.categorizedPlayers,
-						gameHistory: state.gameHistory.slice(0, actionIndex),
-						canGoBack: actionIndex > 0,
-					});
-
-					return true;
-				},
-
-				getGameHistory: () => {
-					const state = get();
-					return state.gameHistory;
 				},
 			}),
 			{

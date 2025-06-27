@@ -1,12 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameStore, useModalStore } from '../store';
-import {
-	Modal,
-	CategoryItem,
-	LoadingSpinner,
-	GameHistory,
-} from '../components';
+import { Modal, CategoryItem, LoadingSpinner } from '../components';
 import { useTelegram } from '../hooks/useTelegram';
 import { startGameSession } from '../api/analyticsService';
 
@@ -16,7 +11,6 @@ const Game = () => {
 	const { initData } = useTelegram();
 	const [club, setClub] = React.useState<any>(null);
 	const [loadingClub, setLoadingClub] = React.useState(true);
-	const [showGameHistory, setShowGameHistory] = React.useState(false);
 
 	// Zustand stores
 	const {
@@ -33,7 +27,6 @@ const Game = () => {
 		maxPlayersToProcess,
 		canGoBack,
 		goBackToPreviousPlayer,
-		getGameHistory,
 	} = useGameStore();
 
 	const {
@@ -147,7 +140,6 @@ const Game = () => {
 	};
 
 	const player = getCurrentPlayer();
-	const gameHistory = getGameHistory();
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading || loadingClub) {
@@ -184,11 +176,6 @@ const Game = () => {
 				onChooseOtherCategory={handleChooseOtherCategory}
 			/>
 
-			<GameHistory
-				isVisible={showGameHistory}
-				onClose={() => setShowGameHistory(false)}
-			/>
-
 			<div className='progress_bar flex flex-col'>
 				<div className='w-full h-2.5 bg-gray-300 rounded-lg flex relative'>
 					<div
@@ -208,61 +195,31 @@ const Game = () => {
 			</div>
 
 			<div className='hero flex flex-col items-center gap-4 relative'>
-				{/* Кнопки управления историей */}
-				<div className='absolute left-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10'>
-					{/* Кнопка возврата на один шаг */}
-					{canGoBack && (
-						<button
-							className='w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-80'
-							style={{ background: '#EC3381' }}
-							onClick={handleGoBack}
-							title='Вернуться на один шаг'
+				{/* Кнопка возврата назад */}
+				{canGoBack && (
+					<button
+						className='absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-80 z-10'
+						style={{ background: '#EC3381' }}
+						onClick={handleGoBack}
+						title='Вернуться на один шаг назад'
+					>
+						<svg
+							width='24'
+							height='24'
+							viewBox='0 0 40 40'
+							fill='none'
+							xmlns='http://www.w3.org/2000/svg'
 						>
-							<svg
-								width='24'
-								height='24'
-								viewBox='0 0 40 40'
-								fill='none'
-								xmlns='http://www.w3.org/2000/svg'
-							>
-								<path
-									d='M22.75 27.5L15.25 20L22.75 12.5'
-									stroke='white'
-									strokeWidth='2'
-									strokeLinecap='round'
-									strokeLinejoin='round'
-								/>
-							</svg>
-						</button>
-					)}
-
-					{/* Кнопка истории игры */}
-					{gameHistory.length > 0 && (
-						<button
-							className='w-12 h-12 rounded-full flex items-center justify-center transition-opacity hover:opacity-80'
-							style={{ background: '#FFEC13', color: '#000' }}
-							onClick={() => setShowGameHistory(true)}
-							title='Показать историю игры'
-						>
-							<svg
-								width='24'
-								height='24'
-								viewBox='0 0 24 24'
-								fill='none'
-								xmlns='http://www.w3.org/2000/svg'
-							>
-								<path
-									d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z'
-									fill='currentColor'
-								/>
-								<path
-									d='M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67V7z'
-									fill='currentColor'
-								/>
-							</svg>
-						</button>
-					)}
-				</div>
+							<path
+								d='M22.75 27.5L15.25 20L22.75 12.5'
+								stroke='white'
+								strokeWidth='2'
+								strokeLinecap='round'
+								strokeLinejoin='round'
+							/>
+						</svg>
+					</button>
+				)}
 
 				{player?.img_url && (
 					<>
