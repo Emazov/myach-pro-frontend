@@ -13,7 +13,7 @@ export const api = axios.create({
 });
 
 /**
- * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Генерируем уникальные заголовки для обхода кэша
+ * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Генерируем заголовки для обхода кэша без CORS preflight
  */
 const getNoCacheHeaders = (initData: string) => ({
 	Authorization: `tma ${initData}`,
@@ -21,7 +21,7 @@ const getNoCacheHeaders = (initData: string) => ({
 	'Cache-Control': 'no-cache, no-store, must-revalidate',
 	Pragma: 'no-cache',
 	Expires: '0',
-	'X-Requested-At': Date.now().toString(), // Уникальный заголовок для каждого запроса
+	// УБРАНО: 'X-Requested-At': Date.now().toString(), // Вызывает CORS preflight ошибки
 });
 
 /**
@@ -29,27 +29,54 @@ const getNoCacheHeaders = (initData: string) => ({
  */
 export const fetchClubs = async (initData: string): Promise<Club[]> => {
 	try {
+		console.log('🔍 fetchClubs: Начало запроса', {
+			timestamp: new Date().toISOString(),
+			API_URL,
+			initDataLength: initData?.length || 0,
+		});
+
 		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
-		const response = await fetch(`${API_URL}/clubs?t=${Date.now()}`, {
-			headers: getNoCacheHeaders(initData),
+		const url = `${API_URL}/clubs?t=${Date.now()}`;
+		const headers = getNoCacheHeaders(initData);
+
+		console.log('📡 Отправляем запрос:', { url, headers });
+
+		const response = await fetch(url, { headers });
+
+		console.log('📨 Получен ответ:', {
+			status: response.status,
+			statusText: response.statusText,
+			headers: Object.fromEntries(response.headers.entries()),
 		});
 
 		if (!response.ok) {
-			throw new Error(`Ошибка при получении клубов: ${response.status}`);
+			const errorText = await response.text();
+			console.error('❌ Ошибка ответа сервера:', errorText);
+			throw new Error(
+				`Ошибка при получении клубов: ${response.status} - ${errorText}`,
+			);
 		}
 
 		const result = await response.json();
+		console.log('📊 Данные от сервера:', result);
 
 		// Преобразуем данные в нужный формат
-		return result.clubs.map((club: any) => {
+		const clubs = result.clubs.map((club: any) => {
 			return {
 				id: club.id.toString(),
 				name: club.name,
 				img_url: club.logoUrl || '',
 			};
 		});
+
+		console.log('✅ Преобразованные клубы:', clubs);
+		return clubs;
 	} catch (error) {
-		console.error('Ошибка при запросе клубов:', error);
+		console.error('❌ Ошибка при запросе клубов:', {
+			error: error instanceof Error ? error.message : String(error),
+			stack: error instanceof Error ? error.stack : undefined,
+			timestamp: new Date().toISOString(),
+		});
 		throw error;
 	}
 };

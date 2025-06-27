@@ -34,17 +34,17 @@ const AdminPage = () => {
 
 		setCacheClearing(true);
 		try {
-			// 1. Очищаем серверный кэш
-			const serverResponse = await fetch(
-				`${import.meta.env.VITE_API_URL}/admin/cache/all`,
-				{
-					method: 'DELETE',
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `tma ${initData}`,
-					},
+			// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем правильный URL без дублирования домена
+			const apiUrl =
+				import.meta.env.VITE_API_URL ||
+				'https://server.myach-specialprojects.ru';
+			const serverResponse = await fetch(`${apiUrl}/api/admin/cache/all`, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `tma ${initData}`,
 				},
-			);
+			});
 
 			// 2. Очищаем Service Worker кэши
 			if ('caches' in window) {
@@ -62,7 +62,11 @@ const AdminPage = () => {
 						window.location.href + '?nocache=' + Date.now();
 				}, 1000);
 			} else {
-				throw new Error('Ошибка очистки серверного кэша');
+				const errorText = await serverResponse.text();
+				console.error('Server response error:', errorText);
+				throw new Error(
+					`Ошибка очистки серверного кэша: ${serverResponse.status}`,
+				);
 			}
 		} catch (error) {
 			console.error('Ошибка при очистке кэшей:', error);
