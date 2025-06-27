@@ -110,7 +110,7 @@ const Results = () => {
 			setShareStatus('Получаем изображение...');
 
 			// Получаем изображение в высоком качестве
-			const { blob } = await downloadResultsImage(shareData);
+			const { blob } = await downloadResultsImage(initData, shareData);
 
 			setShareStatus('Подготавливаем к шэрингу...');
 
@@ -152,7 +152,9 @@ const Results = () => {
 	};
 
 	// Функция для тестирования шэринга (только в development)
-	const getTestShareOptions = async (): Promise<ShareOptions> => {
+	const getTestShareOptions = async (
+		testInitData: string,
+	): Promise<ShareOptions> => {
 		if (!club || !hasGameData) {
 			throw new Error('Недостаточно данных для тестирования');
 		}
@@ -171,7 +173,7 @@ const Results = () => {
 		};
 
 		// Получаем изображение для тестирования
-		const { blob } = await downloadResultsImage(shareData);
+		const { blob } = await downloadResultsImage(testInitData, shareData);
 
 		return {
 			imageBlob: blob,
@@ -352,7 +354,10 @@ const Results = () => {
 
 			{/* Компонент для тестирования шэринга в development режиме */}
 			{import.meta.env.DEV && hasGameData && club && (
-				<ShareTestPanel onTestShare={getTestShareOptions} />
+				<ShareTestPanel
+					onTestShare={getTestShareOptions}
+					initData={initData || ''}
+				/>
 			)}
 		</div>
 	);

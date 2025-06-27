@@ -34,11 +34,17 @@ export const shareResults = async (
 /**
  * Получение изображения для предварительного просмотра (сжатое)
  */
-export async function previewResultsImage(data: ShareData): Promise<Blob> {
+export async function previewResultsImage(
+	initData: string,
+	data: ShareData,
+): Promise<Blob> {
 	try {
 		const response = await api.post('/share/preview', data, {
 			responseType: 'blob',
 			timeout: 30000, // 30 секунд таймаут
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
 		});
 
 		if (response.data instanceof Blob) {
@@ -68,7 +74,10 @@ export async function previewResultsImage(data: ShareData): Promise<Blob> {
 /**
  * Получение изображения в высоком качестве для шэринга/скачивания
  */
-export async function downloadResultsImage(data: ShareData): Promise<{
+export async function downloadResultsImage(
+	initData: string,
+	data: ShareData,
+): Promise<{
 	blob: Blob;
 	filename: string;
 }> {
@@ -76,6 +85,9 @@ export async function downloadResultsImage(data: ShareData): Promise<{
 		const response = await api.post('/share/download', data, {
 			responseType: 'blob',
 			timeout: 60000, // 60 секунд таймаут для высокого качества
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
 		});
 
 		if (!(response.data instanceof Blob)) {

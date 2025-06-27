@@ -7,11 +7,13 @@ import {
 } from '../utils/shareUtils';
 
 interface ShareTestPanelProps {
-	onTestShare: () => Promise<ShareOptions>;
+	onTestShare: (initData: string) => Promise<ShareOptions>;
+	initData: string;
 }
 
 export const ShareTestPanel: React.FC<ShareTestPanelProps> = ({
 	onTestShare,
+	initData,
 }) => {
 	const [isVisible, setIsVisible] = useState(false);
 	const [testResults, setTestResults] = useState<
@@ -29,7 +31,7 @@ export const ShareTestPanel: React.FC<ShareTestPanelProps> = ({
 	const testSpecificMethod = async (methodName: string) => {
 		setIsTesting(true);
 		try {
-			const shareOptions = await onTestShare();
+			const shareOptions = await onTestShare(initData);
 
 			let result;
 			switch (methodName) {
