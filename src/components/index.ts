@@ -6,3 +6,4 @@ export { default as Modal } from './Modal';
 export { default as OptimizedImage } from './OptimizedImage';
 export { default as OptimizedImageUpload } from './OptimizedImageUpload';
 export { default as Skeleton } from './Skeleton';
+export { ShareTestPanel } from './ShareTestPanel';

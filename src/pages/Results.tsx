@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useGameStore, useUserStore } from '../store';
-import { CategoryItem, LoadingSpinner } from '../components';
-import { fetchClubs, previewResultsImage, type ShareData } from '../api';
+import { CategoryItem, LoadingSpinner, ShareTestPanel } from '../components';
+import { fetchClubs } from '../api';
+import { downloadResultsImage, type ShareData } from '../api/shareService';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
 import { TELEGRAM_BOT_USERNAME } from '../config/api';
 import { Link } from 'react-router-dom';
-
-// генерируем изображение
+import {
+	universalShare,
+	detectPlatform,
+	getAvailableShareMethods,
+	type ShareOptions,
+} from '../utils/shareUtils';
 
 // Функция для обработки названия клуба
 const getDisplayClubName = (clubName: string): string => {
@@ -34,6 +39,9 @@ const Results = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [isSharing, setIsSharing] = useState(false);
+	const [shareStatus, setShareStatus] = useState<string>('');
+	const [platform] = useState(() => detectPlatform());
+	const [availableMethods] = useState(() => getAvailableShareMethods());
 
 	// Проверяем, есть ли данные игры
 	const hasGameData =
@@ -74,24 +82,16 @@ const Results = () => {
 		loadClub();
 	}, [initData, hasGameData]);
 
-	// Функция для обработки клика по кнопке "Поделиться"
+	// Универсальная функция для обработки клика по кнопке "Поделиться"
 	const handleShare = async () => {
 		if (!initData || !club || !hasGameData) {
-			alert('Недостаточно данных для создания изображения');
+			setShareStatus('Недостаточно данных для создания изображения');
+			setTimeout(() => setShareStatus(''), 3000);
 			return;
 		}
 
-		// Проверяем поддержку Web Share API
-		if ('share' in navigator) {
-			await handleWebShare();
-		} else {
-			alert('Ваше устройство не поддерживает функцию шаринга');
-		}
-	};
-
-	// Функция для системного шаринга через Web Share API
-	const handleWebShare = async () => {
 		setIsSharing(true);
+		setShareStatus('Генерируем изображение...');
 
 		try {
 			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
@@ -107,33 +107,77 @@ const Results = () => {
 				clubId: club.id,
 			};
 
-			// Получаем изображение как Blob для шаринга
-			const imageBlob = await previewResultsImage(shareData);
+			setShareStatus('Получаем изображение...');
 
-			// Создаем файл из Blob
-			const imageFile = new File([imageBlob], `tier-list-${club.name}.jpg`, {
-				type: 'image/jpeg',
-			});
+			// Получаем изображение в высоком качестве
+			const { blob } = await downloadResultsImage(shareData);
 
-			// Используем Web Share API с изображением и текстом
-			await navigator.share({
+			setShareStatus('Подготавливаем к шэрингу...');
+
+			// Подготавливаем данные для универсального шэринга
+			const shareOptions: ShareOptions = {
+				imageBlob: blob,
 				text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
-				files: [imageFile],
-			});
+				clubName: club.name,
+			};
 
-			console.log('Успешно поделились через Web Share API');
-		} catch (error: any) {
-			console.error('Ошибка при шаринге через Web Share API:', error);
+			setShareStatus('Открываем шэринг...');
 
-			if (error.name === 'AbortError') {
-				console.log('Пользователь отменил шаринг');
-				return;
+			// Используем универсальную функцию шэринга
+			const result = await universalShare(shareOptions);
+
+			if (result.success) {
+				const methodNames: { [key: string]: string } = {
+					webShare: 'системный шэринг',
+					telegram: 'Telegram',
+					clipboard: 'буфер обмена',
+					download: 'скачивание',
+				};
+
+				setShareStatus(
+					`✅ Успешно: ${methodNames[result.method] || result.method}`,
+				);
+			} else {
+				setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
 			}
-
-			alert('Не удалось поделиться изображением');
+		} catch (error: any) {
+			console.error('Ошибка при шэринге:', error);
+			setShareStatus(`❌ ${error.message || 'Не удалось создать изображение'}`);
 		} finally {
 			setIsSharing(false);
+
+			// Очищаем статус через 5 секунд
+			setTimeout(() => setShareStatus(''), 5000);
 		}
+	};
+
+	// Функция для тестирования шэринга (только в development)
+	const getTestShareOptions = async (): Promise<ShareOptions> => {
+		if (!club || !hasGameData) {
+			throw new Error('Недостаточно данных для тестирования');
+		}
+
+		// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+		const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+
+		Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+			categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+		});
+
+		const shareData: ShareData = {
+			categorizedPlayerIds,
+			categories,
+			clubId: club.id,
+		};
+
+		// Получаем изображение для тестирования
+		const { blob } = await downloadResultsImage(shareData);
+
+		return {
+			imageBlob: blob,
+			text: `Тест шэринга тир-листа - @${TELEGRAM_BOT_USERNAME}`,
+			clubName: club.name,
+		};
 	};
 
 	// Показываем загрузку, если данные еще не получены
@@ -254,15 +298,46 @@ const Results = () => {
 							);
 						})}
 					</ul>
-					{/* Кнопка поделиться */}
+
+					{/* Информация о платформе (только для разработки) */}
+					{import.meta.env.DEV && (
+						<div className='text-xs text-gray-500 mb-4'>
+							<p>Платформа: {platform}</p>
+							<p>
+								Доступные методы:{' '}
+								{availableMethods
+									.filter((m) => m.available)
+									.map((m) => m.name)
+									.join(', ')}
+							</p>
+						</div>
+					)}
+
+					{/* Кнопка поделиться и статус */}
 					<div className='flex flex-col items-center justify-center gap-2'>
 						<button
-							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed'
+							className='bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200'
 							onClick={handleShare}
 							disabled={isSharing}
 						>
-							{isSharing ? 'Отправляем...' : 'Поделиться'}
+							{isSharing ? 'Подготавливаем...' : 'Поделиться'}
 						</button>
+
+						{/* Статус шэринга */}
+						{shareStatus && (
+							<div
+								className={`text-sm px-4 py-2 rounded-lg max-w-xs text-center ${
+									shareStatus.startsWith('✅')
+										? 'bg-green-100 text-green-800'
+										: shareStatus.startsWith('❌')
+										? 'bg-red-100 text-red-800'
+										: 'bg-blue-100 text-blue-800'
+								}`}
+							>
+								{shareStatus}
+							</div>
+						)}
+
 						{isAdmin && (
 							<Link
 								to='/admin'
@@ -274,6 +349,11 @@ const Results = () => {
 					</div>
 				</div>
 			</div>
+
+			{/* Компонент для тестирования шэринга в development режиме */}
+			{import.meta.env.DEV && hasGameData && club && (
+				<ShareTestPanel onTestShare={getTestShareOptions} />
+			)}
 		</div>
 	);
 };

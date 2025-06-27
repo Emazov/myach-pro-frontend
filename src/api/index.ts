@@ -1,3 +1,8 @@
+export * from './apiService';
+export * from './analyticsService';
+export * from './imageService';
+export * from './shareService';
+
 export {
 	fetchClubs,
 	fetchPlayers,
@@ -29,5 +34,9 @@ export {
 export {
 	shareResults,
 	previewResultsImage,
+	downloadResultsImage,
+	checkShareServiceHealth,
 	type ShareData,
 } from './shareService';
+
+export { ImageService } from './imageService';
