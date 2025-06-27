@@ -23,6 +23,8 @@ const StartPage = () => {
 		preloadCriticalImages();
 	}, []);
 
+	console.log('update')
+
 	return (
 		<div className='welcome bg-[url("/main_bg.jpg")] bg-cover bg-center h-full'>
 			<div className='container flex flex-col justify-around h-full'>
