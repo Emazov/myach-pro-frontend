@@ -18,6 +18,7 @@ import {
 	getAvailableShareMethods,
 	type ShareOptions,
 } from '../utils/shareUtils';
+import { securityUtils } from '../utils/securityUtils';
 
 // Функция для обработки названия клуба
 const getDisplayClubName = (clubName: string): string => {
@@ -89,22 +90,27 @@ const Results = () => {
 
 	// Универсальная функция для обработки клика по кнопке "Поделиться"
 	const handleShare = async () => {
-		// Проверяем, не была ли уже отправлена картинка в этой сессии
-		if (hasSharedInSession) {
-			setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
-			setTimeout(() => setShareStatus(''), 3000);
-			return;
-		}
-
-		if (!initData || !club || !hasGameData) {
-			setShareStatus('Недостаточно данных для создания изображения');
-			setTimeout(() => setShareStatus(''), 3000);
-			return;
-		}
-
-		setIsSharing(true);
-
 		try {
+			// Проверяем origin для защиты от CSRF
+			if (!securityUtils.checkOrigin(window.location.origin)) {
+				throw new Error('Недопустимый источник запроса');
+			}
+
+			// Проверяем, не была ли уже отправлена картинка в этой сессии
+			if (hasSharedInSession) {
+				setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			if (!initData || !club || !hasGameData) {
+				setShareStatus('Недостаточно данных для создания изображения');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			setIsSharing(true);
+
 			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
 			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
 

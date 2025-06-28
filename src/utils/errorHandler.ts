@@ -147,3 +147,32 @@ export function getErrorMessage(error: AppError): string {
 export function isRetryableError(error: AppError): boolean {
 	return error.type === ErrorType.NETWORK || error.type === ErrorType.SERVER;
 }
+
+export const errorHandler = {
+	// Счетчик ошибок для выявления DDoS
+	errorCounts: new Map<string, number>(),
+	resetTime: Date.now() + 60000,
+
+	handle(error: Error, context: string) {
+		const now = Date.now();
+
+		// Сброс счетчиков каждую минуту
+		if (now > this.resetTime) {
+			this.errorCounts.clear();
+			this.resetTime = now + 60000;
+		}
+
+		// Увеличиваем счетчик ошибок
+		const count = this.errorCounts.get(context) || 0;
+		this.errorCounts.set(context, count + 1);
+
+		// Если слишком много ошибок - возможна атака
+		if (count > 50) {
+			console.error(`Возможная DDoS атака в контексте: ${context}`);
+			// Можно добавить дополнительные меры защиты
+		}
+
+		// Логируем ошибку
+		console.error(`[${context}] ${error.message}`);
+	},
+};

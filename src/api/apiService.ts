@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { Club, Player, User } from '../types';
 import { API_BASE_URL } from '../config/api';
+import { securityUtils } from '../utils/securityUtils';
 
 const API_URL = API_BASE_URL;
 
@@ -24,10 +25,70 @@ const getNoCacheHeaders = (initData: string) => ({
 	// УБРАНО: 'X-Requested-At': Date.now().toString(), // Вызывает CORS preflight ошибки
 });
 
+// Добавляем защиту от множественных запросов
+const requestLimiter = {
+	requests: new Map<string, number>(),
+	resetTime: Date.now() + 60000,
+	maxRequests: 100,
+
+	check(endpoint: string): boolean {
+		const now = Date.now();
+
+		// Сброс счетчиков каждую минуту
+		if (now > this.resetTime) {
+			this.requests.clear();
+			this.resetTime = now + 60000;
+		}
+
+		const count = this.requests.get(endpoint) || 0;
+		this.requests.set(endpoint, count + 1);
+
+		return count < this.maxRequests;
+	},
+};
+
+// Добавляем retry механизм с exponential backoff
+const fetchWithRetry = async (
+	url: string,
+	options: RequestInit,
+	retries = 3,
+): Promise<Response> => {
+	try {
+		const endpoint = new URL(url).pathname;
+
+		if (!requestLimiter.check(endpoint)) {
+			throw new Error('Превышен лимит запросов. Пожалуйста, подождите.');
+		}
+
+		const response = await fetch(url, options);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		return response;
+	} catch (error) {
+		if (retries > 0) {
+			const delay = Math.min(1000 * 2 ** (3 - retries), 5000);
+			await new Promise((resolve) => setTimeout(resolve, delay));
+			return fetchWithRetry(url, options, retries - 1);
+		}
+		throw error;
+	}
+};
+
+// Добавляем проверку origin в каждый API запрос
+const checkRequestSecurity = () => {
+	if (!securityUtils.checkOrigin(window.location.origin)) {
+		throw new Error('Недопустимый источник запроса');
+	}
+};
+
 /**
  * Получить список клубов с сервера
  */
 export const fetchClubs = async (initData: string): Promise<Club[]> => {
+	checkRequestSecurity();
 	try {
 		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
 		const url = `${API_URL}/clubs?t=${Date.now()}`;
@@ -69,6 +130,7 @@ export const fetchClubs = async (initData: string): Promise<Club[]> => {
  * Получить список игроков с сервера
  */
 export const fetchPlayers = async (initData: string): Promise<Player[]> => {
+	checkRequestSecurity();
 	try {
 		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
 		const response = await fetch(`${API_URL}/players?t=${Date.now()}`, {
@@ -103,6 +165,7 @@ export const fetchPlayersByClub = async (
 	initData: string,
 	clubId: string,
 ): Promise<Player[]> => {
+	checkRequestSecurity();
 	try {
 		const club = await fetchClubById(initData, clubId);
 
@@ -128,6 +191,7 @@ export const fetchPlayersByClub = async (
 export const authenticateTelegramUser = async (
 	initData: string,
 ): Promise<User | null> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/auth`, {
 			method: 'POST',
@@ -169,6 +233,7 @@ export const createClub = async (
 	initData: string,
 	formData: FormData,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/clubs`, {
 			method: 'POST',
@@ -197,6 +262,7 @@ export const createPlayer = async (
 	initData: string,
 	formData: FormData,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/players`, {
 			method: 'POST',
@@ -225,6 +291,7 @@ export const fetchClubById = async (
 	initData: string,
 	clubId: string,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем заголовки для обхода кэша
 		const response = await fetch(`${API_URL}/clubs/${clubId}?t=${Date.now()}`, {
@@ -251,6 +318,7 @@ export const updateClub = async (
 	clubId: string,
 	formData: FormData,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
 			method: 'PUT',
@@ -279,6 +347,7 @@ export const deleteClub = async (
 	initData: string,
 	clubId: string,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/clubs/${clubId}`, {
 			method: 'DELETE',
@@ -307,6 +376,7 @@ export const deletePlayer = async (
 	initData: string,
 	playerId: string,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/players/${playerId}`, {
 			method: 'DELETE',
@@ -332,6 +402,7 @@ export const deletePlayer = async (
  * Получить список админов
  */
 export const fetchAdmins = async (initData: string): Promise<any[]> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/admin/admins`, {
 			method: 'GET',
@@ -361,6 +432,7 @@ export const addAdmin = async (
 	telegramId: string,
 	username?: string,
 ): Promise<{ success: boolean; message: string }> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/admin/admins`, {
 			method: 'POST',
@@ -394,6 +466,7 @@ export const removeAdmin = async (
 	initData: string,
 	telegramId: string,
 ): Promise<{ success: boolean; message: string }> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/admin/admins/${telegramId}`, {
 			method: 'DELETE',
@@ -424,6 +497,7 @@ export const searchUsers = async (
 	initData: string,
 	query: string,
 ): Promise<any[]> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(
 			`${API_URL}/admin/search-users?query=${encodeURIComponent(query)}`,
@@ -455,6 +529,7 @@ export const addAdminByUsername = async (
 	initData: string,
 	username: string,
 ): Promise<{ success: boolean; message: string }> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/admin/admins/by-username`, {
 			method: 'POST',
@@ -488,6 +563,7 @@ export const updatePlayer = async (
 	playerId: string,
 	formData: FormData,
 ): Promise<any> => {
+	checkRequestSecurity();
 	try {
 		const response = await fetch(`${API_URL}/players/${playerId}`, {
 			method: 'PUT',

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useGameStore, useModalStore } from '../store';
 import { Modal, CategoryItem, LoadingSpinner } from '../components';
 import { useTelegram } from '../hooks/useTelegram';
 import { startGameSession } from '../api/analyticsService';
+import { securityUtils } from '../utils/securityUtils';
 
 const Game = () => {
 	const navigate = useNavigate();
@@ -39,6 +40,9 @@ const Game = () => {
 		showReplacePlayerModal,
 		closeModal,
 	} = useModalStore();
+
+	// Добавляем мемоизацию для оптимизации производительности
+	const memoizedCategories = useMemo(() => categories, [categories]);
 
 	// Загрузка клуба и инициализация игры при загрузке компонента
 	React.useEffect(() => {
@@ -87,29 +91,36 @@ const Game = () => {
 		loadData();
 	}, [initializeGame, showMessageModal, initData, location.state, navigate]);
 
-	// Функция для добавления игрока в категорию
+	// Улучшаем обработчик клика по категории
 	const handleCategoryClick = (categoryName: string) => {
-		const result = addPlayerToCategory(categoryName);
+		try {
+			// Проверяем на бота
+			securityUtils.botDetection.track();
 
-		switch (result) {
-			case 'category_not_found':
-				showMessageModal('Категория не найдена!');
-				break;
-			case 'category_full':
-				// Показываем модалку с заменой игроков
-				const categoryPlayers = categorizedPlayers[categoryName] || [];
-				showReplacePlayerModal(categoryName, categoryPlayers);
-				break;
-			case 'player_not_found':
-				showMessageModal('Игрок не найден!');
-				break;
-			case 'game_finished':
-				// Игра закончена - перенаправляем на страницу результатов
-				navigate('/results');
-				break;
-			case 'success':
-				// Игрок успешно добавлен, продолжаем игру
-				break;
+			const result = addPlayerToCategory(categoryName);
+
+			switch (result) {
+				case 'category_not_found':
+					showMessageModal('Категория не найдена!');
+					break;
+				case 'category_full':
+					// Показываем модалку с заменой игроков
+					const categoryPlayers = categorizedPlayers[categoryName] || [];
+					showReplacePlayerModal(categoryName, categoryPlayers);
+					break;
+				case 'player_not_found':
+					showMessageModal('Игрок не найден!');
+					break;
+				case 'game_finished':
+					// Игра закончена - перенаправляем на страницу результатов
+					navigate('/results');
+					break;
+				case 'success':
+					// Игрок успешно добавлен, продолжаем игру
+					break;
+			}
+		} catch (error) {
+			showMessageModal((error as Error).message);
 		}
 	};
 
@@ -238,7 +249,7 @@ const Game = () => {
 			</div>
 
 			<ul className='category_list text-center flex flex-col gap-2'>
-				{categories.map((category) => (
+				{memoizedCategories.map((category) => (
 					<CategoryItem
 						key={`category-${category.name}`}
 						category={category}

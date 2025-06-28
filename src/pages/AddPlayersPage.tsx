@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useUserStore } from '../store';
 import { useTelegram } from '../hooks/useTelegram';
 import { createPlayer } from '../api';
+import { securityUtils } from '../utils/securityUtils';
 
 interface Player {
 	id: string;
@@ -105,8 +106,11 @@ const AddPlayersPage = () => {
 		setError(null);
 
 		try {
+			// Санитизация имени игрока
+			const sanitizedPlayerName = securityUtils.sanitizeInput(player.name);
+
 			const formData = new FormData();
-			formData.append('name', player.name.trim());
+			formData.append('name', sanitizedPlayerName);
 			formData.append('avatar', player.image);
 			formData.append('clubId', clubId);
 
@@ -131,7 +135,7 @@ const AddPlayersPage = () => {
 							? {
 									...p,
 									id: playerId, // Заменяем временный ID на реальный
-									name: player.name.trim(),
+									name: sanitizedPlayerName,
 									imagePreview: player.imagePreview,
 									isSaved: true, // Помечаем как сохраненного
 							  }

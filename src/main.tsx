@@ -10,33 +10,51 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 		try {
 			// Создаем улучшенный Service Worker с правильным кэшированием API
 			const swCode = `
-				const CACHE_NAME = 'myach-pro-v2'; // Увеличиваем версию для обновления
-				const STATIC_CACHE_NAME = 'myach-pro-static-v2';
-				const API_CACHE_NAME = 'myach-pro-api-v2';
+				const CACHE_NAME = 'myach-pro-v3';
+				const STATIC_CACHE_NAME = 'myach-pro-static-v3';
+				const API_CACHE_NAME = 'myach-pro-api-v3';
 				
 				// Статические ресурсы для кэширования
 				const staticUrlsToCache = [
 					'/',
 					'/assets/',
-					'/fonts/'
+					'/fonts/',
+					'/main_bg.jpg',
+					'/main_logo.png',
+					'/progress.png'
 				];
 
-				// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ кэшируем API запросы клубов и игроков в SW
-				const NEVER_CACHE_PATTERNS = [
-					'/api/clubs',
-					'/api/players',
-					'/api/admin'
-				];
+				// Защита от DDoS: лимиты запросов
+				const requestLimits = {
+					maxRequestsPerMinute: 300,
+					requestCounts: new Map(),
+					resetTime: Date.now() + 60000
+				};
+
+				// Функция для проверки лимитов
+				const checkRequestLimit = (url) => {
+					const now = Date.now();
+					
+					// Сброс счетчиков каждую минуту
+					if (now > requestLimits.resetTime) {
+						requestLimits.requestCounts.clear();
+						requestLimits.resetTime = now + 60000;
+					}
+
+					const count = requestLimits.requestCounts.get(url) || 0;
+					requestLimits.requestCounts.set(url, count + 1);
+
+					return count < requestLimits.maxRequestsPerMinute;
+				};
 
 				self.addEventListener('install', (event) => {
 					event.waitUntil(
 						Promise.all([
-							// Кэшируем только статические ресурсы
 							caches.open(STATIC_CACHE_NAME)
 								.then((cache) => cache.addAll(staticUrlsToCache))
 						])
 					);
-					self.skipWaiting(); // Принудительно активируем новый SW
+					self.skipWaiting();
 				});
 
 				self.addEventListener('activate', (event) => {
@@ -44,7 +62,6 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 						caches.keys().then((cacheNames) => {
 							return Promise.all(
 								cacheNames.map((cacheName) => {
-									// Удаляем старые кэши
 									if (cacheName !== STATIC_CACHE_NAME && 
 										cacheName !== API_CACHE_NAME && 
 										cacheName !== CACHE_NAME) {
@@ -54,48 +71,73 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 							);
 						})
 					);
-					self.clients.claim(); // Берем контроль над всеми клиентами
+					self.clients.claim();
 				});
 
 				self.addEventListener('fetch', (event) => {
 					const url = new URL(event.request.url);
 					
-					// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Никогда не кэшируем API клубов и игроков
-					const shouldNeverCache = NEVER_CACHE_PATTERNS.some(pattern => 
-						url.pathname.includes(pattern)
-					);
-					
-					if (shouldNeverCache) {
-						// Всегда идем в сеть для API запросов
+					// Проверка лимитов запросов
+					if (!checkRequestLimit(url.pathname)) {
 						event.respondWith(
-							fetch(event.request).catch(() => {
-								// В случае ошибки сети возвращаем fallback
-								return new Response(JSON.stringify({
-									error: 'Нет соединения с сервером'
-								}), {
-									status: 503,
-									headers: { 'Content-Type': 'application/json' }
-								});
+							new Response(JSON.stringify({
+								error: 'Превышен лимит запросов. Пожалуйста, подождите.'
+							}), {
+								status: 429,
+								headers: { 'Content-Type': 'application/json' }
 							})
 						);
 						return;
 					}
-					
-					// Для статических ресурсов используем кэш
+
+					// Кэширование статических ресурсов
 					if (url.pathname.includes('/assets/') || 
 						url.pathname.includes('/fonts/') ||
-						url.pathname === '/') {
+						staticUrlsToCache.includes(url.pathname)) {
 						
 						event.respondWith(
 							caches.match(event.request)
 								.then((response) => {
-									return response || fetch(event.request);
+									if (response) {
+										return response;
+									}
+									return fetch(event.request).then((response) => {
+										if (!response || response.status !== 200) {
+											return response;
+										}
+										const responseToCache = response.clone();
+										caches.open(STATIC_CACHE_NAME)
+											.then((cache) => {
+												cache.put(event.request, responseToCache);
+											});
+										return response;
+									});
 								})
 						);
 						return;
 					}
-					
-					// Для всех остальных запросов идем в сеть
+
+					// Для API запросов используем сетевую стратегию с fallback на кэш
+					if (url.pathname.startsWith('/api/')) {
+						event.respondWith(
+							fetch(event.request)
+								.catch(() => caches.match(event.request))
+								.then((response) => {
+									if (!response) {
+										return new Response(JSON.stringify({
+											error: 'Нет соединения с сервером'
+										}), {
+											status: 503,
+											headers: { 'Content-Type': 'application/json' }
+										});
+									}
+									return response;
+								})
+						);
+						return;
+					}
+
+					// Для остальных запросов используем сеть
 					event.respondWith(fetch(event.request));
 				});
 			`;

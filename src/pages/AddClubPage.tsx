@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '../store';
 import { useTelegram } from '../hooks/useTelegram';
 import { createClub } from '../api';
+import { securityUtils } from '../utils/securityUtils';
 
 const AddClubPage = () => {
 	const { isAdmin, isLoading } = useUserStore();
@@ -62,8 +63,11 @@ const AddClubPage = () => {
 		setIsSubmitting(true);
 
 		try {
+			// Санитизация входных данных
+			const sanitizedClubName = securityUtils.sanitizeInput(clubName);
+
 			const formData = new FormData();
-			formData.append('name', clubName.trim());
+			formData.append('name', sanitizedClubName);
 			formData.append('logo', selectedImage);
 
 			// Используем API сервис
@@ -71,7 +75,7 @@ const AddClubPage = () => {
 
 			// Переходим на страницу добавления игроков с ID созданной команды
 			navigate(`/admin/add-players/${response.club.id}`, {
-				state: { clubName: clubName.trim() },
+				state: { clubName: sanitizedClubName },
 			});
 		} catch (err) {
 			console.error('Ошибка при создании команды:', err);
