@@ -32,26 +32,26 @@ const StartPage = () => {
 						пожаловать!
 					</h2>
 					<img src='./main_logo.png' alt='logo' className='logo' />
-
-					{/* Отображаем статус пользователя */}
-					{telegramId && isAdmin && (
-						<div className='mt-4 bg-white/80 p-3 rounded-lg text-center'>
-							<div className='flex flex-col gap-1'>
-								<p className='font-bold text-green-600'>Администратор</p>
-							</div>
-						</div>
-					)}
 				</div>
 
 				{/* Разные кнопки для админов и обычных пользователей */}
 
 				<div className='flex flex-col gap-3'>
-					<Link
-						to={isAdmin ? '/admin' : '/guide'}
-						className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
-					>
-						{isLoading ? 'Подождите...' : isAdmin ? 'Админ' : 'Поехали!'}
-					</Link>
+					{telegramId ? (
+						<Link
+							to={isAdmin ? '/admin' : '/guide'}
+							className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
+						>
+							{isLoading ? 'Подождите...' : isAdmin ? 'Админ' : 'Поехали!'}
+						</Link>
+					) : (
+						<Link
+							to={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME}`}
+							className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
+						>
+							Запустить в телеграме
+						</Link>
+					)}
 				</div>
 			</div>
 		</div>
