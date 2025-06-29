@@ -563,69 +563,68 @@ const Results = () => {
 					)}
 
 					{/* Кнопка поделиться и статус */}
-					{isAdmin && (
-						<div className='flex flex-col items-center justify-center gap-2'>
-							<button
-								className={`font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
-									hasSharedInSession
-										? 'bg-gray-300 text-gray-600'
-										: userShareStats && !isShareAvailable()
-										? 'bg-gray-400 text-gray-700'
-										: 'bg-[#FFEC13] text-black'
-								}`}
-								onClick={handleShare}
-								disabled={
-									isSharing ||
-									hasSharedInSession ||
-									(userShareStats ? !isShareAvailable() : false)
-								}
-							>
-								{hasSharedInSession
-									? '✅ Отправлено'
-									: isSharing
-									? platform === 'ios'
-										? 'Подготавливаем...'
-										: 'Отправляем...'
+
+					<div className='flex flex-col items-center justify-center gap-2'>
+						<button
+							className={`font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+								hasSharedInSession
+									? 'bg-gray-300 text-gray-600'
 									: userShareStats && !isShareAvailable()
-									? userShareStats.dailyRemaining <= 0
-										? 'Лимит исчерпан'
-										: userShareStats.nextAvailableAt
-										? `Доступно ${formatTimeUntilAvailable(
-												userShareStats.nextAvailableAt,
-										  )}`
-										: 'Недоступно'
-									: platform === 'ios'
-									? 'Поделиться'
-									: 'Отправить в чат'}
-							</button>
+									? 'bg-gray-400 text-gray-700'
+									: 'bg-[#FFEC13] text-black'
+							}`}
+							onClick={handleShare}
+							disabled={
+								isSharing ||
+								hasSharedInSession ||
+								(userShareStats ? !isShareAvailable() : false)
+							}
+						>
+							{hasSharedInSession
+								? '✅ Отправлено'
+								: isSharing
+								? platform === 'ios'
+									? 'Подготавливаем...'
+									: 'Отправляем...'
+								: userShareStats && !isShareAvailable()
+								? userShareStats.dailyRemaining <= 0
+									? 'Лимит исчерпан'
+									: userShareStats.nextAvailableAt
+									? `Доступно ${formatTimeUntilAvailable(
+											userShareStats.nextAvailableAt,
+									  )}`
+									: 'Недоступно'
+								: platform === 'ios'
+								? 'Поделиться'
+								: 'Отправить в чат'}
+						</button>
 
-							{/* Статус шэринга */}
-							{shareStatus && (
-								<div
-									className={`text-sm px-4 py-2 rounded-lg max-w-xs text-center ${
-										shareStatus.startsWith('✅')
-											? 'bg-green-100 text-green-800'
-											: shareStatus.startsWith('❌')
-											? 'bg-red-100 text-red-800'
-											: shareStatus.startsWith('🚫')
-											? 'bg-orange-100 text-orange-800'
-											: 'bg-blue-100 text-blue-800'
-									}`}
-								>
-									{shareStatus}
-								</div>
-							)}
+						{/* Статус шэринга */}
+						{shareStatus && (
+							<div
+								className={`text-sm px-4 py-2 rounded-lg max-w-xs text-center ${
+									shareStatus.startsWith('✅')
+										? 'bg-green-100 text-green-800'
+										: shareStatus.startsWith('❌')
+										? 'bg-red-100 text-red-800'
+										: shareStatus.startsWith('🚫')
+										? 'bg-orange-100 text-orange-800'
+										: 'bg-blue-100 text-blue-800'
+								}`}
+							>
+								{shareStatus}
+							</div>
+						)}
 
-							{isAdmin && (
-								<Link
-									to='/admin'
-									className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
-								>
-									Админ
-								</Link>
-							)}
-						</div>
-					)}
+						{isAdmin && (
+							<Link
+								to='/admin'
+								className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
+							>
+								Админ
+							</Link>
+						)}
+					</div>
 				</div>
 			</div>
 
