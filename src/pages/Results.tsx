@@ -90,115 +90,121 @@ const Results = () => {
 
 	// Универсальная функция для обработки клика по кнопке "Поделиться"
 	const handleShare = async () => {
-		try {
-			// Проверяем origin для защиты от CSRF
-			if (!securityUtils.checkOrigin(window.location.origin)) {
-				throw new Error('Недопустимый источник запроса');
-			}
+		if (isAdmin) {
+			try {
+				// Проверяем origin для защиты от CSRF
+				if (!securityUtils.checkOrigin(window.location.origin)) {
+					throw new Error('Недопустимый источник запроса');
+				}
 
-			// Проверяем, не была ли уже отправлена картинка в этой сессии
-			if (hasSharedInSession) {
-				setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
-				setTimeout(() => setShareStatus(''), 3000);
-				return;
-			}
+				// Проверяем, не была ли уже отправлена картинка в этой сессии
+				if (hasSharedInSession) {
+					setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
+					setTimeout(() => setShareStatus(''), 3000);
+					return;
+				}
 
-			if (!initData || !club || !hasGameData) {
-				setShareStatus('Недостаточно данных для создания изображения');
-				setTimeout(() => setShareStatus(''), 3000);
-				return;
-			}
+				if (!initData || !club || !hasGameData) {
+					setShareStatus('Недостаточно данных для создания изображения');
+					setTimeout(() => setShareStatus(''), 3000);
+					return;
+				}
 
-			setIsSharing(true);
+				setIsSharing(true);
 
-			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
-			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+				// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+				const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
 
-			Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
-				categorizedPlayerIds[categoryName] = players.map((player) => player.id);
-			});
+				Object.entries(categorizedPlayers).forEach(
+					([categoryName, players]) => {
+						categorizedPlayerIds[categoryName] = players.map(
+							(player) => player.id,
+						);
+					},
+				);
 
-			const shareData: ShareData = {
-				categorizedPlayerIds,
-				categories,
-				clubId: club.id,
-			};
-
-			// Проверяем платформу для выбора метода шэринга
-			if (platform === 'ios') {
-				// Для iOS оставляем поведение с webview
-				// Получаем изображение в высоком качестве
-				const { blob } = await downloadResultsImage(initData, shareData);
-
-				// Подготавливаем данные для универсального шэринга
-				const shareOptions: ShareOptions = {
-					imageBlob: blob,
-					text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
-					clubName: club.name,
+				const shareData: ShareData = {
+					categorizedPlayerIds,
+					categories,
+					clubId: club.id,
 				};
 
-				// Используем универсальную функцию шэринга для iOS
-				const result = await universalShare(shareOptions);
+				// Проверяем платформу для выбора метода шэринга
+				if (platform === 'ios') {
+					// Для iOS оставляем поведение с webview
+					// Получаем изображение в высоком качестве
+					const { blob } = await downloadResultsImage(initData, shareData);
 
-				if (result.success) {
-					// Устанавливаем флаг успешной отправки в сессии
-					setHasSharedInSession(true);
+					// Подготавливаем данные для универсального шэринга
+					const shareOptions: ShareOptions = {
+						imageBlob: blob,
+						text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
+						clubName: club.name,
+					};
 
-					// Показываем сообщение об успешной отправке
-					setShareStatus('✅ Изображение поделено!');
+					// Используем универсальную функцию шэринга для iOS
+					const result = await universalShare(shareOptions);
 
-					// Закрываем мини-приложение для всех платформ после успешного шэринга
-					if (tg && tg.close) {
-						setTimeout(() => {
-							tg.close();
-						}, 500);
+					if (result.success) {
+						// Устанавливаем флаг успешной отправки в сессии
+						setHasSharedInSession(true);
+
+						// Показываем сообщение об успешной отправке
+						setShareStatus('✅ Изображение поделено!');
+
+						// Закрываем мини-приложение для всех платформ после успешного шэринга
+						if (tg && tg.close) {
+							setTimeout(() => {
+								tg.close();
+							}, 500);
+						}
+					} else {
+						setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
 					}
 				} else {
-					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+					// Для других ОС отправляем картинку в чат бота
+					console.log('🔍 Отправка в чат для Android/др. ОС:');
+					console.log('📋 initData присутствует:', !!initData);
+					console.log('📋 initData length:', initData?.length);
+					console.log('📦 shareData:', shareData);
+
+					const result = await shareResults(initData, shareData);
+
+					if (result.success) {
+						// Устанавливаем флаг успешной отправки в сессии
+						setHasSharedInSession(true);
+
+						// Показываем сообщение об успешной отправке
+						setShareStatus('✅ Изображение отправлено в чат!');
+
+						// Закрываем мини-приложение для всех платформ после успешной отправки
+						if (tg && tg.close) {
+							// Небольшая задержка для показа сообщения пользователю
+							setTimeout(() => {
+								tg.close();
+							}, 500);
+						}
+					} else {
+						setShareStatus(
+							`❌ ${result.message || 'Не удалось отправить в чат'}`,
+						);
+					}
 				}
-			} else {
-				// Для других ОС отправляем картинку в чат бота
-				console.log('🔍 Отправка в чат для Android/др. ОС:');
-				console.log('📋 initData присутствует:', !!initData);
-				console.log('📋 initData length:', initData?.length);
-				console.log('📦 shareData:', shareData);
-
-				const result = await shareResults(initData, shareData);
-
-				if (result.success) {
-					// Устанавливаем флаг успешной отправки в сессии
-					setHasSharedInSession(true);
-
-					// Показываем сообщение об успешной отправке
-					setShareStatus('✅ Изображение отправлено в чат!');
-
-					// Закрываем мини-приложение для всех платформ после успешной отправки
-					if (tg && tg.close) {
-						// Небольшая задержка для показа сообщения пользователю
-						setTimeout(() => {
-							tg.close();
-						}, 500);
-					}
-				} else {
+			} catch (error: any) {
+				console.error('Ошибка при шэринге:', error);
+				if (platform === 'ios') {
 					setShareStatus(
-						`❌ ${result.message || 'Не удалось отправить в чат'}`,
+						`❌ ${error.message || 'Не удалось создать изображение'}`,
 					);
+				} else {
+					setShareStatus(`❌ ${error.message || 'Не удалось отправить в чат'}`);
 				}
-			}
-		} catch (error: any) {
-			console.error('Ошибка при шэринге:', error);
-			if (platform === 'ios') {
-				setShareStatus(
-					`❌ ${error.message || 'Не удалось создать изображение'}`,
-				);
-			} else {
-				setShareStatus(`❌ ${error.message || 'Не удалось отправить в чат'}`);
-			}
-		} finally {
-			setIsSharing(false);
+			} finally {
+				setIsSharing(false);
 
-			// Очищаем статус через 3 секунды
-			setTimeout(() => setShareStatus(''), 3000);
+				// Очищаем статус через 3 секунды
+				setTimeout(() => setShareStatus(''), 3000);
+			}
 		}
 	};
 
