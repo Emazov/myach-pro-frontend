@@ -1,13 +1,24 @@
 import { useState, useEffect } from 'react';
-import { useGameStore } from '../store';
-import { CategoryItem, LoadingSpinner } from '../components';
+import { useGameStore, useUserStore } from '../store';
+import { CategoryItem, LoadingSpinner, ShareTestPanel } from '../components';
 import { fetchClubs } from '../api';
-// import { downloadResultsImage, type ShareData } from '../api/shareService';
+import {
+	downloadResultsImage,
+	shareResults,
+	type ShareData,
+} from '../api/shareService';
 import { useTelegram } from '../hooks/useTelegram';
 import { getProxyImageUrl } from '../utils/imageUtils';
 import { completeGameSession } from '../api/analyticsService';
-// import { TELEGRAM_BOT_USERNAME } from '../config/api';
-// import { Link } from 'react-router-dom';
+import { TELEGRAM_BOT_USERNAME } from '../config/api';
+import { Link } from 'react-router-dom';
+import {
+	universalShare,
+	detectPlatform,
+	getAvailableShareMethods,
+	type ShareOptions,
+} from '../utils/shareUtils';
+import { securityUtils } from '../utils/securityUtils';
 
 // Функция для обработки названия клуба
 const getDisplayClubName = (clubName: string): string => {
@@ -26,17 +37,17 @@ const getDisplayClubName = (clubName: string): string => {
 };
 
 const Results = () => {
-	const { initData } = useTelegram();
-	// const { isAdmin } = useUserStore();
+	const { initData, tg } = useTelegram();
+	const { isAdmin } = useUserStore();
 	const { categorizedPlayers, categories } = useGameStore();
 	const [club, setClub] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	// const [isSharing, setIsSharing] = useState(false);
-	// const [shareStatus, setShareStatus] = useState<string>('');
-	// const [hasSharedInSession, setHasSharedInSession] = useState(false); // Флаг отправки в сессии
-	// const [platform] = useState(() => detectPlatform());
-	// const [availableMethods] = useState(() => getAvailableShareMethods());
+	const [isSharing, setIsSharing] = useState(false);
+	const [shareStatus, setShareStatus] = useState<string>('');
+	const [hasSharedInSession, setHasSharedInSession] = useState(false); // Флаг отправки в сессии
+	const [platform] = useState(() => detectPlatform());
+	const [availableMethods] = useState(() => getAvailableShareMethods());
 
 	// Проверяем, есть ли данные игры
 	const hasGameData =
@@ -78,8 +89,149 @@ const Results = () => {
 	}, [initData, hasGameData]);
 
 	// Универсальная функция для обработки клика по кнопке "Поделиться"
+	const handleShare = async () => {
+		try {
+			// Проверяем origin для защиты от CSRF
+			if (!securityUtils.checkOrigin(window.location.origin)) {
+				throw new Error('Недопустимый источник запроса');
+			}
+
+			// Проверяем, не была ли уже отправлена картинка в этой сессии
+			if (hasSharedInSession) {
+				setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			if (!initData || !club || !hasGameData) {
+				setShareStatus('Недостаточно данных для создания изображения');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			setIsSharing(true);
+
+			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+
+			Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+				categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+			});
+
+			const shareData: ShareData = {
+				categorizedPlayerIds,
+				categories,
+				clubId: club.id,
+			};
+
+			// Проверяем платформу для выбора метода шэринга
+			if (platform === 'ios') {
+				// Для iOS оставляем поведение с webview
+				// Получаем изображение в высоком качестве
+				const { blob } = await downloadResultsImage(initData, shareData);
+
+				// Подготавливаем данные для универсального шэринга
+				const shareOptions: ShareOptions = {
+					imageBlob: blob,
+					text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
+					clubName: club.name,
+				};
+
+				// Используем универсальную функцию шэринга для iOS
+				const result = await universalShare(shareOptions);
+
+				if (result.success) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
+
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение поделено!');
+
+					// Закрываем мини-приложение для всех платформ после успешного шэринга
+					if (tg && tg.close) {
+						setTimeout(() => {
+							tg.close();
+						}, 500);
+					}
+				} else {
+					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+				}
+			} else {
+				// Для других ОС отправляем картинку в чат бота
+				console.log('🔍 Отправка в чат для Android/др. ОС:');
+				console.log('📋 initData присутствует:', !!initData);
+				console.log('📋 initData length:', initData?.length);
+				console.log('📦 shareData:', shareData);
+
+				const result = await shareResults(initData, shareData);
+
+				if (result.success) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
+
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение отправлено в чат!');
+
+					// Закрываем мини-приложение для всех платформ после успешной отправки
+					if (tg && tg.close) {
+						// Небольшая задержка для показа сообщения пользователю
+						setTimeout(() => {
+							tg.close();
+						}, 500);
+					}
+				} else {
+					setShareStatus(
+						`❌ ${result.message || 'Не удалось отправить в чат'}`,
+					);
+				}
+			}
+		} catch (error: any) {
+			console.error('Ошибка при шэринге:', error);
+			if (platform === 'ios') {
+				setShareStatus(
+					`❌ ${error.message || 'Не удалось создать изображение'}`,
+				);
+			} else {
+				setShareStatus(`❌ ${error.message || 'Не удалось отправить в чат'}`);
+			}
+		} finally {
+			setIsSharing(false);
+
+			// Очищаем статус через 3 секунды
+			setTimeout(() => setShareStatus(''), 3000);
+		}
+	};
 
 	// Функция для тестирования шэринга (только в development)
+	const getTestShareOptions = async (
+		testInitData: string,
+	): Promise<ShareOptions> => {
+		if (!club || !hasGameData) {
+			throw new Error('Недостаточно данных для тестирования');
+		}
+
+		// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+		const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+
+		Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+			categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+		});
+
+		const shareData: ShareData = {
+			categorizedPlayerIds,
+			categories,
+			clubId: club.id,
+		};
+
+		// Получаем изображение для тестирования
+		const { blob } = await downloadResultsImage(testInitData, shareData);
+
+		return {
+			imageBlob: blob,
+			text: `Тест шэринга тир-листа - @${TELEGRAM_BOT_USERNAME}`,
+			clubName: club.name,
+		};
+	};
 
 	// Показываем загрузку, если данные еще не получены
 	if (isLoading) {
@@ -201,10 +353,79 @@ const Results = () => {
 					</ul>
 
 					{/* Информация о платформе (только для разработки) */}
+					{import.meta.env.DEV && isAdmin && (
+						<div className='text-xs text-gray-500 mb-4'>
+							<p>Платформа: {platform}</p>
+							<p>
+								Доступные методы:{' '}
+								{availableMethods
+									.filter((m) => m.available)
+									.map((m) => m.name)
+									.join(', ')}
+							</p>
+						</div>
+					)}
 
 					{/* Кнопка поделиться и статус */}
+					{isAdmin && (
+						<div className='flex flex-col items-center justify-center gap-2'>
+							<button
+								className={`font-bold py-3 px-8 rounded-lg text-lg w-fit disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 ${
+									hasSharedInSession
+										? 'bg-gray-300 text-gray-600'
+										: 'bg-[#FFEC13] text-black'
+								}`}
+								onClick={handleShare}
+								disabled={isSharing || hasSharedInSession}
+							>
+								{hasSharedInSession
+									? '✅ Отправлено'
+									: isSharing
+									? platform === 'ios'
+										? 'Подготавливаем...'
+										: 'Отправляем...'
+									: platform === 'ios'
+									? 'Поделиться'
+									: 'Отправить в чат'}
+							</button>
+
+							{/* Статус шэринга */}
+							{shareStatus && (
+								<div
+									className={`text-sm px-4 py-2 rounded-lg max-w-xs text-center ${
+										shareStatus.startsWith('✅')
+											? 'bg-green-100 text-green-800'
+											: shareStatus.startsWith('❌')
+											? 'bg-red-100 text-red-800'
+											: shareStatus.startsWith('🚫')
+											? 'bg-orange-100 text-orange-800'
+											: 'bg-blue-100 text-blue-800'
+									}`}
+								>
+									{shareStatus}
+								</div>
+							)}
+
+							{isAdmin && (
+								<Link
+									to='/admin'
+									className='inline-block bg-[#FFEC13] text-black font-bold py-3 px-8 rounded-lg text-lg w-fit'
+								>
+									Админ
+								</Link>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
+
+			{/* Компонент для тестирования шэринга в development режиме */}
+			{import.meta.env.DEV && isAdmin && hasGameData && club && (
+				<ShareTestPanel
+					onTestShare={getTestShareOptions}
+					initData={initData || ''}
+				/>
+			)}
 		</div>
 	);
 };
