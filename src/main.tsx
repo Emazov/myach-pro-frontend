@@ -10,9 +10,9 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
 		try {
 			// Создаем улучшенный Service Worker с правильным кэшированием API
 			const swCode = `
-				const CACHE_NAME = 'myach-pro-v3.7';
-				const STATIC_CACHE_NAME = 'myach-pro-static-v3.7';
-				const API_CACHE_NAME = 'myach-pro-api-v3.7';
+				const CACHE_NAME = 'myach-pro-v3.8';
+				const STATIC_CACHE_NAME = 'myach-pro-static-v3.8';
+				const API_CACHE_NAME = 'myach-pro-api-v3.8';
 				
 				// Статические ресурсы для кэширования
 				const staticUrlsToCache = [

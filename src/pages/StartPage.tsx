@@ -37,7 +37,7 @@ const StartPage = () => {
 				{/* Разные кнопки для админов и обычных пользователей */}
 
 				<div className='flex flex-col gap-3'>
-					{telegramId ? (
+					{isLoading || telegramId ? (
 						<Link
 							to={isAdmin ? '/admin' : '/guide'}
 							className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
