@@ -49,7 +49,7 @@ const StartPage = () => {
 							to={`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME}`}
 							className='link_btn bg-[#FFEC13] text-[clamp(1rem,2vh,1.5rem)] text-black py-[clamp(1rem,1vh,2rem)]'
 						>
-							Запустить в телеграме
+							Подождите...
 						</Link>
 					)}
 				</div>
