@@ -256,9 +256,21 @@ const AnalyticsPage = () => {
 						</div>
 						<div className='bg-white rounded-lg p-4 shadow-sm'>
 							<div className='text-2xl font-bold text-[#EC3381]'>
+								{stats.totalImageShares}
+							</div>
+							<div className='text-sm text-gray-600'>Поделились картинкой</div>
+						</div>
+						<div className='bg-white rounded-lg p-4 shadow-sm'>
+							<div className='text-2xl font-bold text-[#EC3381]'>
 								{stats.conversionRate}%
 							</div>
-							<div className='text-sm text-gray-600'>Конверсия</div>
+							<div className='text-sm text-gray-600'>Конверсия завершения</div>
+						</div>
+						<div className='bg-white rounded-lg p-4 shadow-sm'>
+							<div className='text-2xl font-bold text-[#EC3381]'>
+								{stats.shareRate}%
+							</div>
+							<div className='text-sm text-gray-600'>Конверсия шэринга</div>
 						</div>
 					</div>
 				</div>
@@ -266,7 +278,7 @@ const AnalyticsPage = () => {
 				{/* Статистика за сегодня */}
 				<div className='mb-6'>
 					<h2 className='text-xl font-bold mb-4'>За сегодня</h2>
-					<div className='grid grid-cols-3 gap-3'>
+					<div className='grid grid-cols-2 gap-3'>
 						<div className='bg-white rounded-lg p-3 shadow-sm'>
 							<div className='text-lg font-bold text-[#EC3381]'>
 								{stats.recentStats.usersToday}
@@ -284,6 +296,12 @@ const AnalyticsPage = () => {
 								{stats.recentStats.gameCompletionsToday}
 							</div>
 							<div className='text-xs text-gray-600'>Завершений</div>
+						</div>
+						<div className='bg-white rounded-lg p-3 shadow-sm'>
+							<div className='text-lg font-bold text-[#EC3381]'>
+								{stats.recentStats.imageSharesToday}
+							</div>
+							<div className='text-xs text-gray-600'>Поделились картинкой</div>
 						</div>
 					</div>
 				</div>
@@ -355,7 +373,7 @@ const AnalyticsPage = () => {
 										<div className='font-medium mb-1 text-black'>
 											{formatDate(day.date)}
 										</div>
-										<div className='grid grid-cols-2 gap-4 text-sm'>
+										<div className='grid grid-cols-2 gap-4 text-sm mb-2'>
 											<div>
 												<span className='text-gray-600'>Запуски: </span>
 												<span className='font-medium text-black'>
@@ -368,6 +386,14 @@ const AnalyticsPage = () => {
 													{Number(day.game_completions) || 0}
 												</span>
 											</div>
+										</div>
+										<div className='text-sm'>
+											<span className='text-gray-600'>
+												Поделились картинкой:{' '}
+											</span>
+											<span className='font-medium text-[#EC3381]'>
+												{Number(day.image_shares) || 0}
+											</span>
 										</div>
 									</div>
 								))

@@ -4,17 +4,21 @@ export enum EventType {
 	APP_START = 'app_start',
 	GAME_START = 'game_start',
 	GAME_COMPLETED = 'game_completed',
+	IMAGE_SHARED = 'image_shared',
 }
 
 export interface AnalyticsStats {
 	totalUsers: number;
 	totalAppStarts: number;
 	totalGameCompletions: number;
+	totalImageShares: number;
 	conversionRate: number;
+	shareRate: number;
 	recentStats: {
 		usersToday: number;
 		appStartsToday: number;
 		gameCompletionsToday: number;
+		imageSharesToday: number;
 	};
 }
 
@@ -23,6 +27,7 @@ export interface DetailedStats {
 		date: string;
 		app_starts: number;
 		game_completions: number;
+		image_shares: number;
 	}>;
 	topClubs: Array<{
 		clubId: string;
