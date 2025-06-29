@@ -7,13 +7,129 @@ export interface ShareData {
 	clubId: string; // Передаем ID клуба вместо названия и URL
 }
 
+// Интерфейс для статистики лимитов пользователя
+export interface UserShareStats {
+	dailyUsed: number; // Количество использований за день
+	dailyLimit: number; // Дневной лимит (5)
+	dailyRemaining: number; // Оставшиеся попытки за день
+	consecutiveCount: number; // Количество последовательных запросов
+	consecutiveLimit: number; // Лимит последовательных запросов (2)
+	nextAvailableAt: string | null; // Время, когда будет доступен следующий запрос
+	intervalMinutes: number; // Интервал в минутах (10)
+	canUse: boolean; // Можно ли использовать прямо сейчас
+}
+
+// Интерфейс для ответа shareResults с информацией о лимитах
+export interface ShareResponse {
+	success: boolean;
+	message: string;
+	closeWebApp?: boolean;
+	rateLimitInfo?: {
+		dailyUsed: number;
+		dailyRemaining: number;
+		consecutiveCount: number;
+		nextAvailableAt: string | null;
+		intervalMinutes: number;
+	};
+}
+
+// Интерфейс для детальной ошибки лимитов
+export interface RateLimitError extends Error {
+	isRateLimit: true;
+	type: 'daily' | 'consecutive';
+	dailyUsed: number;
+	dailyLimit: number;
+	dailyRemaining: number;
+	consecutiveCount: number;
+	nextAvailableAt: string | null;
+	intervalMinutes: number;
+	retryAfterSeconds?: number;
+}
+
+/**
+ * Получает статистику лимитов пользователя
+ */
+export const getUserShareStats = async (
+	initData: string,
+): Promise<UserShareStats> => {
+	try {
+		const response = await api.get('/share/stats', {
+			headers: {
+				Authorization: `tma ${initData}`,
+			},
+		});
+
+		return response.data;
+	} catch (error: any) {
+		console.error('Ошибка при получении статистики лимитов:', error);
+
+		// Возвращаем дефолтные значения в случае ошибки
+		return {
+			dailyUsed: 0,
+			dailyLimit: 5,
+			dailyRemaining: 5,
+			consecutiveCount: 0,
+			consecutiveLimit: 2,
+			nextAvailableAt: null,
+			intervalMinutes: 10,
+			canUse: true,
+		};
+	}
+};
+
+/**
+ * Извлекает информацию о лимитах из заголовков ответа
+ */
+const extractRateLimitInfo = (headers: any) => {
+	return {
+		dailyUsed: parseInt(headers['x-ratelimit-daily-used'] || '0'),
+		dailyRemaining: parseInt(headers['x-ratelimit-daily-remaining'] || '5'),
+		consecutiveCount: parseInt(headers['x-ratelimit-consecutive-count'] || '0'),
+		nextAvailableAt: headers['x-ratelimit-next-available'] || null,
+		intervalMinutes: parseInt(headers['x-ratelimit-interval-minutes'] || '10'),
+	};
+};
+
+/**
+ * Создает детальную ошибку лимитов из ответа API
+ */
+const createRateLimitError = (error: any): RateLimitError => {
+	const data = error.response?.data || {};
+	const headers = error.response?.headers || {};
+
+	const rateLimitError = new Error(
+		data.error || 'Превышен лимит запросов',
+	) as RateLimitError;
+	rateLimitError.name = 'RateLimitError';
+	rateLimitError.isRateLimit = true;
+	rateLimitError.type = data.type || 'daily';
+	rateLimitError.dailyUsed = parseInt(headers['x-ratelimit-daily-used'] || '0');
+	rateLimitError.dailyLimit = parseInt(
+		headers['x-ratelimit-daily-limit'] || '5',
+	);
+	rateLimitError.dailyRemaining = parseInt(
+		headers['x-ratelimit-daily-remaining'] || '0',
+	);
+	rateLimitError.consecutiveCount = parseInt(
+		headers['x-ratelimit-consecutive-count'] || '0',
+	);
+	rateLimitError.nextAvailableAt =
+		headers['x-ratelimit-next-available'] || null;
+	rateLimitError.intervalMinutes = parseInt(
+		headers['x-ratelimit-interval-minutes'] || '10',
+	);
+	rateLimitError.retryAfterSeconds = parseInt(headers['retry-after'] || '0');
+
+	return rateLimitError;
+};
+
 /**
  * Отправляет данные результатов на сервер для генерации и отправки изображения в Telegram
  */
 export const shareResults = async (
 	initData: string,
 	shareData: ShareData,
-): Promise<{ success: boolean; message: string; closeWebApp?: boolean }> => {
+): Promise<ShareResponse> => {
 	try {
 		const response = await api.post(
 			'/share/results',
@@ -27,10 +143,22 @@ export const shareResults = async (
 			},
 		);
 
-		return response.data;
+		// Извлекаем информацию о лимитах из заголовков
+		const rateLimitInfo = extractRateLimitInfo(response.headers);
+
+		return {
+			...response.data,
+			rateLimitInfo,
+		};
 	} catch (error: any) {
 		console.error('Ошибка при отправке результатов:', error);
 
+		// Если это ошибка лимитов (429), создаем детальную ошибку
+		if (error.response?.status === 429) {
+			throw createRateLimitError(error);
+		}
+
+		// Для других ошибок возвращаем стандартное сообщение
 		throw new Error(
 			error.response?.data?.error ||
 				'Произошла ошибка при отправке результатов',

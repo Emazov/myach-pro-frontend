@@ -36,7 +36,11 @@ export {
 	previewResultsImage,
 	downloadResultsImage,
 	checkShareServiceHealth,
+	getUserShareStats,
 	type ShareData,
+	type UserShareStats,
+	type ShareResponse,
+	type RateLimitError,
 } from './shareService';
 
 export { ImageService } from './imageService';
