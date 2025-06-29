@@ -171,191 +171,183 @@ const Results = () => {
 
 	// Универсальная функция для обработки клика по кнопке "Поделиться"
 	const handleShare = async () => {
-		if (isAdmin) {
-			try {
-				// Проверяем origin для защиты от CSRF
-				if (!securityUtils.checkOrigin(window.location.origin)) {
-					throw new Error('Недопустимый источник запроса');
+		try {
+			// Проверяем origin для защиты от CSRF
+			if (!securityUtils.checkOrigin(window.location.origin)) {
+				throw new Error('Недопустимый источник запроса');
+			}
+
+			// Проверяем, не была ли уже отправлена картинка в этой сессии
+			if (hasSharedInSession) {
+				setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			if (!initData || !club || !hasGameData) {
+				setShareStatus('Недостаточно данных для создания изображения');
+				setTimeout(() => setShareStatus(''), 3000);
+				return;
+			}
+
+			// Проверяем лимиты пользователя
+			if (userShareStats && !isShareAvailable()) {
+				if (userShareStats.dailyRemaining <= 0) {
+					setShareStatus('🚫 Превышен дневной лимит (5 изображений в день)');
+				} else if (!userShareStats.canUse && userShareStats.nextAvailableAt) {
+					const timeUntil = formatTimeUntilAvailable(
+						userShareStats.nextAvailableAt,
+					);
+					setShareStatus(`⏳ Следующая отправка доступна ${timeUntil}`);
+				} else {
+					setShareStatus('🚫 Отправка временно недоступна');
 				}
+				setTimeout(() => setShareStatus(''), 4000);
+				return;
+			}
 
-				// Проверяем, не была ли уже отправлена картинка в этой сессии
-				if (hasSharedInSession) {
-					setShareStatus('🚫 Изображение уже было отправлено в этой сессии');
-					setTimeout(() => setShareStatus(''), 3000);
-					return;
-				}
+			setIsSharing(true);
 
-				if (!initData || !club || !hasGameData) {
-					setShareStatus('Недостаточно данных для создания изображения');
-					setTimeout(() => setShareStatus(''), 3000);
-					return;
-				}
+			// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
+			const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
 
-				// Проверяем лимиты пользователя
-				if (userShareStats && !isShareAvailable()) {
-					if (userShareStats.dailyRemaining <= 0) {
-						setShareStatus('🚫 Превышен дневной лимит (5 изображений в день)');
-					} else if (!userShareStats.canUse && userShareStats.nextAvailableAt) {
-						const timeUntil = formatTimeUntilAvailable(
-							userShareStats.nextAvailableAt,
-						);
-						setShareStatus(`⏳ Следующая отправка доступна ${timeUntil}`);
-					} else {
-						setShareStatus('🚫 Отправка временно недоступна');
-					}
-					setTimeout(() => setShareStatus(''), 4000);
-					return;
-				}
+			Object.entries(categorizedPlayers).forEach(([categoryName, players]) => {
+				categorizedPlayerIds[categoryName] = players.map((player) => player.id);
+			});
 
-				setIsSharing(true);
+			const shareData: ShareData = {
+				categorizedPlayerIds,
+				categories,
+				clubId: club.id,
+			};
 
-				// Преобразуем categorizedPlayers в categorizedPlayerIds (только IDs)
-				const categorizedPlayerIds: { [categoryName: string]: string[] } = {};
+			// Проверяем платформу для выбора метода шэринга
+			if (platform === 'ios') {
+				// Для iOS оставляем поведение с webview
+				// Получаем изображение в высоком качестве
+				const { blob } = await downloadResultsImage(initData, shareData);
 
-				Object.entries(categorizedPlayers).forEach(
-					([categoryName, players]) => {
-						categorizedPlayerIds[categoryName] = players.map(
-							(player) => player.id,
-						);
-					},
-				);
-
-				const shareData: ShareData = {
-					categorizedPlayerIds,
-					categories,
-					clubId: club.id,
+				// Подготавливаем данные для универсального шэринга
+				const shareOptions: ShareOptions = {
+					imageBlob: blob,
+					text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
+					clubName: club.name,
 				};
 
-				// Проверяем платформу для выбора метода шэринга
-				if (platform === 'ios') {
-					// Для iOS оставляем поведение с webview
-					// Получаем изображение в высоком качестве
-					const { blob } = await downloadResultsImage(initData, shareData);
+				// Используем универсальную функцию шэринга для iOS
+				const result = await universalShare(shareOptions);
 
-					// Подготавливаем данные для универсального шэринга
-					const shareOptions: ShareOptions = {
-						imageBlob: blob,
-						text: `Собери свой тир лист - @${TELEGRAM_BOT_USERNAME}`,
-						clubName: club.name,
-					};
+				if (result.success) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
 
-					// Используем универсальную функцию шэринга для iOS
-					const result = await universalShare(shareOptions);
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение поделено!');
 
-					if (result.success) {
-						// Устанавливаем флаг успешной отправки в сессии
-						setHasSharedInSession(true);
-
-						// Показываем сообщение об успешной отправке
-						setShareStatus('✅ Изображение поделено!');
-
-						// Закрываем мини-приложение для всех платформ после успешного шэринга
-						if (tg && tg.close) {
-							setTimeout(() => {
-								tg.close();
-							}, 500);
-						}
-					} else {
-						setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+					// Закрываем мини-приложение для всех платформ после успешного шэринга
+					if (tg && tg.close) {
+						setTimeout(() => {
+							tg.close();
+						}, 500);
 					}
 				} else {
-					// Для других ОС отправляем картинку в чат бота
-					console.log('🔍 Отправка в чат для Android/др. ОС:');
-					console.log('📋 initData присутствует:', !!initData);
-					console.log('📋 initData length:', initData?.length);
-					console.log('📦 shareData:', shareData);
+					setShareStatus(`❌ ${result.error || 'Не удалось поделиться'}`);
+				}
+			} else {
+				// Для других ОС отправляем картинку в чат бота
+				console.log('🔍 Отправка в чат для Android/др. ОС:');
+				console.log('📋 initData присутствует:', !!initData);
+				console.log('📋 initData length:', initData?.length);
+				console.log('📦 shareData:', shareData);
 
-					const result = await shareResults(initData, shareData);
+				const result = await shareResults(initData, shareData);
 
-					if (result.success) {
-						// Устанавливаем флаг успешной отправки в сессии
-						setHasSharedInSession(true);
+				if (result.success) {
+					// Устанавливаем флаг успешной отправки в сессии
+					setHasSharedInSession(true);
 
-						// Обновляем статистику лимитов из ответа
-						if (result.rateLimitInfo) {
-							setUserShareStats((prev) =>
-								prev
-									? {
-											...prev,
-											dailyUsed: result.rateLimitInfo!.dailyUsed,
-											dailyRemaining: result.rateLimitInfo!.dailyRemaining,
-											consecutiveCount: result.rateLimitInfo!.consecutiveCount,
-											nextAvailableAt: result.rateLimitInfo!.nextAvailableAt,
-											canUse: result.rateLimitInfo!.nextAvailableAt
-												? false
-												: true,
-									  }
-									: null,
-							);
-						}
-
-						// Показываем сообщение об успешной отправке
-						setShareStatus('✅ Изображение отправлено в чат!');
-
-						// Закрываем мини-приложение для всех платформ после успешной отправки
-						if (tg && tg.close) {
-							// Небольшая задержка для показа сообщения пользователю
-							setTimeout(() => {
-								tg.close();
-							}, 500);
-						}
-					} else {
-						setShareStatus(
-							`❌ ${result.message || 'Не удалось отправить в чат'}`,
+					// Обновляем статистику лимитов из ответа
+					if (result.rateLimitInfo) {
+						setUserShareStats((prev) =>
+							prev
+								? {
+										...prev,
+										dailyUsed: result.rateLimitInfo!.dailyUsed,
+										dailyRemaining: result.rateLimitInfo!.dailyRemaining,
+										consecutiveCount: result.rateLimitInfo!.consecutiveCount,
+										nextAvailableAt: result.rateLimitInfo!.nextAvailableAt,
+										canUse: result.rateLimitInfo!.nextAvailableAt
+											? false
+											: true,
+								  }
+								: null,
 						);
 					}
-				}
-			} catch (error: any) {
-				console.error('Ошибка при шэринге:', error);
 
-				// Обработка ошибок лимитов
-				if (error.isRateLimit) {
-					const rateLimitError = error as RateLimitError;
+					// Показываем сообщение об успешной отправке
+					setShareStatus('✅ Изображение отправлено в чат!');
 
-					// Обновляем статистику из ошибки
-					setUserShareStats((prev) =>
-						prev
-							? {
-									...prev,
-									dailyUsed: rateLimitError.dailyUsed,
-									dailyLimit: rateLimitError.dailyLimit,
-									dailyRemaining: rateLimitError.dailyRemaining,
-									consecutiveCount: rateLimitError.consecutiveCount,
-									nextAvailableAt: rateLimitError.nextAvailableAt,
-									canUse: false,
-							  }
-							: null,
+					// Закрываем мини-приложение для всех платформ после успешной отправки
+					if (tg && tg.close) {
+						// Небольшая задержка для показа сообщения пользователю
+						setTimeout(() => {
+							tg.close();
+						}, 500);
+					}
+				} else {
+					setShareStatus(
+						`❌ ${result.message || 'Не удалось отправить в чат'}`,
 					);
-
-					// Показываем специализированное сообщение об ошибке лимитов
-					if (rateLimitError.type === 'daily') {
-						setShareStatus('🚫 Превышен дневной лимит (5 изображений в день)');
-					} else if (rateLimitError.type === 'consecutive') {
-						const timeUntil = formatTimeUntilAvailable(
-							rateLimitError.nextAvailableAt,
-						);
-						setShareStatus(`⏳ Следующая отправка доступна ${timeUntil}`);
-					} else {
-						setShareStatus(`❌ ${rateLimitError.message}`);
-					}
-				} else {
-					// Обычные ошибки
-					if (platform === 'ios') {
-						setShareStatus(
-							`❌ ${error.message || 'Не удалось создать изображение'}`,
-						);
-					} else {
-						setShareStatus(
-							`❌ ${error.message || 'Не удалось отправить в чат'}`,
-						);
-					}
 				}
-			} finally {
-				setIsSharing(false);
-
-				// Очищаем статус через 3 секунды
-				setTimeout(() => setShareStatus(''), 3000);
 			}
+		} catch (error: any) {
+			console.error('Ошибка при шэринге:', error);
+
+			// Обработка ошибок лимитов
+			if (error.isRateLimit) {
+				const rateLimitError = error as RateLimitError;
+
+				// Обновляем статистику из ошибки
+				setUserShareStats((prev) =>
+					prev
+						? {
+								...prev,
+								dailyUsed: rateLimitError.dailyUsed,
+								dailyLimit: rateLimitError.dailyLimit,
+								dailyRemaining: rateLimitError.dailyRemaining,
+								consecutiveCount: rateLimitError.consecutiveCount,
+								nextAvailableAt: rateLimitError.nextAvailableAt,
+								canUse: false,
+						  }
+						: null,
+				);
+
+				// Показываем специализированное сообщение об ошибке лимитов
+				if (rateLimitError.type === 'daily') {
+					setShareStatus('🚫 Превышен дневной лимит (5 изображений в день)');
+				} else if (rateLimitError.type === 'consecutive') {
+					const timeUntil = formatTimeUntilAvailable(
+						rateLimitError.nextAvailableAt,
+					);
+					setShareStatus(`⏳ Следующая отправка доступна ${timeUntil}`);
+				} else {
+					setShareStatus(`❌ ${rateLimitError.message}`);
+				}
+			} else {
+				// Обычные ошибки
+				if (platform === 'ios') {
+					setShareStatus(
+						`❌ ${error.message || 'Не удалось создать изображение'}`,
+					);
+				} else {
+					setShareStatus(`❌ ${error.message || 'Не удалось отправить в чат'}`);
+				}
+			}
+		} finally {
+			setIsSharing(false);
+
+			// Очищаем статус через 3 секунды
+			setTimeout(() => setShareStatus(''), 3000);
 		}
 	};
 
